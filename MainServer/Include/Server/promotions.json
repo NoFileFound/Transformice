@@ -1,0 +1,24 @@
+[
+    {
+		"Id": 1000,
+        "Category": 4,
+        "Item": 8,
+        "Discount": 100,
+        "Time": 1719955844,
+		"isShamanItem": false,
+		"Perm": false,
+		"Collector": true,
+		"AddedBy": "Server"
+    },
+    {
+		"Id": 1001,
+        "Category": -1,
+        "Item": 119,
+        "Discount": 100,
+        "Time": 1719955844,
+		"isShamanItem": true,
+		"Perm": false,
+		"Collector": false,
+		"AddedBy": "Server"
+    }
+]

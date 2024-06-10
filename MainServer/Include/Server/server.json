@@ -1,0 +1,22 @@
+{
+	"name": "Transformice",
+	"ip_address": "127.0.0.1",
+	"debug": false,
+	"streaming": false,
+	"db_name": "transformice1",
+	"db_url": "mongodb://localhost:27017",
+	"swf_url": "file:///C|/Users/believix/Desktop/TFM/Transformice.swf",
+	"bulles": [{
+		"id": 1,
+		"ip_address": "127.0.0.1",
+		"port": [4444, 5555, 6666, 7777, 8888],
+		"capacity": 150
+		}
+	],
+	"event": {
+		"adventure_banner": "x_cimetiere.jpg",
+		"adventure_flyer": "flyer_2023_07_27.jpg",
+		"adventure_id": 23
+	},
+	"bulle_auth_code": "123456789abcdefghi1234"
+}

@@ -1,0 +1,17 @@
+{
+	"initial_firsts": 0,
+	"initial_cheeses": 0,
+	"initial_bootcamps": 0,
+	"initial_shop": {
+		"cheese": 0,
+		"strawberry": 0
+	},
+	"initial_saves": {
+		"normal": 0,
+		"normal_no_skill": 0,
+		"hard": 0,
+		"hard_no_skill": 0,
+		"divine": 0,
+		"divine_no_skill": 0
+	}
+}

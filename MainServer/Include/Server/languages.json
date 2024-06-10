@@ -1,0 +1,16 @@
+{
+	"id" : ["Bahasa Indonesia", "id"],
+	"de" : ["Deutsch", "de"],
+	"ee" : ["Eesti keel", "ee"],
+	"gb" : ["English", "gb"],
+	"es" : ["Español", "es"],
+	"fr" : ["Français", "fr"],
+	"hr" : ["Hrvatski", "hr"],
+	"it" : ["Italiano", "it"],
+	"pl" : ["Polski", "pl"],
+	"pt" : ["Português", "pt"],
+	"br" : ["Português brasileiro", "br"],
+	"ro" : ["Română", "ro"],
+	"ru" : ["Русский язык", "ru"],
+	"ua" : ["Українська мова", "ua"]	
+}
