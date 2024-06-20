@@ -8,7 +8,7 @@ class Time:
 
     @staticmethod
     def getDate():
-        return str(datetime.now()).replace("-", "/").split(".")[0].replace(" ", " - ")
+        return str(datetime.datetime.now()).replace("-", "/").split(".")[0].replace(" ", " - ")
         
     @staticmethod
     def getSecondsDiff(endTimeMillis):
@@ -17,8 +17,8 @@ class Time:
     @staticmethod
     def getHoursDiff(endTimeMillis):
         startTime = self.getTime()
-        startTime = datetime.fromtimestamp(float(startTime))
-        endTime = datetime.fromtimestamp(float(endTimeMillis))
+        startTime = datetime.datetime.fromtimestamp(float(startTime))
+        endTime = datetime.datetime.fromtimestamp(float(endTimeMillis))
         result = endTime - startTime
         seconds = (result.microseconds + (result.seconds + result.days * 24 * 3600) * 10 ** 6) / float(10 ** 6)
         hours = int(int(seconds) / 3600) + 1
@@ -26,8 +26,8 @@ class Time:
 
     @staticmethod
     def getDaysDiff(endTimeMillis):
-        startTime = datetime.fromtimestamp(float(self.getTime()))
-        endTime = datetime.fromtimestamp(float(endTimeMillis))
+        startTime = datetime.datetime.fromtimestamp(float(self.getTime()))
+        endTime = datetime.datetime.fromtimestamp(float(endTimeMillis))
         result = endTime - startTime
         return result.days + 1
         

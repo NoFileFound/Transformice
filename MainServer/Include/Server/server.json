@@ -1,7 +1,7 @@
 {
 	"name": "Transformice",
 	"ip_address": "127.0.0.1",
-	"debug": false,
+	"debug": true,
 	"streaming": false,
 	"db_name": "transformice1",
 	"db_url": "mongodb://localhost:27017",
@@ -18,5 +18,6 @@
 		"adventure_flyer": "flyer_2023_07_27.jpg",
 		"adventure_id": 23
 	},
+	"owners": ["Test#0365"],
 	"bulle_auth_code": "123456789abcdefghi1234"
 }

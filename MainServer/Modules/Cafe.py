@@ -1,12 +1,18 @@
+#coding: utf-8
+import datetime
 import pymongo
+
+# Modules
 from Modules.Identifiers import Identifiers
 from Modules.ByteArray import ByteArray
+
+# Utils
 from Utils.Time import Time
 
 class Cafe:
-    def __init__(self, client, server):
+    def __init__(self, client):
         self.client = client
-        self.server = server
+        self.server = client.server
         self.canUseCafe = False
         self.isModerator = False
 
@@ -74,7 +80,7 @@ class Cafe:
                     "Posts" :                   0,
                     "LastPostName" :            "",
                     "Date":                     Time.getTime(),
-                    "Langue":                   self.client.gameLanguage
+                    "Langue":                   self.client.playerLangue
             })
             self.createNewCafePost(self.server.lastCafeTopicID, message)
         self.server.lastCafeTopicID += 1
@@ -123,7 +129,7 @@ class Cafe:
         packet = ByteArray().writeBoolean(self.canUseCafe).writeBoolean(self.isModerator)
         cursor = self.server.cursor["cafetopics"].find().sort("Date", pymongo.DESCENDING).limit(20)
         for topic in cursor:
-            if topic["Langue"] == self.client.gameLanguage or self.client.privLevel >= 8:
+            if topic["Langue"] == self.client.playerLangue or self.client.privLevel >= 8:
                 packet.writeInt(topic["TopicID"]).writeUTF(topic["Title"]).writeInt(self.server.getPlayerID(topic["Author"])).writeInt(topic["Posts"]).writeUTF(topic["LastPostName"]).writeInt(Time.getSecondsDiff(topic["Date"]))
         
         self.client.sendPacket(Identifiers.send.Cafe_Topics_List, packet.toByteArray())
@@ -175,12 +181,25 @@ class Cafe:
 
 
     def verifyCafePost(self, topicID, status): # UNFINISHED
-        pass
+        print(f"[-] THIS FUNCTION IS NOT A FINISHED DUE MISSING INFORMATION HOW THIS IN GAME WORKS. FUNC: VerifyCafePost ARGS: {topicID},{status}")
 
-    def viewCafePosts(self, playerName): # UNFINISHED
-        pass
-
+    def viewCafePosts(self, playerName):
+        cursor = self.server.cursor['cafeposts'].find({"Author":playerName})
+        topicName = self.server.cursor['cafetopics'].find_one({"TopicID":cursor[0]["TopicID"]})["Title"]
+        message = ""
+        for post in cursor:
+            status = ""
+            msg = post['Message'].replace('\r', '')
+            message += f"Message: {msg} | "
+            message += f"Topic: <J>{topicName}</J> | "
+            if post["Moderator"] != "":
+                message += f"Moderated by: <ROSE>{post['Moderator']}</ROSE> | "
+            message += f"Date: <BL>{datetime.datetime.fromtimestamp(post['Date']).strftime('%m/%d/%Y %H:%M:%S')}</BL> | "
+            message += f"Status: {'Active' if post['Type'] == 0 else 'Approved' if post['Type'] == 1 else 'Moderated'}"
+            message += "\n"
         
+        self.client.sendPacket(Identifiers.send.MiniBox_New, ByteArray().writeShort(600).writeUTF("View Posts of player " + playerName).writeUTF(message).toByteArray())
+
         # Cafe packets
 
     def sendCafeWarnings(self):

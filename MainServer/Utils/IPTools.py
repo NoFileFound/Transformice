@@ -18,5 +18,18 @@ class IPTools:
         return '.'.join(result)
         
     @staticmethod
-    def ColorIP(ip) -> str:
-        pass
+    def ColorIP(ip : str) -> str:
+        ip = ip.lstrip('#')
+        components = ip.split('.')
+        concatenated = ''.join(components)
+        concatenated = concatenated.ljust(8, '0')[:8]
+        # Convert to RGB values
+        r = int(concatenated[:2], 16)
+        g = int(concatenated[2:4], 16)
+        b = int(concatenated[4:6], 16)
+        hex_color = f'#{r:02X}{g:02X}{b:02X}'
+        return hex_color
+        
+    @staticmethod
+    def GetCountry(ip):
+        return "Brazil"

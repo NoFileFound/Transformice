@@ -10718,7 +10718,134 @@
             "fraise": 50,
             "new": false,
             "customs": 2
+        },
+		{
+            "category": 11,
+            "id": 14,
+            "cheese": 550,
+            "fraise": 55,
+            "new": false,
+            "customs": 0,
+            "collector": false
+        },
+		{
+            "category": 11,
+            "id": 13,
+            "cheese": 500,
+            "fraise": 50,
+            "new": false,
+            "customs": 0,
+            "collector": false
+        },
+		{
+            "category": 11,
+            "id": 12,
+            "cheese": 500,
+            "fraise": 50,
+            "new": false,
+            "customs": 0,
+            "collector": false
+        },
+		{
+            "category": 11,
+            "id": 11,
+            "cheese": 500,
+            "fraise": 50,
+            "new": false,
+            "customs": 0,
+            "collector": false
+        },
+		{
+            "category": 11,
+            "id": 10,
+            "cheese": 500,
+            "fraise": 50,
+            "new": false,
+            "customs": 0,
+            "collector": false
+        },
+		{
+            "category": 11,
+            "id": 9,
+            "cheese": 500,
+            "fraise": 50,
+            "new": false,
+            "customs": 0,
+            "collector": false
+        },
+		{
+            "category": 11,
+            "id": 8,
+            "cheese": 500,
+            "fraise": 50,
+            "new": false,
+            "customs": 0,
+            "collector": false
+        },
+		{
+            "category": 11,
+            "id": 7,
+            "cheese": 500,
+            "fraise": 50,
+            "new": false,
+            "customs": 0,
+            "collector": false
+        },
+		{
+            "category": 11,
+            "id": 6,
+            "cheese": 500,
+            "fraise": 50,
+            "new": false,
+            "customs": 0,
+            "collector": false
+        },
+		{
+            "category": 11,
+            "id": 5,
+            "cheese": 500,
+            "fraise": 50,
+            "new": false,
+            "customs": 0,
+            "collector": false
+        },
+		{
+            "category": 11,
+            "id": 4,
+            "cheese": 500,
+            "fraise": 50,
+            "new": false,
+            "customs": 0,
+            "collector": false
+        },
+		{
+            "category": 11,
+            "id": 3,
+            "cheese": 500,
+            "fraise": 50,
+            "new": false,
+            "customs": 0,
+            "collector": false
+        },
+		{
+            "category": 11,
+            "id": 2,
+            "cheese": 500,
+            "fraise": 50,
+            "new": false,
+            "customs": 0,
+            "collector": false
+        },
+		{
+            "category": 11,
+            "id": 1,
+            "cheese": 500,
+            "fraise": 50,
+            "new": false,
+            "customs": 0,
+            "collector": false
         }
+		
     ],
     "shamanItems": [
         {
