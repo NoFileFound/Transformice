@@ -1,6 +1,13 @@
 class Identifiers:
     class bulle:
-        BU_ConnectToGivenRoom = 1
+        BU_ConnectToGivenRoom = 1001
+        BU_SendModerationMesage = 1006
+        BU_LoadMapEditor_Map = 1007
+        BU_DrawingClear = 1008
+        BU_DrawingStart = 1009
+        BU_DrawingPoint = 1010
+        BU_GetChatLog = 1011
+        BU_ReceiveTitleID = 1012
         
     class tribulle:
         class recv:
@@ -62,13 +69,16 @@ class Identifiers:
             ET_ResultatSuppressionListeNoire = 45
             ET_ResultatConsultationListeNoire = 47
             ET_ResultatEnvoiMessageChat = 49
+            ET_ResultatEnvoiMessagePrive = 53
             ET_ResultatRejoindreCanalPublique = 55
             ET_ResultatQuitterCanalPublique = 57
             ET_ResultatListerCanalPublique = 59
+            ET_ResultatDefinirModeSilence = 61
             ET_SignalementRejoindreCanalPublique = 62
             ET_SignalementQuitterCanalPublique = 63
             ET_SignalementMessageChat = 64
             ET_SignalementMessageTribu = 65
+            ET_SignalementMessagePrive = 66
             ET_ResultatInvitationTribu = 79
             ET_ResultatRepondsInvitationTribu = 81
             ET_ResultatDemandeQuitterTribu = 83
@@ -153,6 +163,8 @@ class Identifiers:
         Player_Ping = (28, 6)
         Send_Code = (28, 16)
         Computer_Info = (28, 17)
+        Slash_Command = (28, 48)
+        Verify_Email_Address = (28, 64)
         
         # Cafe packets
         Reload_Cafe = (30, 40)
@@ -194,6 +206,7 @@ class Identifiers:
         Open_A801_Promotions = (149, 16)
         Remove_Sale = (149, 17)
         Add_Sale = (149, 18)
+        Ranking = (149, 21)
         Shop_Purchase_Emote = (149, 25)
         Shop_Set_Favorite_Item = (149, 27)
 
@@ -212,6 +225,7 @@ class Identifiers:
         Recv_Message = [6, 20]
         
         # Player packets
+        Titles_List = [8, 14]
         Profile = [8, 16]
         Player_Shop_List = [8, 20]
         Anim_Zelda = [8, 44]
@@ -233,7 +247,6 @@ class Identifiers:
         # Modopwet
         Modopwet_Open = [25, 2]
         Modopwet_Reports_Community_Count = [25, 3]
-        Modopwet_Room_Password_Protected = [25, 4]
         Modopwet_Banned = [25, 5]
         Modopwet_Disconnected = [25, 6]
         Modopwet_Deleted = [25, 7]
@@ -259,10 +272,11 @@ class Identifiers:
         Promotion_Popup = [28, 3]
         Message_Langue = [28, 5]
         Ping = [28, 6]
-        Email_Address_Code_Validated = [28, 12]
-        Email_Address_Verified = [28, 13]
+        #Email_Address_Code_Validated = [28, 12]
+        #Email_Address_Verified = [28, 13]
         Log_Message = [28, 46]
         Request_Info = [28, 50]
+        Verify_Email_Popup = [28, 64]
         Connect_To_Server = [28, 98]
         
         # Cafe packets
@@ -288,12 +302,15 @@ class Identifiers:
         
         # Tribulle
         Old_Tribulle = [60, 1]
+        Rejoindre_Canal_Publique = [60, 2]
         New_Tribulle = [60, 3]
         Switch_Tribulle = [60, 4]
         
         # New packets
         Open_Dressing = [100, 30]
+        Buy_Full_Look = [100, 31]
         New_Consumable = [100, 67]
+        Change_Title = [100, 72]
         Image_Login = [100, 99]
         
         # New-new packets
@@ -301,6 +318,7 @@ class Identifiers:
         MiniBox_New = [144, 17]
         Open_A801_Outfits_Window = [144, 22]
         Open_A801_Promotions_Window = [144, 29]
+        Ranking = [144, 36]
         Emote_Panel = [144, 44]
         
         Start_Sonar = [145, 174]
@@ -315,7 +333,16 @@ class Identifiers:
         
     class old:
         class recv:
+            Load_Map = (14, 6)
             Leave_Map_Editor = (14, 26)
+            
+            Drawing_Clear = (25, 3)
+            Drawing_Init = (25, 4)
+            Drawing_Point = (25, 5)
     
         class send:
+            Load_Map_Result = [14, 8]
             Map_Editor = [14, 14]
+            
+            Ban_Consideration = [26, 9]
+            Player_Ban_Login = [26, 18]

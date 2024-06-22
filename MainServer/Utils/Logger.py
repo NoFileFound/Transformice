@@ -1,5 +1,7 @@
+#coding: utf-8
 import asyncio
 import sys
+
 from colorconsole import win
 
 class Logger:

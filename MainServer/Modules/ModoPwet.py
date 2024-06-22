@@ -20,18 +20,18 @@ class ModoPwet:
 # Modopwet helper functions
 
     def banHack(self, playerName, iban):
-        info = self.server.cursor["casier"].find_one({"PlayerName":playerName}, sort=[("Date", -1)])
+        info = self.server.cursor["sanctions"].find_one({"Username":playerName, 'Type':'Banned', 'State':'Expired', 'Reason':self.banhackreason}, sort=[("Duration", -1)])
         if info == None:
             hours = 24
         else:
-            hours = info * 2
+            hours = Time.getHoursDiff(info) * 2
         
-        if hours > 3600:
+        if hours > 8766:
             reason = self.banhackreasonperm
-            self.server.banPlayer(playerName, -1, reason, self.client.playerName, False, False)
+            self.server.banPlayer(playerName, -1, reason, self.client.playerName, False, True)
         else:
             reason = self.banhackreason
-            self.server.banPlayer(playerName, hours, reason, self.client.playerName, False, iban)
+            self.server.banPlayer(playerName, hours, reason, self.client.playerName, iban, True)
         self.sendReportersKarma(playerName, hours, reason, self.client.playerName, "ban")
 
     def makeReport(self, playerName, type, reason, reporter):
@@ -63,6 +63,7 @@ class ModoPwet:
                     self.server.modoReports[playerName]["bannedby"] = ""
                     self.server.modoReports[playerName]["banhours"] = 0
                     self.server.modoReports[playerName]["banreason"] = ""
+                self.client.sendBanConsideration()
                 self.updateModoPwet()
                 reported_community = self.server.modoReports[playerName]['language'].upper()
                 if reported_community in self.client.modoCommunitiesNotification and self.client.isModoPwetNotifications:
@@ -218,7 +219,7 @@ class ModoPwet:
 
     def sendReportResult(self, playerName, handled):
         if handled == 1:
-            self.decidePlayerPunishment(playerName)
+            self.sendReportersKarma(playerName, 0, "", self.client.playerName, "")
             
         self.server.modoReports[playerName]["status"] = "deleted"
         self.server.modoReports[playerName]["deletedby"] = self.client.playerName
@@ -231,9 +232,6 @@ class ModoPwet:
         for mod in mods:
             p.writeUTF(mod)
         self.client.sendPacket(Identifiers.send.Modopwet_Room_Mods, p.toByteArray())
-
-    def sendReportRoomPasswordProtected(self, playerName, roomName, isPasswordProtected): ####
-        self.client.sendPacket(Identifiers.send.Modopwet_Room_Password_Protected, ByteArray().writeUTF(playerName).writeUTF(roomName).writeBoolean(isPasswordProtected).toByteArray())
 
     def sendReportStatusBanned(self, playerName, banhours, banreason, bannedby, isTranslation=True):
         self.client.sendPacket(Identifiers.send.Modopwet_Banned, ByteArray().writeUTF(playerName).writeBoolean(isTranslation).writeUTF(bannedby).writeInt(int(banhours)).writeUTF(banreason).toByteArray())
@@ -271,6 +269,18 @@ class ModoPwet:
             p.writeUTF(community.upper())
         self.client.sendPacket(Identifiers.send.Modopwet_Add_Language, p.toByteArray())
 
+    def sendModoNotification(self, playerName, community, operation, arguments=[]):
+        if operation == "disconnect":
+            self.server.sendStaffMessage(f"<ROSE>[Modopwet]</ROSE> The player <N>{playerName}</N> from community {community} just left the game.", "PrivMod|Mod|Admin", True, True)
+        elif operation == "connect":
+            self.server.sendStaffMessage(f"<ROSE>[Modopwet]</ROSE> The player <N>{playerName}</N> from community {community} just connected in the game.", "PrivMod|Mod|Admin", True, True)
+        elif operation == "changeroom":
+            self.server.sendStaffMessage(f"<ROSE>[Modopwet]</ROSE> The player <BV>{playerName}</BV> (<N>{arguments[0]}</N>) left the room [{arguments[1]}] and came to the room [{arguments[2]}].", "PrivMod|Mod|Admin", True, True)
+        elif operation == "report":
+            self.server.sendStaffMessage(f"<ROSE>[Modopwet]</ROSE> The player <N>{playerName}</N> from community {community} reported the player {arguments[0]} for <N2>{arguments[1]}</N2>.", "PrivMod|Mod|Admin", True, True)
+        elif operation == "reported":
+            self.server.sendStaffMessage(f"<ROSE>[Modopwet]</ROSE> The player <BV>{playerName}</BV> has been reported for <N>{arguments[0]}</N> in room [{arguments[1]}].", "PrivMod|Mod|Admin", True, True)
+
     def sendUpdateModopwet(self, langue, modopwetOnlyPlayerReports, sortBy, reOpen):
         if self.client.modoPwetLangue != langue:
             self.client.modoPwetLangue = langue
@@ -289,22 +299,17 @@ class ModoPwet:
                     self.client.sendWatchPlayerPacket(playerName, True)
                     self.client.sendEnterRoom(player.roomName, player.playerLangue, True)
 
-
-    
-    def decidePlayerPunishment(self, playerName):
-        pass
-        
     def openChatLog(self, playerName):
-        pass
-        
-    def sendModoNotification(self, playerName, community, operation, arguments=[]):
-        if operation == "disconnect":
-            self.server.sendStaffMessage(f"<ROSE>[Modopwet]</ROSE> The player <N>{playerName}</N> from community {community} just left the game.", "PrivMod|Mod|Admin", True, True)
-        elif operation == "connect":
-            self.server.sendStaffMessage(f"<ROSE>[Modopwet]</ROSE> The player <N>{playerName}</N> from community {community} just connected in the game.", "PrivMod|Mod|Admin", True, True)
-        elif operation == "changeroom":
-            self.server.sendStaffMessage(f"<ROSE>[Modopwet]</ROSE> The player <BV>{playerName}</BV> (<N>{arguments[0]}</N>) left the room [{arguments[1]}] and came to the room [{arguments[2]}].", "PrivMod|Mod|Admin", True, True)
-        elif operation == "report":
-            self.server.sendStaffMessage(f"<ROSE>[Modopwet]</ROSE> The player <N>{playerName}</N> from community {community} reported the player {arguments[0]} for <N2>{arguments[1]}</N2>.", "PrivMod|Mod|Admin", True, True)
-        elif operation == "reported":
-            self.server.sendStaffMessage(f"<ROSE>[Modopwet]</ROSE> The player <BV>{playerName}</BV> has been reported for <N>{arguments[0]}</N> in room [{arguments[1]}].", "PrivMod|Mod|Admin", True, True)
+        if playerName in self.server.whisperMessages:
+            packet = ByteArray().writeUTF(playerName).writeByte(0)
+            x = 0
+            p = ByteArray()
+            for room in self.server.whisperMessages[playerName]:
+                if not '#' in room: continue
+                x += 1
+                p.writeUTF(room).writeByte(len(self.server.whisperMessages[playerName][room]))
+                for message in self.server.whisperMessages[playerName][room]:
+                    p.writeUTF(message[1]).writeUTF(message[0])
+            packet.writeByte(x).writeBytes(p.toByteArray())
+            self.client.sendPacket(Identifiers.send.Modopwet_Chat_Log, packet.toByteArray())
+        self.client.sendBullePacket(Identifiers.bulle.BU_GetChatLog, self.client.playerID, playerName)

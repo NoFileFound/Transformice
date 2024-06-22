@@ -14,7 +14,7 @@ class Bulle:
         self.keep_alive()
         
     def keep_alive(self):
-        self.transport.write(b'0;')
+        self.transport.write(b'1000;')
         
     def send_packet(self, code, *args):
         d = []

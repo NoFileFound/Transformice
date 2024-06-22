@@ -1,3 +1,4 @@
+import base64
 import datetime
 import re
 import time
@@ -9,6 +10,7 @@ from Modules.ByteArray import ByteArray
 
 # Utils
 from Utils.IPTools import IPTools
+from Utils.Time import Time
 
 class Packets:
     def __init__(self, player):
@@ -89,7 +91,22 @@ class Packets:
 
         @self.packet(args=['readInt', 'readBoolean'])
         async def Buy_Shop_Item(self, _id, withFraises):
-            self.client.Shop.buyItem(_id, withFraises)
+            original_fullitem = _id
+        
+            # How is this working?
+            if _id > 10999 and _id < 100000:
+                info = list(str(_id))
+                ch = int(info[0]) - 1
+                info[0] = str(ch)
+                _id = int("".join(info))
+            
+            elif _id > 100000:
+                info = list(str(_id))
+                ch = int(info[1]) - 1
+                info[1] = str(ch)
+                _id = int("".join(info))
+
+            self.client.Shop.buyItem(_id, withFraises, original_fullitem)
 
         @self.packet(args=['readShort', 'readBoolean'])
         async def Buy_Shop_Shaman_Custom(self, _id, withFraises):
@@ -370,6 +387,46 @@ class Packets:
             if self.client.privLevel >= 8 or self.client.isPrivMod:
                 self.client.ModoPwet.sendWatchPlayer(playerName, isFollowing)
 
+        @self.packet(args=['readShort'])
+        async def Old_Protocol(self, length):
+            data = self.packet.readUTFBytes(length)
+            if isinstance(data, (bytes, bytearray)):
+                data = data.decode()
+                
+            values = data.split('\x01')
+            C = ord(values[0][0])
+            CC = ord(values[0][1])
+            values = values[1:]
+            if (C, CC) == Identifiers.old.recv.Load_Map:
+                mapID = values[0]
+                if not mapID.isdigit():
+                    self.client.sendPacket(Identifiers.old.send.Load_Map_Result, [])
+                else:
+                    self.client.sendBullePacket(Identifiers.bulle.BU_LoadMapEditor_Map, mapID, self.client.playerID)
+                        
+            elif (C, CC) == Identifiers.old.recv.Leave_Map_Editor:
+                self.client.sendPacket(Identifiers.old.send.Map_Editor, ["0"])
+                self.client.sendEnterRoom("")
+                                
+            elif (C, CC) == Identifiers.old.recv.Drawing_Clear:
+                if self.client.privLevel != 10:
+                    return
+                self.client.sendBullePacket(Identifiers.bulle.BU_DrawingClear, self.client.roomName)
+                
+            elif (C, CC) == Identifiers.old.recv.Drawing_Point:
+                if self.client.privLevel != 10:
+                    return
+                info = base64.b64encode(','.join(values).encode()).decode()
+                self.client.sendBullePacket(Identifiers.bulle.BU_DrawingPoint, self.client.roomName, info, self.client.playerID)
+                
+            elif (C, CC) == Identifiers.old.recv.Drawing_Init:
+                if self.client.privLevel != 10:
+                    return
+                info = base64.b64encode(','.join(values).encode())
+                self.client.sendBullePacket(Identifiers.bulle.BU_DrawingStart, self.client.roomName, info, self.client.playerID)
+            else:
+                self.client.Logger.warn(f"[SERVER][{self.client.ipAddress}][OLD] The packet {C}:{CC} is not registered in the bulle.\n")
+
         @self.packet(args=[])
         async def Open_A801_Outfits(self):
             if self.client.privLevel not in [4, 10] and not self.client.isFashionSquad:
@@ -510,6 +567,43 @@ class Packets:
                     return
 
         @self.packet(args=[])
+        async def Ranking(self):
+            if self.client.isGuest:
+                return
+                
+            data = ByteArray()
+            data.writeInt128(self.server.currentRankingSeason) # Current season
+            data.writeInt128(Time.getDaysDiff(self.server.currentRankingSeasonTime)) # Remaining days
+            total_players = self.server.cursor['users'].count_documents({})
+            if total_players > 10:
+                total_players = 10
+                
+            for info in ['CheeseCount', 'FirstCount', 'ShamanCheeses', 'UKNOWN_1', 'BootcampCount', 'UKNOWN_2', 'UKNOWN_3']:
+                data.writeInt128(total_players) # Total players in the ranking
+                if info.startswith('UKNOWN'):
+                    res = self.server.cursor['users'].find().limit(10)
+                    x = 1
+                    rank = []
+                    for user in res:
+                        ppstats = list(map(int, filter(None, user['PlayerStats'].split(","))))
+                        rank.append([user['PlayerID'], user['Username'], ppstats[3] if info[-1:] == '1' else ppstats[7] if info[-1:] == '2' else ppstats[9]])
+                    rank = sorted(rank, key=lambda x: x[2],  reverse=True)
+                    
+                    for user in rank:
+                        data.writeInt128(user[0]).writeUTF(user[1]).writeInt128(user[2]).writeInt128(x)
+                        x += 1
+                else:
+                    info_cheese = self.server.cursor['users'].find().sort(info, -1).limit(10)
+                    x = 1
+                    for user in info_cheese:
+                        data.writeInt128(user['PlayerID']).writeUTF(user['Username']).writeInt128(user[info]).writeInt128(x)
+                        x += 1
+                        
+            for i in range(0, 8):
+                data.writeInt128(1).writeInt128(1)
+            self.client.sendPacket(Identifiers.send.Ranking, data.toByteArray())
+
+        @self.packet(args=[])
         async def Reload_Cafe(self):
             if not self.client.isReloadCafe:
                 self.client.Cafe.loadCafeMode()
@@ -564,7 +658,7 @@ class Packets:
             if self.client.privLevel < 4:
                 return
                 
-            self.client.sendStaffChannelMessage(_id, message)
+            await self.client.sendStaffChannelMessage(_id, message)
 
         @self.packet(args=['readUTF'])
         async def Set_Language(self, lang):
@@ -654,6 +748,25 @@ class Packets:
         async def Shop_Save_Clothe(self, _id):
             self.client.Shop.saveClothe(_id)
 
+        @self.packet(args=['readUTF'])
+        async def Slash_Command(self, command):
+            if command == '' and (self.client.privLevel >= 8 or self.client.isPrivMod):
+                msg = "Commands dealing with naughy mice:<br><br>"
+                for command in self.server.gameCommands:
+                    if self.client.checkStaffPermission(command["Privileges"]):
+                        msg += f"<J>/{command['Name']}</J> " if command["Channel"] == "ALL" else f"<J>.{command['Name']}</J> "
+                        if "Arguments" in command:
+                            for argument in command["Arguments"]:
+                                msg += f"<V>["
+                                msg += argument
+                                msg += "]</V> "
+                        msg += f"<BL>: {command['Description']}"
+                        if 'Aliases' in command:
+                            msg += f" (Aliases: /{', /'.join(command['Aliases'])})</BL><br>"
+                        else:
+                            msg += "</BL><br>"
+                self.client.sendLogMessage(msg)
+
         @self.packet(args=['readByte'])
         async def Sonar_Information(self, code):
             if not self.client.playerName in self.server.playerMovement:
@@ -737,3 +850,18 @@ class Packets:
         async def Vote_Cafe_Post(self, topicID, postID, mode):
             self.client.Cafe.voteCafePost(topicID, postID, mode)
 
+                      
+        @self.packet(args=['readUTF'])
+        async def Verify_Email_Address(self, emailAddress):
+            if self.client.isEmailAddressVerified:
+                return
+            print(emailAddress)
+
+
+
+
+        @self.packet(args=['readUTF'])
+        async def Send_Code(self, lang):
+            #print(lang, packet_id)
+            #if packet_id == 2 and self.client.isEmailAddressVerified:
+            self.client.sendPacket(Identifiers.send.Email_Address_Code_Validated, ByteArray().writeBoolean(True).toByteArray())

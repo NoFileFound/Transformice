@@ -60,12 +60,12 @@ class Commands:
         if command in self.commands:
             self.server.cursor['commandlog'].insert_one({'Username':self.client.playerName, 'IP':IPTools.EncodeIP(self.client.ipAddress), 'Time':Time.getTime(), 'Command':command, 'Service':self.server.serverInfo['name']})
             for i in self.commands[command][0]:
-                if i[0] == "args":
-                    if not self.requireArgs(i[1]): return
+                if i[0] == 'nosouris':
+                    if self.client.isGuest: return
                 elif i[0] == "level":
                     if not self.requireLevel(i[1]): return
-                elif i[0] == 'nosouris':
-                    if self.client.isGuest: return
+                elif i[0] == "args":
+                    if not self.requireArgs(i[1]): return
                 elif i[0] == 'tribe':
                     if not self.requireTribePerm(i[1]): return
                 elif i[0] == 'debug':
@@ -102,7 +102,6 @@ class Commands:
         async def tutorial(self):
             self.client.sendEnterRoom("\x03[Tutorial] %s" %(self.client.playerName))
                         
- 
 # Player Commands
         @self.command(nosouris=True, args=1)
         async def codecadeau(self, code):
@@ -163,10 +162,49 @@ class Commands:
         async def staffroles(self):
             self.client.sendServerMessage(str(self.client.getStaffPermissions()), True)
                         
+        @self.command(nosouris=True, alias=["titre", "titulo", "titel"])
+        async def title(self, titleID=0):
+            if self.currentArgsCount == 0:
+                p = ByteArray()
+                p2 = ByteArray()
+                titlesCount = 0
+                starTitlesCount = 0
+                for title in self.client.titleList:
+                    titleInfo = str(title).split(".")
+                    titleNumber = int(titleInfo[0])
+                    titleStars = int(titleInfo[1])
+                    if titleStars > 1:
+                        p.writeShort(titleNumber).writeByte(titleStars)
+                        starTitlesCount += 1
+                    else:
+                        p2.writeShort(titleNumber)
+                        titlesCount += 1
+                self.client.sendPacket(Identifiers.send.Titles_List, ByteArray().writeShort(titlesCount).writeBytes(p2.toByteArray()).writeShort(starTitlesCount).writeBytes(p.toByteArray()).toByteArray())
+            else:
+                found = False
+                for title in self.client.titleList:
+                    if str(title).split(".")[0] == titleID:
+                        found = True
+
+                if found:
+                    self.client.titleNumber = int(titleID)
+                    for title in self.client.titleList:
+                        if str(title).split(".")[0] == titleID:
+                            self.client.titleStars = int(str(title).split(".")[1])
+                    self.client.sendPacket(Identifiers.send.Change_Title, ByteArray().writeByte(self.client.genderType).writeShort(titleID).toByteArray())
+                    self.client.sendBullePacket(Identifiers.bulle.BU_ReceiveTitleID, self.client.playerID, self.client.titleNumber, self.client.titleStars)
+                        
         @self.command(nosouris=True)
         async def totem(self):
             if self.client.shamanNormalSaves >= 1500 or self.server.isDebug:
                 self.client.sendEnterRoom(f"\x03[Totem] {self.client.playerName}")
+            
+        @self.command(nosouris=True)
+        async def verifyemail(self):
+            if self.client.isEmailAddressVerified:
+                self.client.sendServerMessage("Your email address is already verified.", True)
+            else:
+                self.client.sendPacket(Identifiers.send.Verify_Email_Popup, ByteArray().writeUTF(self.client.playerEmail).toByteArray())
             
 # Fashion squad commands
         @self.command(level=['FS', 'Mod', 'Admin', 'Owner'])
@@ -203,10 +241,44 @@ class Commands:
 
             
 # Modo commands
-        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1)
+        @self.command(nosouris=True, alias=['iban'])
+        async def ban(self, playerName, *args):
+            playerName = Other.parsePlayerName(playerName)
+            if self.client.roomName.lower() == "*strm_" + self.client.playerName.lower(): # STRM support
+                player = self.server.players.get(playerName)
+                if player != None and player.roomName == self.client.roomName:
+                    player.sendEnterRoom("")
+                    
+            elif len(args) == 0: # Vote Populaire Support
+                self.server.voteBanPopulaire(playerName, self.client.playerName, self.client.ipAddress)
+                self.client.sendBanConsideration()
+            else:
+                if self.requireLevel(["PrivMod", "Mod", "Admin", "Owner"]):
+                    hours = int(args[0])
+                    if hours < 0: hours = 0
+                    reason = self.argsNotSplited.split(" ", 2)[2]
+                    result = self.server.banPlayer(playerName, hours, reason, self.client.playerName, (self.commandName == 'iban'), True)
+                    if not result:
+                        self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
+                    elif result == 1:
+                        self.client.sendServerMessage(f"The player {playerName} got banned for {hours}h ({reason})", True)
+                    else:
+                        self.client.sendServerMessage(f"Player [{playerName}] is already banned, please wait.", True)
+
+        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1, alias=['ibanhack'])
         async def banhack(self, playerName):
             playerName = Other.parsePlayerName(playerName)
-            self.client.ModoPwet.banHack(playerName, False)
+            self.client.ModoPwet.banHack(playerName, (self.commandName == 'ibanhack'))
+
+        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=3)
+        async def banip(self, ip, hours, reason):
+            decip = IPTools.DecodeIP(ip)
+            result = self.server.banIPAddress(decip, int(hours), reason, self.client.playerName)
+            if not result:
+                self.client.sendServerMessage(f"The IP [{ip}] is already banned, please wait.", True)
+            else:
+                self.server.sendServerMessageAll(f"{self.client.playerName} banned the IP {ip} for {hours}h ({reason}).", self.client, False)
+                self.client.sendServerMessage(f"The IP {ip} got banned.", True)
 
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'])
         async def chatfilter(self, option, *args):
@@ -239,6 +311,19 @@ class Commands:
         async def chatlog(self, playerName):
             self.client.ModoPwet.openChatLog(Other.parsePlayerName(playerName))
 
+        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1)
+        async def clearban(self, playerName):
+            player = self.server.players.get(playerName)
+            if player != None:
+                if len(player.banVotes) > 0:
+                    player.banVotes = []
+                    self.server.sendServerMessageAll(f"{self.client.playerName} removed all ban votes of {playerName}.", self.client, False)
+                    self.client.sendServerMessage(f"Done!", True)
+                else:
+                    self.client.sendServerMessage(f"{playerName} does not contains any ban votes.", True)
+            else:
+                 self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
+
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1, alias=['chercher'])
         async def find(self, text):
             result = ""
@@ -261,11 +346,6 @@ class Commands:
                     self.client.sendEnterRoom(player.roomName, community)
             else:
                 self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
-
-        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1)
-        async def ibanhack(self, playerName):
-            playerName = Other.parsePlayerName(playerName)
-            self.client.ModoPwet.banHack(playerName, True)
 
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1)
         async def ip(self, playerName):
@@ -294,6 +374,17 @@ class Commands:
             self.client.sendServerMessage(List, True)
 
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1)
+        async def kick(self, playerName):
+            playerName = Other.parsePlayerName(playerName)
+            player = self.server.players.get(playerName)
+            if player != None:
+                player.transport.close()
+                self.server.sendServerMessageAll(f"The player {playerName} has been kicked by {self.client.playerName}.", self.client, False)
+                self.client.sendServerMessage(f"The player {playerName} got kicked", True)
+            else:
+                self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
+
+        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1)
         async def l(self, xxx):
             if "." not in xxx:
                 r = self.server.cursor['loginlog'].find({'Username':xxx})
@@ -314,18 +405,10 @@ class Commands:
                         message += f"<p align='left'><V>[ {rs['Username']} ]</V> <BL>{rs['Time']}</BL><G> ( <font color = '{IPTools.ColorIP(xxx)}'>{xxx}</font> - {rs['Country']} ) {rs['ConnectionID']} - {rs['Community']}</BL><br>"
                     self.client.sendLogMessage(message)
 
-        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1)
-        async def kick(self, playerName):
-            playerName = Other.parsePlayerName(playerName)
-            player = self.server.players.get(playerName)
-            if player != None:
-                player.transport.close()
-                self.server.sendServerMessageAll(f"The player {playerName} has been kicked by {self.client.playerName}.", self.client, False)
-                self.client.sendServerMessage(f"The player {playerName} got kicked", True)
-            else:
-                self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
-
-        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1)
+        @self.command(level=['Mod', 'Admin', 'Owner'])
+        async def mm(self, *args):
+            self.client.sendBullePacket(Identifiers.bulle.BU_SendModerationMesage, self.client.playerID, base64.b64encode(self.argsNotSplited.encode()).decode())
+        
         async def nomip(self, playerName):
             playerName = Other.parsePlayerName(playerName)
             player = self.server.players.get(playerName)
@@ -384,13 +467,12 @@ class Commands:
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1, alias=['debanip'])
         async def unbanip(self, ipAddress):
             decip = IPTools.DecodeIP(ipAddress)
-            if decip in self.server.IPTempBanCache:
-                self.server.IPTempBanCache.remove(decip)
-                self.server.cursor['iptempban'].delete_one({'IP':decip})
+            result = self.server.removeTempIPBan(decip)
+            if not result:
+                self.client.sendServerMessage("The given IP is invalid or not banned.", True)
+            else:
                 self.server.sendServerMessageAll(f"The player {self.client.playerName} unbanned the ip address {ipAddress}.", self.client, False)
                 self.client.sendServerMessage(f"The IP address {ipAddress} got unbanned.", True)
-            else:
-                self.client.sendServerMessage("The given IP is invalid or not banned.", True)
 
 # Admin Commands
         @self.command(level=['Admin'], args=1)
@@ -447,6 +529,11 @@ class Commands:
                 d = str(datetime.datetime.fromtimestamp(float(int(rs['Time']))))
                 message += f"<p align='left'><V>[ {playerName} ]</V> <BL>{d}</BL> (<font color='{IPTools.ColorIP(rs['IP'])}'>{rs['IP']}</font>) -> {rs['Command']}</p>"
             self.client.sendLogMessage(message)
+
+        @self.command(level=['Admin', 'Owner'], args=1)
+        async def openlink(self, url):
+            for player in self.server.players.copy().values():
+                player.sendPacket(Identifiers.send.Open_Link, ByteArray().writeUTF(url).toByteArray())
 
         @self.command(level=['Admin', 'Owner'])
         async def removeipbancache(self):
@@ -579,3 +666,7 @@ class Commands:
         @self.command(level=['Owner'], alias=['closeserver', 'poweroff'])
         async def shutdown(self):
             self.server.closeServer()
+        
+        @self.command(level=['Owner'])
+        async def tribulle2(self):
+            self.client.sendTribulleProtocol(False)

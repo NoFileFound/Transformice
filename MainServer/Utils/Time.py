@@ -1,3 +1,4 @@
+#coding: utf-8
 import datetime
 import time
 
@@ -16,7 +17,7 @@ class Time:
         
     @staticmethod
     def getHoursDiff(endTimeMillis):
-        startTime = self.getTime()
+        startTime = Time.getTime()
         startTime = datetime.datetime.fromtimestamp(float(startTime))
         endTime = datetime.datetime.fromtimestamp(float(endTimeMillis))
         result = endTime - startTime
@@ -26,12 +27,12 @@ class Time:
 
     @staticmethod
     def getDaysDiff(endTimeMillis):
-        startTime = datetime.datetime.fromtimestamp(float(self.getTime()))
+        startTime = datetime.datetime.fromtimestamp(float(Time.getTime()))
         endTime = datetime.datetime.fromtimestamp(float(endTimeMillis))
         result = endTime - startTime
         return result.days + 1
         
     @staticmethod
     def getDiffDays(time):
-        diff = time - self.getTime()
+        diff = time - Time.getTime()
         return diff / (24 * 60 * 60)

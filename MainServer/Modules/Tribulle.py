@@ -1,6 +1,7 @@
 #coding: utf-8
 import re
 import time
+from collections import deque
 
 # Modules
 from Modules.ByteArray import ByteArray
@@ -21,6 +22,7 @@ class Tribulle:
         self.MAX_TRIBU_MEMBRES = 500
         self.MAX_TRIBU_MESSAGE = 3600
         self.MAX_CANAL_LEN = 42
+        self.MAX_MENSAGE_LEN = 90
         self.TRIBE_RANKS = "0|${trad#TG_0}|0;0|${trad#TG_1}|0;2|${trad#TG_2}|0;3|${trad#TG_3}|0;4|${trad#TG_4}|32;5|${trad#TG_5}|160;6|${trad#TG_6}|416;7|${trad#TG_7}|932;8|${trad#TG_8}|2044;9|${trad#TG_9}|2046"
 
     def checkTribePermisson(self, permId): # UNFINISHED
@@ -267,6 +269,10 @@ class Tribulle:
         player = self.server.players.get(Other.parsePlayerName(playerName))
         self.client.sendTribullePacket(Identifiers.tribulle.send.ET_SignalementModificationAmi, ByteArray().writeInt(player.playerID).writeUTF(playerName).writeByte(player.genderType).writeInt(player.playerID).writeByte(True).writeByte(False).writeInt(0).writeUTF("").writeInt(player.lastOn).toByteArray())
         self.client.sendTribullePacket(Identifiers.tribulle.send.ET_SignalementDeconnexionAmi, ByteArray().writeUTF(playerName).toByteArray())
+
+    def sendFriendChangedRoom(self, playerName):
+        player = self.server.players.get(Other.parsePlayerName(playerName))
+        self.client.sendTribullePacket(Identifiers.tribulle.send.ET_SignalementModificationAmi, ByteArray().writeInt(player.playerID).writeUTF(player.playerName).writeByte(player.genderType).writeInt(player.playerID).writeBoolean(True).writeBoolean(True).writeInt(self.GAME_MODE).writeUTF(player.roomName).writeInt(player.lastOn).toByteArray())
 
     # Ignored List
     def sendIgnoredList(self, packet):
@@ -915,6 +921,9 @@ class Tribulle:
         self.sendTribullePacketWholeTribe(Identifiers.tribulle.send.ET_SignaleDeconnexionMembre, ByteArray().writeUTF(self.client.playerName).toByteArray(), False)
         self.sendTribullePacketWholeTribe(Identifiers.tribulle.send.ET_SignaleChangementParametresMembre, ByteArray().writeInt(self.client.playerID).writeUTF(self.client.playerName).writeByte(self.client.genderType).writeInt(self.client.playerID).writeInt(self.client.lastOn).writeByte(self.client.tribeRank).writeInt(1).writeUTF("").toByteArray())
         
+    def sendTribeMemberChangeRoom(self):
+        self.sendTribullePacketWholeTribe(Identifiers.tribulle.send.ET_SignaleChangementParametresMembre, ByteArray().writeInt(self.client.playerID).writeUTF(self.client.playerName.lower()).writeByte(self.client.genderType).writeInt(self.client.playerID).writeInt(0).writeByte(self.client.tribeRank).writeInt(self.GAME_MODE).writeUTF(self.client.roomName).toByteArray())
+        
         
     # Chat
     def sendCreateServerChannel(self, packet):
@@ -957,11 +966,68 @@ class Tribulle:
         self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatEnvoiMessageChat, ByteArray().writeInt(tribulleID).writeByte(1).toByteArray())
         
     # Whisper (Private) messages
-    def sendWhisperMessage(self, packet): # UNFINISHED
-        print(f"[-] THIS FUNCTION IS NOT A FINISHED DUE MISSING INFORMATION HOW THIS IN GAME WORKS. FUNC: SendWhisperMessage ARGS: {str(packet._bytes)}")
-        
-    def sendDisabledWhisper(self, packet): # UNFINISHED
-        print(f"[-] THIS FUNCTION IS NOT A FINISHED DUE MISSING INFORMATION HOW THIS IN GAME WORKS. FUNC: SendDisabledWhisper ARGS: {str(packet._bytes)}")
+    def sendWhisperMessage(self, packet):
+        tribulleID, playerName, message = packet.readInt(), Other.parsePlayerName(packet.readUTF()), packet.readUTF().replace("\n", "").replace("&amp;#", "&#").replace("<", "&lt;")
+        isCheck = self.server.checkMessage(message)
+        if self.client.isGuest:
+            self.client.sendLangueMessage("", "$Créer_Compte_Parler")
+            return
+
+        packet = ByteArray().writeInt(tribulleID)
+        if playerName.startswith("*") or not playerName in self.server.players:
+            self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatEnvoiMessagePrive, packet.writeByte(12).writeShort(0).toByteArray())
+            return
+            
+        if playerName in self.client.ignoredList:
+            self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatEnvoiMessagePrive, packet.writeByte(27).writeShort(0).toByteArray())
+            return
+            
+        if len(message) > self.MAX_MENSAGE_LEN:
+            self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatEnvoiMessagePrive, packet.writeByte(22).writeShort(0).toByteArray())
+            return
+                
+        if self.client.isMuted:
+            muteInfo = self.server.getTempPunishmentInfo(self.client.playerName, 0)
+            timeCalc = Time.getHoursDiff(muteInfo[1])
+            if timeCalc <= 0:
+                self.server.removeModMute(self.client.playerName)
+            else:
+                self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatEnvoiMessagePrive, packet.writeByte(23).writeShort(0).toByteArray())
+                return
+                                                
+        else:
+            player = self.server.players.get(playerName)
+            if player != None:
+                if player.silenceType != 0:
+                    if self.client.privLevel < 8 and (player.silenceType != 1 or not self.checkFriend(playerName, self.client.playerName)):
+                        self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatEnvoiMessagePrive, packet.writeByte(25).writeUTF(player.silenceMessage).toByteArray())
+                        return
+                        
+                if self.client.playerTime < 3600 * 5 and not (self.client.playerName in player.friendList and not playerName == self.client.playerName):
+                    self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatEnvoiMessagePrive, packet.writeByte(28).writeShort(0).toByteArray())
+                    return
+                        
+                if not (self.client.playerName in player.ignoredList) and not isCheck and playerName != self.client.playerName:
+                    player.sendTribullePacket(Identifiers.tribulle.send.ET_SignalementMessagePrive, ByteArray().writeUTF(self.client.playerName).writeInt(Langue.getLangueID(self.client.playerLangue)+1).writeUTF(player.playerName).writeUTF(message).toByteArray())
+                self.client.sendTribullePacket(Identifiers.tribulle.send.ET_SignalementMessagePrive, ByteArray().writeUTF(self.client.playerName).writeInt(Langue.getLangueID(player.playerLangue)+1).writeUTF(player.playerName).writeUTF(message).toByteArray())
+    
+                if not self.client.playerName in self.server.whisperMessages:
+                     messages = deque([], 60)
+                     messages.append([time.strftime("%Y/%m/%d %H:%M:%S"), message, self.client.roomName])
+                     self.server.whisperMessages[self.client.playerName] = {}
+                     self.server.whisperMessages[self.client.playerName][player.playerName] = messages
+                elif not player.playerName in self.server.whisperMessages[self.client.playerName]:
+                    messages = deque([], 60)
+                    messages.append([time.strftime("%Y/%m/%d %H:%M:%S"), message, self.client.roomName])
+                    self.server.whisperMessages[self.client.playerName][player.playerName] = messages
+                else:
+                     self.server.whisperMessages[self.client.playerName].append([time.strftime("%Y/%m/%d %H:%M:%S"), message, self.client.roomName])
+    
+    def sendDisabledWhisper(self, packet):
+        tribulleID, type, message = packet.readInt(), packet.readByte(), packet.readUTF()
+        self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatDefinirModeSilence, ByteArray().writeInt(tribulleID).writeByte(1).toByteArray())
+        self.client.silenceType = type
+        self.client.silenceMessage = "" if self.server.checkMessage(message) else message
         
     # Helper functions
     def checkExistingTribe(self, tribeName) -> bool:

@@ -256,29 +256,15 @@ class ByteArray:
        return self
        
     def writeInt128(self, arg_1):
-        #local_2 = arg_1 >> 7
-        #local_3 = True
-        #local_4 = -1 if arg_1 >= 2147483648 else 0
-        #
-        #while local_3:
-        #    local_3 = (local_2 != local_4) or ((local_2 & 1) != ((arg_1 >> 6) & 1))
-        #    self.writeByte((arg_1 & 0x7F) | (128 if local_3 else 0))
-        #    arg_1 = local_2
-        #    local_2 = local_2 >> 7
-        is_negative = arg_1 < 0
+        local_2 = arg_1 >> 7
+        local_3 = True
+        local_4 = -1 if arg_1 >= 2147483648 else 0
         
-        if is_negative:
-            arg_1 += (1 << 32)
-        
-        while True:
-            to_write = arg_1 & 0x7F
-            arg_1 >>= 7
-            
-            if arg_1 != 0:
-                self.writeByte(to_write | 0x80000000)  # Set continuation bit
-            else:
-                self.writeByte(to_write)
-                break
+        while local_3:
+            local_3 = (local_2 != local_4) or ((local_2 & 1) != ((arg_1 >> 6) & 1))
+            self.writeByte((arg_1 & 0x7F) | (128 if local_3 else 0))
+            arg_1 = local_2
+            local_2 = local_2 >> 7
         return self
         
     # Decryption

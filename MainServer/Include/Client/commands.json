@@ -1,0 +1,472 @@
+[
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "ban",
+		"Arguments": [
+			"playerName",
+			"duration",
+			"reason"
+		],
+		"Description": "Bans the player for the set duration.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "banip",
+		"Arguments": [
+			"IP"
+		],
+		"Description": "Bans the every player with given IP.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "iban",
+		"Arguments": [
+			"playerName",
+			"duration",
+			"reason"
+		],
+		"Description": "Bans the player for the set duration, unmarked message on the room.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "mute",
+		"Arguments": [
+			"playerName",
+			"duration",
+			"reason"
+		],
+		"Description": "Prevent player from speaking for the set duration.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "imute",
+		"Arguments": [
+			"playerName",
+			"duration",
+			"reason"
+		],
+		"Description": "Prevent player from speaking for the set duration, unmarked message on the room.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "kick",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Disconnects the player from the game.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "mumute",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Mutes the player without telling them, they see it as if they are sending messages, but nobody else sees the messages (removed on reconnect).",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "demute",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Unmute a player. Do not use /mute 0 to unmute a player!",
+		"Channel": "ALL",
+		"Aliases": ["unmute"]
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "deban",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Removes the last ban from a player's account. Do not use /ban 0 to unban a player!",
+		"Channel": "ALL",
+		"Aliases": ["unban"]
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "debanip",
+		"Arguments": [
+			"IP"
+		],
+		"Description": "Unbans the selected IP address.",
+		"Channel": "ALL",
+		"Aliases": ["unbanip"]
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "clearban",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Deletes the voteban on a person.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "banhack",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Special ban command for cheaters.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "ibanhack",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Special ban command for cheaters, unmarked message on the room.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "prison",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Teleports the player to your room and does not let them leave (use again to return them to a normal room.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "casier",
+		"Arguments": [
+			"playerName|IP"
+		],
+		"Description": "Gives the list of sanctions received by a player or ip address.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["Mod", "Admin"],
+		"Name": "ms",
+		"Arguments": [
+			"message"
+		],
+		"Description": "Allows you to put a [Moderation] 'Message' on a room.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "nomip",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Gives the designated player's IP.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "ipnom",
+		"Arguments": [
+			"IP"
+		],
+		"Description": "Gives the list of accounts linked to the IP address.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "ip",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Gives the IP and country of a connected player.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "l",
+		"Arguments": [
+			"playerName|IP"
+		],
+		"Description": "Gives the list of the 200 previous connections of the requested nickname or IP address, independently of the server reboot for the functioning of nomip/ipnom.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "relation",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Gives list of related accounts since the last reboot.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "closeroom",
+		"Arguments": [
+			"roomName"
+		],
+		"Description": "Dissolves the room you are in. Everyone is kicked out to other rooms.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "commu",
+		"Arguments": [
+			"community"
+		],
+		"Description": "Changes your community in-game.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "room*",
+		"Arguments": [
+			"community-roomName"
+		],
+		"Description": "Joins the specified room on the specified community.",
+		"Channel": "ALL",
+		"Aliases": ["sala*", "salon*"]
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "follow",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Joins the room of a specific player. NOTE: Room player limits and passwords are skipped by these commands.",
+		"Channel": "ALL",
+		"Aliases": ["join"]
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "find",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Gives the name of the room where a player is.",
+		"Channel": "ALL",
+		"Aliases": ["chercher"]
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "creator",
+		"Description": "Returns the first mouse to join room.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "ninja",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Performs the same functionality as Watch in modopwet, but saves you having to search through modopwet for the report.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "ls",
+		"Arguments": [
+			"roomName"
+		],
+		"Description": "Gives the number of mice in a room.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "lsroom",
+		"Arguments": [
+			"roomName"
+		],
+		"Description": "Lists the names of the mice in a room and their IP addresses.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "lsc",
+		"Description": "Gives the number of mice per community.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "lsarb",
+		"Description": "Gives the list of connected Arbitres as well as their room.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "lsmodo",
+		"Description": "Gives the list of connected Moderators and Admins as well as their room.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "roomkick",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Kicks specific player from the room.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["Mod", "Admin"],
+		"Name": "clearchat",
+		"Description": "Clear the room chat.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "chatlog",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Gives the log of messages by a player.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "chatfilter",
+		"Arguments": [
+			"add|del|list"
+		],
+		"Description": "Adds or removes string to chat filter, or shows all strings in chat filter.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "ch",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Designates the next Shaman. (Doesn't work as a double shaman!)",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "del",
+		"Arguments": [
+			"mapName"
+		],
+		"Description": "Sets the given map on category p44 (Deleted).",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "info",
+		"Arguments": [
+			"mapName"
+		],
+		"Description": "Gives the information of a map.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "infocommu",
+		"Arguments": [
+			"community"
+		],
+		"Description": "Gives info about which game modes are being played by mice connected to community.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "infotribu",
+		"Arguments": [
+			"tribeName"
+		],
+		"Description": "Shows information about a tribe (members, cafofo map, date of entry of members, positions and permissions).",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "lsmap",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Gives list a player's maps, with their category.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "lsbulle",
+		"Description": "Gives info about the satellite servers (which host the rooms).",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "roominfo",
+		"Description": "Gives info about the current room (players, satellite info and more).",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "lstribe",
+		"Description": "Gives the list of tribes with at least one person connected.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "lsbots",
+		"Description": "Gives the list of bots.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "max",
+		"Description": "Gives the maximum number of players connected since the last reboot.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "sonar",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Gives information about player movement stuff.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "mouse_physics",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Gives information about player mouse physics stuff.",
+		"Channel": "ALL"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "flog",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Returns the IRC log of recent player bans, useful when /casier isn't working, shows room kicks also, but not buffy bans or offline ban reasons.",
+		"Channel": "Modo"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "*flog",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Returns the full IRC ban history of a player (takes a lot longer but goes back much further).",
+		"Channel": "Modo"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "stafflog",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Shows the given sanctions of a staff member.",
+		"Channel": "Modo"
+	},
+	{
+		"Privileges": ["PrivMod", "Mod", "Admin"],
+		"Name": "modinfo",
+		"Arguments": [
+			"playerName"
+		],
+		"Description": "Searchs for moderator and arbitre alts in the original game.",
+		"Channel": "Modo"
+	}
+]

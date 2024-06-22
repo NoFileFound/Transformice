@@ -31,12 +31,14 @@ class Cafe:
         elif len(self.client.privRoles) > 0:
             return True
             
-        return (self.client.cheeseCount > 1000 and self.client.playerTime > 108000)
+        return (self.client.cheeseCount > 1000 and self.client.playerTime > 3600 * 30)
         
     def checkModeratorPerm(self) -> bool:
-        if self.server.isDebug:
-            return True
         return self.client.privLevel >= 8 or self.client.isPrivMod
+        
+    def getTopicNormalPosts(self, topicID) -> int:
+        info = self.server.cursor['cafeposts'].count_documents({"TopicID":topicID, "Type":0})
+        return info
         
     def makeCafePermissions(self):
         self.canUseCafe = self.checkPerm()
@@ -87,7 +89,7 @@ class Cafe:
         self.loadCafeMode()
         
     def deleteCafePost(self, postID):
-        if not self.canUseCafe and not self.isModerator:
+        if not self.isModerator:
             return
             
         topicID = self.server.cursor['cafeposts'].find_one({'PostID': postID})["TopicID"]
@@ -104,7 +106,7 @@ class Cafe:
             self.openCafeTopic(topicID)
         
     def deleteAllCafePosts(self, topicID, playerName):
-        if not self.canUseCafe and not self.isModerator:
+        if not self.isModerator:
             return
             
         deleted_posts = 0
@@ -129,15 +131,20 @@ class Cafe:
         packet = ByteArray().writeBoolean(self.canUseCafe).writeBoolean(self.isModerator)
         cursor = self.server.cursor["cafetopics"].find().sort("Date", pymongo.DESCENDING).limit(20)
         for topic in cursor:
-            if topic["Langue"] == self.client.playerLangue or self.client.privLevel >= 8:
-                packet.writeInt(topic["TopicID"]).writeUTF(topic["Title"]).writeInt(self.server.getPlayerID(topic["Author"])).writeInt(topic["Posts"]).writeUTF(topic["LastPostName"]).writeInt(Time.getSecondsDiff(topic["Date"]))
+            if topic["Langue"] == self.client.playerLangue or self.client.privLevel >= 9:
+                packet.writeInt(topic["TopicID"]).writeUTF(topic["Title"]).writeInt(self.server.getPlayerID(topic["Author"])).writeInt(topic["Posts"] if self.isModerator else self.getTopicNormalPosts(topic["TopicID"])).writeUTF(topic["LastPostName"]).writeInt(Time.getSecondsDiff(topic["Date"]))
         
         self.client.sendPacket(Identifiers.send.Cafe_Topics_List, packet.toByteArray())
         self.sendCafeWarnings()
         
     def openCafeTopic(self, topicID):
         ### Note: Second false is topic moderation.
-        packet = ByteArray().writeBoolean(True).writeInt(topicID).writeBoolean(False).writeBoolean(self.canUseCafe)
+        if any(post['topicID'] == topicID for post in self.server.reportedCafePosts):
+            needTakeAction = True
+        else:
+            needTakeAction = False
+        
+        packet = ByteArray().writeBoolean(True).writeInt(topicID).writeBoolean(needTakeAction and self.isModerator).writeBoolean(self.canUseCafe)
         cursor = self.server.cursor["cafeposts"].find({'TopicID':topicID}).sort("PostID", pymongo.ASCENDING)
         for post in cursor:
             if post["Type"] == 2 and not self.isModerator:
@@ -158,12 +165,46 @@ class Cafe:
         isModerated = self.server.cursor['cafeposts'].find_one({'PostID': postID})["Moderator"]
         if isModerated == "":
             self.server.sendStaffMessage(f"A new cafe report was made by {self.client.playerName} on topic {topicName}. Message: {postMessage}.", "PrivMod|Mod|Admin")
+            self.server.reportedCafePosts.append({"topicID": topicID, "postID": postID})
+            self.server.cursor['cafeposts'].update_one({"TopicID":topicID, "PostID":postID}, {"$set": {'Type':1}})
+            if self.client.isCafeOpened:
+                self.openCafeTopic(topicID)
+
+    def verifyCafePost(self, topicID, isDelete):
+        if not self.isModerator:
+            return
+            
+        postID = next((post['postID'] for post in self.server.reportedCafePosts if post['topicID'] == topicID), -1)
+        if postID > 0:
+            self.server.cursor['cafeposts'].update_one({"TopicID":topicID, "PostID":postID}, {"$set": {'Type':2 if isDelete else 0, 'Moderator':self.client.playerName}})
+        self.server.reportedCafePosts = [post for post in self.server.reportedCafePosts if post['topicID'] != topicID]
+        self.openCafeTopic(topicID)
+
+    def viewCafePosts(self, playerName):
+        if not self.isModerator:
+            return
+    
+        cursor = self.server.cursor['cafeposts'].find({"Author":playerName})
+        topicName = self.server.cursor['cafetopics'].find_one({"TopicID":cursor[0]["TopicID"]})["Title"]
+        message = ""
+        for post in cursor:
+            status = ""
+            msg = post['Message'].replace('\r', '')
+            message += f"Message: {msg} | "
+            message += f"Topic: <J>{topicName}</J> | "
+            if post["Moderator"] != "":
+                message += f"Moderated by: <ROSE>{post['Moderator']}</ROSE> | "
+            message += f"Date: <BL>{datetime.datetime.fromtimestamp(post['Date']).strftime('%m/%d/%Y %H:%M:%S')}</BL> | "
+            message += f"Status: {'Active' if post['Type'] == 0 else 'Moderated'}"
+            message += "\n"
+        
+        self.client.sendPacket(Identifiers.send.MiniBox_New, ByteArray().writeShort(600).writeUTF("View Posts of player " + playerName).writeUTF(message).toByteArray())
 
     def voteCafePost(self, topicID, postID, mode):
         if not self.canUseCafe:
             return
             
-        info = self.server.cursor['cafeposts'].find_one({"TopicID":topicID, "PostID":postID})
+        info = self.server.cursor['cafeposts'].find_one({"TopicID":topicID})
         if info:
             points = info["Points"]
             votes = info["Votes"]
@@ -179,29 +220,7 @@ class Cafe:
                 self.server.cursor['cafeposts'].update_one({"TopicID":topicID, "PostID":postID}, {"$set": {'Votes': votes, 'Points':points}})
                 self.openCafeTopic(topicID)
 
-
-    def verifyCafePost(self, topicID, status): # UNFINISHED
-        print(f"[-] THIS FUNCTION IS NOT A FINISHED DUE MISSING INFORMATION HOW THIS IN GAME WORKS. FUNC: VerifyCafePost ARGS: {topicID},{status}")
-
-    def viewCafePosts(self, playerName):
-        cursor = self.server.cursor['cafeposts'].find({"Author":playerName})
-        topicName = self.server.cursor['cafetopics'].find_one({"TopicID":cursor[0]["TopicID"]})["Title"]
-        message = ""
-        for post in cursor:
-            status = ""
-            msg = post['Message'].replace('\r', '')
-            message += f"Message: {msg} | "
-            message += f"Topic: <J>{topicName}</J> | "
-            if post["Moderator"] != "":
-                message += f"Moderated by: <ROSE>{post['Moderator']}</ROSE> | "
-            message += f"Date: <BL>{datetime.datetime.fromtimestamp(post['Date']).strftime('%m/%d/%Y %H:%M:%S')}</BL> | "
-            message += f"Status: {'Active' if post['Type'] == 0 else 'Approved' if post['Type'] == 1 else 'Moderated'}"
-            message += "\n"
-        
-        self.client.sendPacket(Identifiers.send.MiniBox_New, ByteArray().writeShort(600).writeUTF("View Posts of player " + playerName).writeUTF(message).toByteArray())
-
         # Cafe packets
-
     def sendCafeWarnings(self):
         if not self.canUseCafe:
             return
