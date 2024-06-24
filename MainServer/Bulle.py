@@ -1,5 +1,7 @@
-# amke it as client handler
+#coding: utf-8
 import asyncio
+
+# Utils
 from Utils import Config
 
 class Bulle:

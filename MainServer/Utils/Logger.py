@@ -31,3 +31,7 @@ class Logger:
 
     def error(self, message : str) -> None:
         self.log("ERROR", message)
+        
+    def logException(self, ex, file):
+        with open(f"./Includes/{file}") as F:
+            F.write(ex)

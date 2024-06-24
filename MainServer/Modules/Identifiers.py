@@ -1,6 +1,9 @@
 class Identifiers:
     class bulle:
         BU_ConnectToGivenRoom = 1001
+        BU_SendAnimZelda = 1003
+        BU_SendRoomPrison = 1004
+        BU_SendMuMute = 1005
         BU_SendModerationMesage = 1006
         BU_LoadMapEditor_Map = 1007
         BU_DrawingClear = 1008
@@ -8,6 +11,19 @@ class Identifiers:
         BU_DrawingPoint = 1010
         BU_GetChatLog = 1011
         BU_ReceiveTitleID = 1012
+        BU_RespawnPlayer = 1013
+        BU_ChangeRoomTime = 1014
+        BU_Clear_Room_Chat = 1015
+        BU_SendRoomCreator = 1016
+        BU_SendBanMessage = 1017
+        BU_SendMute = 1018
+        BU_DeleteMap = 1019
+        BU_ChangePlayerLook = 1020
+        BU_ChangeShamanLook = 1021
+        BU_Interrupt_Connection = 1022
+        BU_ChangeShamanBadge = 1023
+        BU_ChangeShamanType = 1024
+        BU_ChangeShamanColor = 1025
         
     class tribulle:
         class recv:
@@ -161,8 +177,10 @@ class Identifiers:
         Correct_Version = (28, 1)
         Game_Log = (28, 4)
         Player_Ping = (28, 6)
+        Change_Shaman_Type = (28, 10)
         Send_Code = (28, 16)
         Computer_Info = (28, 17)
+        Change_Shaman_Color = (28, 18)
         Slash_Command = (28, 48)
         Verify_Email_Address = (28, 64)
         
@@ -228,7 +246,6 @@ class Identifiers:
         Titles_List = [8, 14]
         Profile = [8, 16]
         Player_Shop_List = [8, 20]
-        Anim_Zelda = [8, 44]
         Anim_Donation = [8, 50]
     
         # idk 💀
@@ -272,11 +289,13 @@ class Identifiers:
         Promotion_Popup = [28, 3]
         Message_Langue = [28, 5]
         Ping = [28, 6]
-        #Email_Address_Code_Validated = [28, 12]
-        #Email_Address_Verified = [28, 13]
+        Shaman_Type = [28, 10]
+        Email_Address_Code_Validated = [28, 12]
+        Email_Address_Verified = [28, 13]
         Log_Message = [28, 46]
         Request_Info = [28, 50]
         Verify_Email_Popup = [28, 64]
+        Server_Restart = [28, 88]
         Connect_To_Server = [28, 98]
         
         # Cafe packets
@@ -309,6 +328,7 @@ class Identifiers:
         # New packets
         Open_Dressing = [100, 30]
         Buy_Full_Look = [100, 31]
+        Question_Popup = [100, 50]
         New_Consumable = [100, 67]
         Change_Title = [100, 72]
         Image_Login = [100, 99]

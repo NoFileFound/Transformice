@@ -1,4 +1,5 @@
 #coding: utf-8
+import base64
 import binascii
 import time
 
@@ -22,7 +23,7 @@ class Shop:
 
         self.sendShopList(False)
 
-    def buyItem(self, fullItem, withFraises):
+    def buyItem(self, fullItem, withFraises, original_fullitem): # UNFINISHED
         item_info = self.getShopItemInfo(fullItem)
         price = self.getShopItemPrice(item_info[0], item_info[1], withFraises)
         
@@ -36,10 +37,10 @@ class Shop:
                 canBuy = True
         
         if canBuy:
-            self.client.shopItems += str(fullItem) if self.client.shopItems == "" else "," + str(fullItem)
-            self.sendItemBuy(fullItem)
+            self.client.shopItems += str(original_fullitem) if self.client.shopItems == "" else "," + str(original_fullitem)
+            self.sendItemBuy(original_fullitem)
             self.sendShopList(False)
-            self.client.buyItemResult(fullItem)
+            self.client.buyItemResult(original_fullitem)
         else:
             self.server.sendStaffMessage(f"The player {self.client.playerName} tried buy an item using a hack.", "PrivMod|Mod|Admin")
 
@@ -92,7 +93,27 @@ class Shop:
         else:
             self.server.sendStaffMessage(f"The player {self.client.playerName} tried buy a shaman item using a hack.", "PrivMod|Mod|Admin")
 
-    def customItem(self, fullItem, customs):
+    def checkShopGifts(self):
+        if self.client.isGuest:
+            return
+    
+        info = self.server.cursor['shopgifts'].find_one({'Username':self.client.playerName})
+        if info:
+            if not info["Gifts"] == "":
+                for gift in info["Gifts"].split("/"):
+                    values = binascii.unhexlify(gift.encode()).decode().split("|", 4)
+                    self.server.lastShopGiftID += 1
+                    self.client.sendPacket(Identifiers.send.Shop_Gift, ByteArray().writeInt(self.server.lastShopGiftID).writeUTF(self.client.playerName).writeUTF(values[1]).writeBoolean(bool(values[1])).writeInt(int(values[3])).writeUTF(values[4] if len(values) > 4 or values[4] != '' else "").writeBoolean(False).toByteArray())
+                    self.server.shopGifts[self.server.lastShopGiftID] = [values[0], bool(values[2]), int(values[3])]
+                self.server.cursor['shopgifts'].update_one({'Username':self.client.playerName}, {'$set':{'Gifts':''}})
+            if not info["Messages"] == "":
+                for message in info["Messages"].split("/"):
+                    if not message == "":
+                        values = binascii.unhexlify(message.encode()).decode().split("|", 4)
+                        self.client.sendPacket(Identifiers.send.Shop_Gift, ByteArray().writeInt(0).writeUTF(values[0]).writeUTF(values[1]).writeBoolean(bool(values[2])).writeInt(int(values[3])).writeUTF(values[4]).writeBoolean(True).toByteArray())
+                self.server.cursor['shopgifts'].update_one({'Username':self.client.playerName}, {'$set':{'Messages':''}})
+
+    def customItem(self, fullItem, customs): # UNFINISHED
         _item = ""
         items = self.client.shopItems.split(",")
         for shopItem in items:
@@ -167,7 +188,7 @@ class Shop:
         self.sendLookChange()
         self.sendShopList(False)
 
-    def equipItem(self, fullItem):
+    def equipItem(self, fullItem): # UNFINISHED
         info = self.getShopItemInfo(fullItem)
         itemCat = info[0]
         item = info[1]
@@ -246,9 +267,10 @@ class Shop:
             else:
                 messages = ""
                 rs = self.server.cursor['shopgifts'].find_one({'Username':values[0]})
-                messages = rs['Messages']
-                messages += ("" if messages == "" else "/") + binascii.hexlify("|".join(map(str, [self.client.playerName, self.client.playerLook, values[1], values[2], message])).encode()).decode()
-                self.server.cursor['shopgifts'].update_one({'Username':values[0]}, {'$set':{'Messages':messages}})
+                if rs:
+                    messages = rs['Messages']
+                    messages += ("" if messages == "" else "/") + binascii.hexlify("|".join(map(str, [self.client.playerName, self.client.playerLook, values[1], values[2], message])).encode()).decode()
+                    self.server.cursor['shopgifts'].update_one({'Username':values[0]}, {'$set':{'Messages':messages}})
                 
         elif isMessageClosed:
             del self.server.shopGifts[giftID]
@@ -307,7 +329,7 @@ class Shop:
         else:
             return False
 
-    def getItemCustomization(self, checkItem, isShamanShop):
+    def getItemCustomization(self, checkItem, isShamanShop) -> str:
         items = self.client.shopShamanItems if isShamanShop else self.client.shopItems
         if not items == "":
             for shopItem in items.split(","):
@@ -318,14 +340,13 @@ class Shop:
         else:
             return ""
 
-    def getItemPriceInfo(self, item_category, item_id):
+    def getItemPriceInfo(self, item_category, item_id): #########
+        #print(item_category, item_id)
         concat = str(item_category) + "|" + str(item_id)
         if concat in self.server.shopListCheck:
             return self.server.shopListCheck[concat]
-        else:
-            return self.getItemPriceInfo(item_category - 1, item_id)
 
-    def getShopOutfits(self) -> int:
+    def getShopOutfits(self) -> dict:
         fulllooks = {}
         for _id in self.server.shopOutfitsCheck:
             if self.server.shopOutfitsCheck[_id][4] == True:
@@ -336,15 +357,11 @@ class Shop:
                 
         return fulllooks
 
-    def getShopCategory(self, fullItem) -> int:
+    def getShopCategory(self, fullItem) -> int: # UNFINISHED
         return ((0 if fullItem // 10000 == 1 else fullItem // 10000) if fullItem > 9999 else fullItem // 100)
 
     def getShopItem(self, category, item_id) -> int:
         return (category * (10000 if item_id > 99 else 100) + item_id + (10000 if item_id > 99 else 0))
-
-    def getShopItemCustomNumber(self, item_cat, item_id):
-        concat = str(item_category) + "|" + str(item_id)
-        return self.server.shopListCheck[concat][2]
 
     def getShopItemID(self, fullItem, category) -> int:
         return (fullItem % 1000 if fullItem > 9999 else fullItem % 100 if fullItem > 999 else fullItem % (100 * category) if fullItem > 99 else fullItem)
@@ -372,7 +389,7 @@ class Shop:
         return price
 
     def sendItemBuy(self, fullItem):
-        self.client.sendPacket(Identifiers.send.Item_Buy, ByteArray().writeInt(fullItem).writeByte(2).toByteArray())
+        self.client.sendPacket(Identifiers.send.Item_Buy, ByteArray().writeInt(fullItem).writeByte(4).toByteArray())
 
     def sendLookChange(self):
         look = self.client.playerLook.split(";")
@@ -395,6 +412,7 @@ class Shop:
 
         p.writeInt(int(self.client.mouseColor, 16))
         self.client.sendPacket(Identifiers.send.Mouse_Look, p.toByteArray())
+        self.client.sendBullePacket(Identifiers.bulle.BU_ChangePlayerLook, self.client.playerID, base64.b64encode(self.client.playerLook.encode()).decode('utf-8'), self.client.mouseColor)
 
     def sendShamanItems(self):
         shamanItems = [] if self.client.shopShamanItems == "" else self.client.shopShamanItems.split(",")
@@ -423,9 +441,10 @@ class Shop:
                 items.writeShort(realItem)
                 count += 1
         self.client.sendPacket(Identifiers.send.Shaman_Look, ByteArray().writeShort(count).writeBytes(items.toByteArray()).toByteArray())
+        self.client.sendBullePacket(Identifiers.bulle.BU_ChangeShamanLook, self.client.playerID, base64.b64encode(self.client.shopShamanItems.encode()).decode('utf-8'))
 
     def sendShopGift(self, playerName, isShamanItem, fullItem, message):
-        if (self.server.checkAlreadyExistingAccount(playerName) or playerName == self.client.playerName):
+        if (not self.server.checkAlreadyExistingAccount(playerName) or playerName == self.client.playerName):
             self.sendShopGiftPacket(1, playerName)
         else:
             player = self.server.players.get(playerName)
@@ -554,19 +573,18 @@ class Shop:
 
 
 
-
     def viewFullLook(self, visuID): # UNFINISHED
         print(f"[-] THIS FUNCTION IS NOT A FINISHED DUE MISSING INFORMATION HOW THIS IN GAME WORKS. FUNC: ViewFullLook ARGS: {visuID}")
 
   
-    def sendPromotionPopup(self):
+    def sendPromotionPopup(self): # UNFINISHED
         if len(self.server.shopPromotions) > 0:
             promotion = self.server.shopPromotions[0]
             self.client.sendPacket(Identifiers.send.Promotion_Popup, ByteArray().writeShort(promotion["Category"]).writeShort(promotion["Item"]).writeByte(promotion["Discount"]).writeShort(2230).toByteArray())
             
 
-    def sendPromotions(self): #######
+    def sendPromotions(self): # UNFINISHED
         for promotion in self.server.shopPromotions:
-            self.client.sendPacket(Identifiers.send.Promotion, ByteArray().writeBoolean(not promotion["Collector"]).writeBoolean(not promotion["isShamanItem"]).writeInt((self.getShopItem(promotion["Category"], promotion["Item"])) if promotion["isShamanItem"] == False else promotion["Item"]).writeBoolean(True).writeInt(0).writeByte(0).toByteArray())
-            self.client.sendPacket(Identifiers.send.Promotion, ByteArray().writeBoolean(True).writeBoolean(not promotion["isShamanItem"]).writeInt((self.getShopItem(promotion["Category"], promotion["Item"])) if promotion["isShamanItem"] == False else promotion["Item"]).writeBoolean(True).writeInt(promotion["Time"] - self.server.serverTime).writeByte(promotion["Discount"]).toByteArray())
+            self.client.sendPacket(Identifiers.send.Promotion, ByteArray().writeBoolean(False).writeBoolean(not promotion["isShamanItem"]).writeInt((self.getShopItem(promotion["Category"], promotion["Item"])) if promotion["isShamanItem"] == False else promotion["Item"]).writeBoolean(True).writeInt(promotion["Time"] - self.server.serverTime).writeByte(0).toByteArray())
+            self.client.sendPacket(Identifiers.send.Promotion, ByteArray().writeBoolean(True).writeBoolean(not promotion["isShamanItem"]).writeInt((self.getShopItem(promotion["Category"], promotion["Item"])) if promotion["isShamanItem"] == False else promotion["Item"]).writeBoolean(True).writeInt(promotion["Time"] - self.server.serverTime).writeByte(0).toByteArray())
  

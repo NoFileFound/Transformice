@@ -21,6 +21,7 @@ from Utils import Config, Logger
 from Utils.Langue import Langue
 from Utils.Time import Time
 from Utils.IPTools import IPTools
+from Utils.Other import Other
 
 # Other
 import Modules as _module
@@ -32,7 +33,7 @@ class Client:
         self.cursor = _cursor
         self.clientPacket = ByteArray()
         self.Logger = Logger.Logger()
-                
+                        
         # Integer
         self.adventurePoints = 0
         self.bootcampCount = 0
@@ -42,6 +43,7 @@ class Client:
         self.furEnd = 0
         self.equipedShamanBadge = 0
         self.genderType = 0
+        self.isMutedHours = 0
         self.lastDivorceTime = 0
         self.lastOn = 0
         self.lastPacketID = 0
@@ -67,6 +69,7 @@ class Client:
         self.shamanDivineSavesNoSkill = 0
         self.shamanCheeses = 0
         self.shamanLevel = 0
+        self.shamanType = 0
         self.shopCheeses = 0
         self.shopFraises = 0
         self.titleNumber = 0
@@ -82,6 +85,7 @@ class Client:
         self.isClosed = False
         self.isEmailAddressVerified = False
         self.isEnterRoom = False
+        self.isFriendListOpen = False
         self.isGuest = False
         self.isFashionSquad = False
         self.isFunCorp = False
@@ -91,9 +95,11 @@ class Client:
         self.isMapCrew = False
         self.isModoPwetNotifications = False
         self.isModoPwetOpened = False
+        self.isMumuted = False
         self.isMuted = False
-        self.isFriendListOpen = False
+        self.isNewAccount = False
         self.isPacketLogging = False
+        self.isPrisoned = False
         self.isPrivMod = False
         self.isReloadCafe = False
         self.isServerErrorLogging = False
@@ -109,6 +115,7 @@ class Client:
         self.flashVersion = ""
         self.mouseColor = "78583A"
         self.ipCountry = "Brazil"
+        self.isMutedReason = ""
         self.modoPwetLangue = "ALL"
         self.playerEmail = ""
         self.playerLook = "1;0,0,0,0,0,0,0,0,0,0,0,0"
@@ -142,6 +149,7 @@ class Client:
         self.playerBadges = []
         self.playerStats = []
         self.privRoles = []
+        self.totemInfo = [0, ""]
         self.titleList = []
         self.tribeInvite = []
         
@@ -199,7 +207,7 @@ class Client:
             return
 
         if packet == b'<policy-file-request/>\x00':
-            self.server.Logger.warn(f"{self.ipAddress} -> Policy File Request")
+            self.server.Logger.warn(f"{self.ipAddress} -> Policy File Request\n")
             self.transport.write(b'<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"*\"/></cross-domain-policy>\x00')
             self.transport.close()
             return
@@ -263,6 +271,7 @@ class Client:
             
     def connection_lost(self, *args) -> None: # UNFINISHED
         self.isClosed = True
+        
         if self.playerName in self.server.players:
             # Friend disconnect
             for player in self.server.players.copy().values():
@@ -278,7 +287,10 @@ class Client:
                 self.ModoPwet.sendModoNotification(self.playerName, self.playerLangue, "disconnect")
                 if not self.server.modoReports[self.playerName]["status"] in ["banned", "deleted"]:
                     self.server.modoReports[self.playerName]["status"] = "disconnected"
-        
+            
+            # database
+            self.updateDatabase()
+            
             del self.server.players[self.playerName]
         self.transport.close()
         
@@ -322,6 +334,8 @@ class Client:
             "CurrentShamanBadge":               0,
             "ShamanBadges":                     "",
             "ShamanLook":                       self.shamanLook,
+            "ShamanType":                       0,
+            "ShamanColor":                      "95d9d6",
             
             # Shop
             "ShopCheeseCount" :                 self.server.gameInfo["initial_shop"]["cheese"],
@@ -353,14 +367,13 @@ class Client:
             "FurType":                          0,
             "PetType":                          0,
             "FurEnd":                           0,
-            "PetEnd":                           0
+            "PetEnd":                           0,
+            "TotemInfo":                        ""
             
         })
+        self.isNewAccount = True
         await self.loginPlayer(playerName, password, f"\x03[Tutorial] {playerName}")
-        
-    def checkAccountCreationTime(self) -> bool:
-        return True
-        
+                
     async def loginPlayer(self, playerName, password, startRoom):  # UNFINISHED
         if self.ipAddress in self.server.IPTempBanCache:
             info = self.server.getTempIPBanInfo(self.ipAddress)
@@ -414,8 +427,18 @@ class Client:
                             self.isLoggedIn = False
                             return
                         else:
-                            self.server.removeTempUserBan(playerName)
+                            self.server.removeTempUserBan(playerName, False)
             
+                muteInfo = self.server.getTempPunishmentInfo(playerName, 0)
+                if len(muteInfo) > 0:
+                    time = Time.getHoursDiff(muteInfo[1])
+                    if time > 0:
+                        self.isMuted = True
+                        self.isMutedHours = muteInfo[1]
+                        self.isMutedReason = muteInfo[0]
+                    else:
+                        self.server.removeModMute(playerName, False)
+                    
             
                 # Identification
                 self.playerName = playerName
@@ -452,6 +475,8 @@ class Client:
                 self.equipedShamanBadge = rs["CurrentShamanBadge"]
                 self.shamanBadges = list(map(int, filter(None, rs['ShamanBadges'].split(","))))
                 self.shamanLook = rs["ShamanLook"]
+                self.shamanType = rs["ShamanType"]
+                self.shamanColor = rs["ShamanColor"]
                 
                 # Shop
                 self.shopCheeses = rs["ShopCheeseCount"]
@@ -491,6 +516,7 @@ class Client:
                 self.furEnd = rs["FurEnd"]
                 self.petType = rs["PetType"]
                 self.petEnd = rs["PetEnd"]
+                self.totemInfo = list(map(lambda x: int(x) if x.isdigit() else x, rs["TotemInfo"].split("|")))
                                 
                 self.isLoggedIn = True
             else:
@@ -517,12 +543,19 @@ class Client:
             self.sendPlayerEmotes()
             self.sendPlayerInventory()
             self.sendModopwetNotification()
-            
             self.sendDefaultGlobalChat()
             self.sendEnterRoom(startRoom)
+            self.sendRegisteredAccountConsumable()
+            self.sendShopCache()
+            if self.shamanNormalSaves >= 1500:
+                self.sendShamanType(self.shamanType, (self.shamanNormalSaves >= 5000 and self.shamanHardSaves >= 2000), False)
+    
             self.Shop.sendPromotionPopup() #######
 
-    async def connectToBulle(self, roomName, community="", isHidden=False, sendPacket=True): # UNFINISHED 
+    async def connectToBulle(self, roomName, community="", isHidden=False, sendPacket=True): # UNFINISHED, shamanItems
+        if self.isPrisoned:
+            return
+    
         if self.isTrade:
             self.cancelTrade(self.tradeName, False)
             
@@ -548,9 +581,9 @@ class Client:
         bullePorts = '-'.join(map(str, self.bulleID["port"]))
         isReported = self.playerName in self.server.modoReports
 
-        temp_code = random.randint(100,100000)
+        temp_code = Other.randomGen()
         try:
-            self.server.bulles[self.bulleID["id"]].send_packet(Identifiers.bulle.BU_ConnectToGivenRoom, self.playerID, self.playerName, self.playerCode, community, base64.b64encode(self.playerLook.encode()).decode('utf-8'), self.getStaffPermissions(), self.isMuted, self.genderType, roomName, isHidden, isReported, self.titleNumber, self.titleStars, temp_code)
+            self.server.bulles[self.bulleID["id"]].send_packet(Identifiers.bulle.BU_ConnectToGivenRoom, self.playerID, self.playerName, self.playerCode, community, base64.b64encode(self.playerLook.encode()).decode('utf-8'), self.getStaffPermissions(), self.isMuted, self.genderType, roomName, isHidden, isReported, self.titleNumber, self.titleStars, self.isMutedHours, self.isMutedReason, self.shamanType, self.shamanLevel, base64.b64encode(self.shopShamanItems.encode()).decode('utf-8'), self.equipedShamanBadge, self.shamanColor, temp_code)
             self.Logger.debug(f"[{self.ipAddress}] Established connection to bulle{self.bulleID['id']} : {self.bulleID['ip_address']}:{bullePorts}.\n")
         except KeyError as e:
             self.Logger.error("Unable to connect to bulle. Refreshing in 10 seconds.\n")
@@ -750,6 +783,23 @@ class Client:
             perms.append("Owner")
         return ','.join(perms)
 
+    def giveConsumable(self, _id, amount, flag=False):
+        limit = 80
+        if _id in [800, 801, 2257, 2472]:
+            limit = 250
+            
+        elif _id in [2253, 2254, 2260, 2261, 2504, 2505, 2506, 2507, 2508, 2509, 2497, 2343]:
+            limit = 200
+            
+        if flag:
+            self.sendAnimZelda(4,_id)
+        self.sendNewConsumable(_id, amount)
+        sum = (self.playerConsumables[_id] if _id in self.playerConsumables else 0) + amount
+        if sum > limit: sum = limit
+        
+        self.playerConsumables[_id] = sum
+        self.sendUpdateInventoryConsumable(_id, sum, limit)
+
     def logConnection(self):
         if self.isGuest:
             return
@@ -778,6 +828,9 @@ class Client:
             
         if "PrivMod" in self.privRoles:
             self.isPrivMod = True
+
+    def sendAnimZelda(self, type, item=0, case="", id=0):
+        self.sendBullePacket(Identifiers.bulle.BU_SendAnimZelda, self.playerID, self.playerCode, type, item, id, case)
 
     def sendBanConsideration(self):
         self.sendPacket(Identifiers.old.send.Ban_Consideration, ["0"])
@@ -822,6 +875,15 @@ class Client:
             
         self.sendPacket(Identifiers.send.Rejoindre_Canal_Publique, ByteArray().writeUTF(self.playerLangue).toByteArray())
 
+    def sendEmailVerifiedPacket(self, isVerified=True):
+        if self.isGuest or not self.isEmailAddressVerified:
+            return
+
+        if not isVerified:
+            self.isEmailAddressVerified = False
+
+        self.sendPacket(Identifiers.send.Email_Address_Verified, ByteArray().writeByte(isVerified).toByteArray())
+
     def sendEnterRoom(self, roomName, community="", isHidden=False):
         if not self.isEnterRoom:
             self.isEnterRoom = True
@@ -842,6 +904,20 @@ class Client:
 
     def sendNewConsumable(self, consumable, count):
         self.sendPacket(Identifiers.send.New_Consumable, ByteArray().writeByte(0).writeShort(consumable).writeShort(count).toByteArray())
+
+    def sendRestartPacket(self, seconds):
+        self.sendPacket(Identifiers.send.Server_Restart, ByteArray().writeInt(seconds * 1000).toByteArray())
+
+    def sendPlayerBan(self, hours, reason, silent=False):
+        if not hours == -1:
+            self.sendPacket(Identifiers.old.send.Player_Ban_Login, [hours * 3600000, reason])
+        if not silent:
+            if hours == -1:
+                msg_type = "$MessageBanDefSalon"
+            else:
+                msg_type = "$Message_Ban"
+                
+            self.sendBullePacket(Identifiers.bulle.BU_SendBanMessage, self.roomName, self.playerID, self.playerName, str(hours), msg_type, str(reason))
 
     def sendPlayerEmotes(self):
         emotes = [] if len(self.shopEmotes) == 0 else self.shopEmotes.split(',')
@@ -924,6 +1000,15 @@ class Client:
             data.writeByte(info[6])                 # Consumable index
         self.sendPacket(Identifiers.send.Inventory, data.toByteArray())
 
+    def sendPlayerMute(self, hours, reason):
+        self.sendBullePacket(Identifiers.bulle.BU_SendMute, self.playerID, self.isMuted, hours, reason)
+
+    def sendPlayerMuteMessage(self, hours, reason, isOnly=False):
+        self.sendLangueMessage("", "<ROSE>$MuteInfo1", str(hours), reason)
+        if isOnly:
+            return
+        self.sendBullePacket(Identifiers.bulle.BU_SendBanMessage, self.roomName, self.playerID, self.playerName, str(hours), "$MuteInfo2", str(reason))
+
     def sendPlayerTime(self):
         self.sendPacket(Identifiers.send.Time_Stamp, ByteArray().writeInt(self.loginTime / 1000).toByteArray())
 
@@ -987,11 +1072,19 @@ class Client:
         packet.writeInt(self.adventurePoints)
         self.sendPacket(Identifiers.send.Profile, packet.toByteArray())
 
+    def sendRegisteredAccountConsumable(self):
+        if self.isNewAccount:
+            self.giveConsumable(0, 10)
+            self.isNewAccount = False
+
     def sendServerMessage(self, message, tab=False, *args):
         packet = ByteArray().writeBoolean(tab).writeUTF(message).writeByte(len(args))
         for arg in args:
             packet.writeUTF(args)
         self.sendPacket(Identifiers.send.Recv_Message, packet.toByteArray())
+
+    def sendShamanType(self, mode, canDivine, isNoSkills):
+        self.sendPacket(Identifiers.send.Shaman_Type, ByteArray().writeByte(mode).writeBoolean(canDivine).writeInt(int(self.shamanColor, 16)).writeBoolean(isNoSkills).toByteArray())
 
     def sendSourisLogin(self):
         if not self.isGuest:
@@ -1020,9 +1113,10 @@ class Client:
         self.sendPacket(Identifiers.send.Trade_Start, ByteArray().writeInt(playerCode).toByteArray())
 
     def sendTribulleInitialization(self):
-        self.Tribulle.sendPlatformCommunityConnection()
         if self.isGuest:
             return
+    
+        self.Tribulle.sendPlatformCommunityConnection()
         
         for player in self.server.players.values():
             if self.playerName in player.friendList and player.playerName in self.friendList:
@@ -1042,58 +1136,24 @@ class Client:
         self.sendPacket(Identifiers.send.Old_Tribulle, ByteArray().writeShort(code).writeBytes(result).toByteArray())
 
     def sendTribulleProtocol(self, isNew=True):
-        if self.isGuest:
-            return
         self.sendPacket(Identifiers.send.Switch_Tribulle, ByteArray().writeBoolean(isNew).toByteArray())
-            
+           
+    def sendUpdateInventoryConsumable(self, id, count, limit=250):
+        self.sendPacket(Identifiers.send.Update_Inventory_Consumable, ByteArray().writeShort(id).writeUnsignedByte(limit if count > limit else count).toByteArray())
+           
     def sendWatchPlayerPacket(self, playerName, status):
         self.sendPacket(Identifiers.send.Watch_Player, ByteArray().writeUTF(playerName).writeBoolean(status).toByteArray())
 
 
-
-
-    def sendPlayerBan(self, hours, reason, silent=False):
-        if not hours == -1:
-            self.sendPacket(Identifiers.old.send.Player_Ban_Login, [hours * 3600000, reason])
-        if not silent:
-            pass
-            #for player in self.room.clients.copy().values():
-            #    player.sendLangueMessage("", "<ROSE>• [Moderation] $Message_Ban", self.playerName, str(hours), reason)
+    def sendShopCache(self): # UNFINISHED
+        print(f"[-] THIS FUNCTION IS NOT A FINISHED DUE MISSING INFORMATION HOW THIS IN GAME WORKS. FUNC: SendShopCache ARGS: None")
 
 
     def useConsumable(self, _id):
         pass
         
-    def sendRoomPacket(self, identifiers, packet):
-        for player in self.players.copy().values():
-            if player.roomName == roomName:
-                player.sendPacket(identifiers, packet)
-
-
-    def sendAnimZelda(self, type, item=0, case="", id=0): #######
-        packet = ByteArray().writeInt(self.playerCode).writeByte(type)
-        if type == 7:
-            packet.writeUTF(case).writeUnsignedByte(id)
-        elif type == 5:
-            packet.writeUTF(case)
-        else:
-            packet.writeInt(item)
-            
-        #self.sendRoomPacket(Identifiers.send.Anim_Zelda, packet.toByteArray())
-
-
-    def sendEmailVerifiedPacket(self, isVerified=True):
-        if self.isGuest or not self.isEmailAddressVerified:
-            return
-
-        if not isVerified:
-            self.isEmailAddressVerified = False
-
-        #self.sendPacket(Identifiers.send.Email_Address_Verified, ByteArray().writeBoolean(isVerified).toByteArray())
-        
     def buyItemResult(self, fullitem, isShopShamanItem=False):
-        pass
-        #self.sendAnimZelda(bool(isShopShamanItem), fullitem)
+        self.sendAnimZelda(int(isShopShamanItem), fullitem)
         #self.checkUnlockShopTitle()
         #self.checkUnlockShopBadge(fullItem)
         #self.client.missions.upMission('6')
@@ -1106,13 +1166,76 @@ class Client:
         self.Shop = _module.Shop.Shop(self, self.server)
         self.ParseCommands =_module.Commands.Commands(self, self.server)
         
-    def updateDatabase(self):
-        pass
+    def updateDatabase(self): # UNFINISHED
+        if self.isGuest:
+            return
+    
+        if self.server.disableDatabase:
+            return
+            
+        self.server.cursor['users'].update_one({'Username':self.playerName},{'$set':{
+            # Identification
+            "PlayerGender": self.genderType,
+            "PlayerKarma": self.playerKarma,
+            "PlayerTime": self.playerTime + abs(Time.getSecondsDiff(self.loginTime)),
+            "PlayerLook": self.playerLook,
 
-        
-    def giveConsumable(self, _id, amount):
-        pass
-        
-        #for player in this.server.players.values():
-        #    if this.playerName and player.playerName in this.friendsList and player.friendsList:
-        #        player.tribulle.sendFriendChangedRoom(this.playerName, this.langueID)
+            # Stats
+            "FirstCount": self.firstCount,
+            "CheeseCount": self.cheeseCount,
+            "ShamanCheeses": self.shamanCheeses,
+            "BootcampCount": self.bootcampCount,
+            "NormalSavesCount": self.shamanNormalSaves,
+            "NormalSavesCountNS": self.shamanNormalSavesNoSkill,
+            "HardSavesCount": self.shamanHardSaves,
+            "HardSavesCountNS": self.shamanHardSavesNoSkill,
+            "DivineSavesCount": self.shamanDivineSaves,
+            "DivineSavesCountNS": self.shamanDivineSavesNoSkill,
+            "PlayerBadges": ",".join(map(str, filter(None, [badge for badge in self.playerBadges]))),
+            "PlayerStats": ",".join(map(str, filter(None, [stat for stat in self.playerStats]))),
+            "TitleNumber": self.titleNumber,
+            # Title list
+            
+            # Shaman
+            "ShamanLevel": self.shamanLevel,
+            "CurrentShamanBadge": self.equipedShamanBadge,
+            "ShamanBadges": (",".join(map(str, filter(None, [badge for badge in self.shamanBadges])))),
+            "ShamanLook": self.shamanLook,
+            "ShamanType": self.shamanType,
+            "ShamanColor": self.shamanColor,
+            
+            # Shop
+            "ShopCheeseCount": self.shopCheeses,
+            "ShopFraiseCount": self.shopFraises,
+            "ShopItems": self.shopItems,
+            "ShopFavoriteItems": self.shopFavoriteItems,
+            "ShopClothes": self.shopClothes,
+            "ShopShamanItems": self.shopShamanItems,
+            "ShopEmotes": self.shopEmotes,
+            
+            # Tribulle
+            "FriendsList": (",".join(map(str, filter(None, [player for player in self.friendList])))),
+            "IgnoredList": (",".join(map(str, filter(None, [player for player in self.ignoredList])))),
+            "Soulmate": self.playerSoulmate,
+            "TribeCode": self.tribeCode,
+            "TribeJoined": self.tribeJoined,
+            "TribeRank": self.tribeRank,
+            "LastDivorceTime": self.lastDivorceTime,
+            
+            # Other
+            "EmailVerified": int(self.isEmailAddressVerified),
+            "EquipedConsumables": (",".join(map(str, filter(None, [consumable for consumable in self.equipedConsumables])))),
+            "Inventory": ";".join(map(lambda consumable: "%s:%s" %(consumable[0], consumable[1]), self.playerConsumables.items())),
+            "AdventurePoints": self.adventurePoints,
+            "ModoCommunities": ",".join(map(str, filter(None, [community for community in self.modoCommunities]))),
+            # adventure info
+            "LastOn": self.Tribulle.getTime(),
+            "FurType": self.furType,
+            "FurEnd": self.furEnd,
+            "PetType": self.petType,
+            "PetEnd": self.petEnd
+            # Toteminfo
+        }})
+                
+    def checkAccountCreationTime(self) -> bool:
+        return True

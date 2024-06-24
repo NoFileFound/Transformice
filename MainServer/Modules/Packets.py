@@ -120,14 +120,26 @@ class Packets:
         async def Cancel_Trade(self, playerName):
             self.client.cancelTrade(playerName)
 
-        @self.packet(args=['readShort', 'readUTF', 'readUTF', 'readUTF'])
-        async def Correct_Version(self, version, language, con_key, stand):
-            if not self.client.isVerifiedClientVersion:
-                if (version != self.server.swfInfo["version"]) or (con_key != self.server.swfInfo["connection_key"]):
-                    self.client.Logger.error(f"[CLIENT][{self.client.ipAddress}] Version/CKEY check failure. ({version}/{con_key})\n")
-                    self.client.transport.close()
-                    return
-            self.client.sendCorrectVersion(language, stand)
+        @self.packet(args=['readByte'])
+        async def Change_Shaman_Badge(self, badge):
+            if badge == 0 or badge in self.client.shamanBadges:
+                self.client.equipedShamanBadge = badge
+                self.client.sendBullePacket(Identifiers.bulle.BU_ChangeShamanBadge, self.client.playerID, badge)
+                self.client.sendProfile(self.client.playerName)
+
+        @self.packet(args=['readInt'])
+        async def Change_Shaman_Color(self, color):
+            self.client.shamanColor = "%06X" %(0xFFFFFF & color)
+            self.client.sendBullePacket(Identifiers.bulle.BU_ChangeShamanColor, self.client.playerID, self.client.shamanColor)
+
+        @self.packet(args=['readByte', 'readBoolean'])
+        async def Change_Shaman_Type(self, _id, withoutSkills):
+            if self.client.shamanNormalSaves < 1500:
+                return
+        
+            self.client.shamanType = _id
+            self.client.sendShamanType(_id, (self.client.shamanNormalSaves >= 5000 and self.client.shamanHardSaves >= 2000), withoutSkills)
+            self.client.sendBullePacket(Identifiers.bulle.BU_ChangeShamanType, self.client.playerID, _id, int(withoutSkills))
 
         @self.packet(args=['readUTF', 'readUTF', 'readUTF'])
         async def Computer_Info(self, osLang, osinfo, flashver):
@@ -143,11 +155,14 @@ class Packets:
             self.client.computerInformation = osinfo
             self.client.flashVersion = flashver
 
-        @self.packet(args=['readByte'])
-        async def Change_Shaman_Badge(self, badge):
-            if badge == 0 or badge in self.client.shamanBadges:
-                self.client.equipedShamanBadge = badge
-                self.client.sendProfile(self.client.playerName)
+        @self.packet(args=['readShort', 'readUTF', 'readUTF', 'readUTF'])
+        async def Correct_Version(self, version, language, con_key, stand):
+            if not self.client.isVerifiedClientVersion:
+                if (version != self.server.swfInfo["version"]) or (con_key != self.server.swfInfo["connection_key"]):
+                    self.client.Logger.error(f"[CLIENT][{self.client.ipAddress}] Version/CKEY check failure. ({version}/{con_key})\n")
+                    self.client.transport.close()
+                    return
+            self.client.sendCorrectVersion(language, stand)
 
         @self.packet(args=['readUTF', 'readUTF', 'readUTF', 'readUTF', 'readShort', 'readUTF'], decrypt=True)
         async def Create_Account(self, playerName, password, email, captcha, unknown, flash_url):
@@ -165,7 +180,7 @@ class Packets:
             elif self.server.checkAlreadyExistingAccount(playerName):
                 # account already exist
                 self.client.sendPacket(Identifiers.send.Login_Result, ByteArray().writeByte(3).writeUTF("").writeUTF("").toByteArray())
-            elif self.server.getTotalAccountsByEmailAddress(email) > 7:
+            elif len(self.server.getTotalAccountsByEmailAddress(email)) > 7:
                 # too many accounts in given email address
                 self.client.sendPacket(Identifiers.send.Login_Result, ByteArray().writeByte(10).writeUTF("").writeUTF("").toByteArray())
             elif not self.client.checkAccountCreationTime():
@@ -334,7 +349,7 @@ class Packets:
                 except Exception as e:
                     # server error
                     self.client.sendPacket(Identifiers.send.Login_Result, ByteArray().writeByte(6).writeUTF(playerName).writeUTF("").toByteArray())
-                    self.client.Logger.log(e, "Serveur.log")
+                    self.client.Logger.logException(e, "Serveur.log")
 
         @self.packet(args=[])
         async def Login_Time(self):
@@ -529,7 +544,7 @@ class Packets:
             if self.client.PInfo[1] == 0:
                 self.client.PInfo[2] = 60             
             else:
-                self.client.PInfo[2] = int((time.time() - self.client.PInfo[1])*1000) + VC
+                self.client.PInfo[2] = int((time.time() - self.client.PInfo[1]) * 1000) + VC
                 if prev*2 < self.client.PInfo[2]:
                     self.client.PInfo[2] = prev + 1
 
@@ -850,12 +865,14 @@ class Packets:
         async def Vote_Cafe_Post(self, topicID, postID, mode):
             self.client.Cafe.voteCafePost(topicID, postID, mode)
 
-                      
+                
+                
         @self.packet(args=['readUTF'])
         async def Verify_Email_Address(self, emailAddress):
             if self.client.isEmailAddressVerified:
                 return
             print(emailAddress)
+
 
 
 

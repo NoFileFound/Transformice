@@ -17,19 +17,21 @@ class Server(asyncio.Transport):
     def __init__(self):
         # Config
         self.bullesInfo = []
-        self.captchaList = Config.Json().load_file("./Include/Server/captchas.json")
-        self.communityPartners = Config.Json().load_file("./Include/Server/partners.json")
-        self.forbiddenWords = Config.Json().load_file("./Include/Server/forbidden_words.json")
-        self.gameCodes = Config.Json().load_file("./Include/Server/codes.json")
-        self.gameCommands = Config.Json().load_file("./Include/Client/commands.json")
-        self.gameLanguages = Config.Json().load_file("./Include/Server/languages.json")
-        self.gameInfo = Config.Json().load_file("./Include/Server/game.json")
-        self.inventoryConsumables = Config.Json().load_file("./Include/Server/inventory.json")
-        self.profileStats = Config.Json().load_file("./Include/Server/profilestats.json")
-        self.shopInfo = Config.Json().load_file("./Include/Server/shop.json")
-        self.shopPromotions = Config.Json().load_file("./Include/Server/promotions.json")
-        self.serverInfo = Config.Json().load_file("./Include/Server/server.json")
-        self.swfInfo = Config.Json().load_file("./Include/Server/swf.json")
+        self.jsonConfig = Config.Json()
+        self.captchaList = self.jsonConfig.load_file("./Include/Server/captchas.json")
+        self.communityPartners = self.jsonConfig.load_file("./Include/Server/partners.json")
+        self.forbiddenWords = self.jsonConfig.load_file("./Include/Server/forbidden_words.json")
+        self.gameCodes = self.jsonConfig.load_file("./Include/Server/codes.json")
+        self.gameCommands = self.jsonConfig.load_file("./Include/Client/commands.json")
+        self.gameLanguages = self.jsonConfig.load_file("./Include/Server/languages.json")
+        self.gameInfo = self.jsonConfig.load_file("./Include/Server/game.json")
+        self.inventoryConsumables = self.jsonConfig.load_file("./Include/Server/inventory.json")
+        self.profileStats = self.jsonConfig.load_file("./Include/Server/profilestats.json")
+        self.shopInfo = self.jsonConfig.load_file("./Include/Server/shop.json")
+        self.shopPromotions = self.jsonConfig.load_file("./Include/Server/promotions.json")
+        self.serverInfo = self.jsonConfig.load_file("./Include/Server/server.json")
+        self.swfInfo = self.jsonConfig.load_file("./Include/Server/swf.json")
+        self.modoReports = self.jsonConfig.load_file("./Include/Client/modopwet.json")
     
         # Integer
         self.bullecount = 0
@@ -44,6 +46,7 @@ class Server(asyncio.Transport):
         self.lastTribeID = 0
         
         # Boolean
+        self.disableDatabase = False #True
         self.isDebug = False
         
         # List
@@ -75,6 +78,7 @@ class Server(asyncio.Transport):
         self.cursor = None
         self.serverTime = int(time.time())
         self.Logger = Logger.Logger()
+        self.rebootTimer = None
 
     def appendBulle(self, bulle):
         self.bullecount += 1
@@ -192,6 +196,7 @@ class Server(asyncio.Transport):
     def LoadDebug(self):
         self.isDebug = self.serverInfo["debug"]
         self.Logger.info(f"Debug : {'on' if self.isDebug else 'off'}\n")
+        self.Logger.info(f"Status: {'Preview' if self.disableDatabase else 'Released'}\n")
 
     def LoadPunishments(self):
         self.IPPermaBanCache = [doc['IP'] for doc in list(self.cursor["ippermaban"].find())]
@@ -234,6 +239,9 @@ class Server(asyncio.Transport):
         
     # Packets
     def sendDatabaseUpdate(self):
+        if self.disableDatabase:
+            return
+            
         for player in self.players.copy().values():
             player.updateDatabase()
 
@@ -245,6 +253,21 @@ class Server(asyncio.Transport):
         for player in self.players.copy().values():
             if (player.privLevel == sender.privLevel or player.privLevel in staff_positions) and player != sender:
                 player.sendServerMessage(message, isTab)
+
+    def sendServerRestart(self, seconds):
+        for player in self.players.copy().values():
+            player.sendRestartPacket(seconds)
+            
+        if seconds <= 1:
+            self.closeServer()
+
+    def sendServerRestartSEC(self, no=0, sec=1):
+        if sec > 0 or no != 5:
+            self.sendServerRestart(120 if no == 0 else (60 if no == 1 else (30 if no == 2 else (20 if no == 3 else (10 if no == 4 else sec)))))
+            if self.rebootTimer != None:
+                self.rebootTimer.cancel()
+            self.rebootTimer = self.loop.call_later(60 if no == 0 else 30 if no == 1 else 10 if no == 2 or no == 3 else 1, lambda: self.sendServerRestartSEC(no if no == 5 else no + 1, 9 if no == 4 else sec - 1 if no == 5 else 0))
+        return
 
     def sendStaffChannelMessage(self, _id, langue, identifiers, packet):
         for client in self.players.copy().values():
@@ -294,34 +317,39 @@ class Server(asyncio.Transport):
 
 
     # Other Functions
-    def banPlayer(self, playerName, hours, reason, moderator, isSilent=False, disconnectIP=True) -> bool:
-        if self.checkAlreadyExistingAccount(playerName):
-            player = self.players.get(playerName)
-            if player != None:        
-                if moderator == "Serveur":
-                    self.sendStaffMessage(f"The player {playerName} was banned for {hours} hour(s). Reason: Vote Populaire.", "PrivMod|Mod|Admin")
-                    player.banVotes = []
-                self.cursor["sanctions"].insert_one({"ID":self.lastSanctionID, "Username":playerName, "Type":"Banned", "State":"Active", "Duration":int(Time.getTime() + (hours * 60 * 60)) if hours != -1 else -1, "Reason":reason, "Moderator":moderator, "CancelledAuthor":"", "CancelledReason":""})
-                if hours != -1:
-                    player.sendPlayerBan(hours, reason, isSilent)
-                    self.sendStaffMessage(f"{moderator} banned the player {playerName} for {hours}h ({reason}).", "PrivMod|Mod|Admin")
-                else:
-                    player.transport.close()
-                    self.sendStaffMessage(f"{moderator} permanently banned the player {playerName} ({reason}).", "PrivMod|Mod|Admin")
-                
-                if disconnectIP:
-                    for p in self.players.copy().values():
-                        if p.ipAddress == player.ipAddress and p.playerName != playerName:
-                            p.transport.close()
-                self.lastSanctionID += 1
-                return True
+    def banPlayer(self, playerName, hours, reason, moderator, isSilent=False, disconnectIP=True) -> int:
+        if self.checkAlreadyExistingSanction(playerName, "BAN"):
+            return 2
+    
+        player = self.players.get(playerName)
+        if player != None:
+            if moderator == "Serveur":
+                self.sendStaffMessage(f"The player {playerName} was banned for {hours} hour(s). Reason: Vote Populaire.", "PrivMod|Mod|Admin")
+                player.banVotes = []
             
-            else:
+            if not player.isGuest:
                 self.cursor["sanctions"].insert_one({"ID":self.lastSanctionID, "Username":playerName, "Type":"Banned", "State":"Active", "Duration":int(Time.getTime() + (hours * 60 * 60)) if hours != -1 else -1, "Reason":reason, "Moderator":moderator, "CancelledAuthor":"", "CancelledReason":""})
-                self.sendStaffMessage(f"{moderator} offline banned the player {playerName} for {hours}h ({reason}).", "PrivMod|Mod|Admin")
-                self.lastSanctionID += 1
-                return True
-        return False
+                self.lastSanctionID += 1                               
+                           
+            if hours != -1:
+                player.sendPlayerBan(hours, reason, isSilent)
+                self.sendStaffMessage(f"{moderator} banned the player {playerName} for {hours}h ({reason}).", "PrivMod|Mod|Admin")
+            else:
+                player.transport.close()
+                self.sendStaffMessage(f"{moderator} permanently banned the player {playerName} ({reason}).", "PrivMod|Mod|Admin")
+            
+            if disconnectIP and not self.isDebug:
+                for p in self.players.copy().values():
+                    if p.ipAddress == player.ipAddress and p.playerName != playerName:
+                        p.transport.close()
+            return 1
+        
+        elif self.checkAlreadyExistingAccount(playerName):
+            self.cursor["sanctions"].insert_one({"ID":self.lastSanctionID, "Username":playerName, "Type":"Banned", "State":"Active", "Duration":int(Time.getTime() + (hours * 60 * 60)) if hours != -1 else -1, "Reason":reason, "Moderator":moderator, "CancelledAuthor":"", "CancelledReason":""})
+            self.sendStaffMessage(f"{moderator} offline banned the player {playerName} for {hours}h ({reason}).", "PrivMod|Mod|Admin")
+            self.lastSanctionID += 1
+            return 1
+        return 0
 
     def banIPAddress(self, ipAddress, hours, reason, moderator) -> bool:
         if ipAddress in self.IPTempBanCache:
@@ -351,7 +379,30 @@ class Server(asyncio.Transport):
                 px = len(values)
             py += 1
         return [CC, (px + 2), 17, lines]
- 
+
+    def mutePlayer(self, playerName, hours, reason, moderator, isSilent=False):
+        if self.checkAlreadyExistingSanction(playerName, "MUTE"):
+            return 2
+            
+        player = self.players.get(playerName)
+        if player != None:
+            player.isMuted = True
+            player.sendPlayerMuteMessage(hours, reason, isSilent)
+            player.sendPlayerMute(hours, reason)
+            if playerName in self.modoReports:
+                self.modoReports[playerName]['isMuted'] = True
+                self.modoReports[playerName]['mutehours'] = hours
+                self.modoReports[playerName]['mutereason'] = reason
+                self.modoReports[playerName]['mutedby'] = moderator
+
+            if not player.isGuest:
+                self.cursor["sanctions"].insert_one({"ID":self.lastSanctionID, "Username":playerName, "Type":"Muted", "State":"Active", "Duration":int(Time.getTime() + (hours * 60 * 60)), "Reason":reason, "Moderator":moderator, "CancelledAuthor":"", "CancelledReason":""})
+                self.lastSanctionID += 1
+            
+            return 1
+        else:
+            return 0
+
     def removeTempIPBan(self, ipAddress) -> bool:
         if not ipAddress in self.IPTempBanCache:
             return False
@@ -368,25 +419,53 @@ class Server(asyncio.Transport):
                 self.banPlayer(playerName, 1, "Vote Populaire", "Server", False)
             self.sendStaffMessage(f"The player {playerVoted} voted to ban {playerName} ({len(player.banVotes)} / 20 votes)", "PrivMod|Mod|Admin", False)
 
-    def removeTempUserBan(self, playerName):
+
+    # Save Database Functions
+    def saveFilterList(self):
+        self.jsonConfig.save_file("./Include/Server/forbidden_words.json", self.forbiddenWords)
+        
+    def saveJapanExpos(self):
+        self.jsonConfig.save_file("./Include/Server/codes.json", self.gameCodes)
+        
+    def saveModopwet(self):
+        self.jsonConfig.save_file("./Include/Client/modopwet.json", self.modoReports)
+        
+    def savePromotions(self):
+        self.jsonConfig.save_file("./Include/Server/promotions.json", self.shopPromotions)
+
+
+
+    def checkAlreadyExistingSanction(self, playerName, typ) -> bool:
+        return False
+
+
+    def removeTempUserBan(self, playerName, isCancelled=False):
         pass
         
-    def removeModMute(self, playerName):
+    def removeModMute(self, playerName, isCancelled=False):
         pass
-
-    def LoadModoPwet(self):
+                
+    def saveOutfits(self):
         pass
-        
-    def SaveModoPwet(self):
-        pass
-
+       
+    async def exit_server_loop(self):                                              
+        loop = asyncio.get_event_loop()
+        loop.stop()
+        return
+       
     def closeServer(self):
         self.sendDatabaseUpdate()
-        self.SaveModoPwet()
-        pass
-
-    def sendServerRestart(self, seconds):
-        pass
+        self.saveModopwet()
+        self.savePromotions()
+        self.saveOutfits()
+        self.saveJapanExpos()
+        self.saveFilterList()
+        for task in asyncio.all_tasks():
+            task.cancel()
+        
+        asyncio.ensure_future(self.exit_server_loop())
+        #os._exit(5)
+        
 
     def Main(self):
         self.LoadDatabase()
@@ -395,7 +474,6 @@ class Server(asyncio.Transport):
         self.LoadPunishments()
         self.LoadShopItems()
         self.LoadShopPromotions()
-        self.LoadModoPwet()
         self.LoadDebug()
         
         

@@ -988,7 +988,7 @@ class Tribulle:
                 
         if self.client.isMuted:
             muteInfo = self.server.getTempPunishmentInfo(self.client.playerName, 0)
-            timeCalc = Time.getHoursDiff(muteInfo[1])
+            timeCalc = self.client.isMutedHours #Time.getHoursDiff(muteInfo[1])
             if timeCalc <= 0:
                 self.server.removeModMute(self.client.playerName)
             else:
