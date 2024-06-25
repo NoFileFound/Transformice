@@ -207,6 +207,23 @@ class Commands:
                 self.client.sendPacket(Identifiers.send.Verify_Email_Popup, ByteArray().writeUTF(self.client.playerEmail).toByteArray())
             
 # Fashion squad commands
+        @self.command(level=['FS', 'Admin', 'Owner'], args=1)
+        async def getlook(self, playerName):
+            player = self.server.players.get(Other.parsePlayerName(playerName))
+            if player != None:
+                self.client.sendServerMessage(f"{playerName} -> {player.playerLook}", True)
+            else:
+                self.client.sendServerMessage(f"The supplied argument isn't a valid nickname.", True)
+
+        @self.command(level=['FS', 'Admin', 'Owner'], args=1)
+        async def iteminfo(self, fullItem):
+            info = self.client.Shop.getShopItemInfo(int(fullItem))
+            cheesePrice, fraisePrice = self.client.Shop.getShopItemPriceNoPromotion(info[0], info[1], False), self.client.Shop.getShopItemPriceNoPromotion(info[0], info[1], True)
+            self.client.sendServerMessage(f"Category: {info[0]}", True)
+            self.client.sendServerMessage(f"Item ID: {info[1]}", True)
+            self.client.sendServerMessage(f"Item Price: <J>{cheesePrice}</J> / <R>{fraisePrice}</R>", True)
+            self.client.sendServerMessage(f"Item Promotion: {(self.client.Shop.getShopItemPrice(info[0], info[1], True) / fraisePrice) * 100}", True)
+
         @self.command(level=['FS', 'Mod', 'Admin', 'Owner'])
         async def lsfs(self):
             FS = ""
@@ -218,14 +235,14 @@ class Commands:
             else:
                 self.client.sendServerMessage("Don't have any online Fashion Squads at moment.", True)
 
-        @self.command(level=['FS', 'Mod', 'Admin', 'Owner'], args=1)
-        async def iteminfo(self, fullItem):
-            info = self.client.Shop.getShopItemInfo(int(fullItem))
-            cheesePrice, fraisePrice = self.client.Shop.getShopItemPriceNoPromotion(info[0], info[1], False), self.client.Shop.getShopItemPriceNoPromotion(info[0], info[1], True)
-            self.client.sendServerMessage(f"Category: {info[0]}", True)
-            self.client.sendServerMessage(f"Item ID: {info[1]}", True)
-            self.client.sendServerMessage(f"Item Price: <J>{cheesePrice}</J> / <R>{fraisePrice}</R>", True)
-            self.client.sendServerMessage(f"Item Promotion: {(self.client.Shop.getShopItemPrice(info[0], info[1], True) / fraisePrice) * 100}", True)
+        @self.command(level=['FS', 'Admin', 'Owner'], args=2, alias=['changelook'])
+        async def setlook(self, playerName, look):
+            player = self.server.players.get(Other.parsePlayerName(playerName))
+            if player != None:
+                player.playerLook = look
+                self.client.sendServerMessage(f"Done.", True)
+            else:
+                self.client.sendServerMessage(f"The supplied argument isn't a valid nickname.", True)
 
 # Lua commands
         @self.command(level=['LU', 'Mod', 'Admin', 'Owner'])
@@ -240,6 +257,49 @@ class Commands:
                 self.client.sendServerMessage("Don't have any online Lua Crews at moment.", True)
 
 # FunCorp Commands
+        @self.command(level=['FC', 'Admin', 'Owner'])
+        async def changesize(self, *args):
+            players = ""
+            option = ""
+        
+            if args[0] == "*":
+                players = "*"
+            else:
+                _list = []
+                for arg in args:
+                    _list.append(arg)
+                players = ",".join(_list)
+           
+            option = args[-1] if args[-1] != "off" else "off"
+            self.client.sendBullePacket(Identifiers.bulle.BU_FunCorpChangePlayerSize, self.client.roomName, base64.b64encode(players.encode()).decode(), option, self.requireLevel(["Admin", "Owner"]), self.client.playerID)
+
+        @self.command(level=['FC', 'Admin', 'Owner'])
+        async def funcorp(self, args=''):
+            if args == "help":
+                self.client.sendLogMessage(self.FunCorpMemberCommands())
+            
+            elif args == '':
+                self.client.sendBullePacket(Identifiers.bulle.BU_ManageFunCorpRoom, self.client.roomName)
+                
+            else:
+                self.client.sendServerMessage("The supplied argument isn't a valid option for this command.", True)
+
+        @self.command(level=['FC', 'Admin', 'Owner'])
+        async def linkmice(self, *args):
+            players = ""
+            option = ""
+        
+            if args[0] == "*":
+                players = "*"
+            else:
+                _list = []
+                for arg in args:
+                    _list.append(arg)
+                players = ",".join(_list)
+           
+            option = "" if args[-1] != "off" else "off"
+            self.client.sendBullePacket(Identifiers.bulle.BU_FunCorpLinkMices, self.client.roomName, base64.b64encode(players.encode()).decode(), option, self.requireLevel(["Admin", "Owner"]), self.client.playerID)
+
         @self.command(level=['FC', 'Mod', 'Admin', 'Owner'])
         async def lsfc(self):
             FCs = ""
@@ -251,6 +311,45 @@ class Commands:
             else:
                 self.client.sendServerMessage("Don't have any online funcorps at moment.", True)
 
+        @self.command(level=['FC', 'Admin', 'Owner'])
+        async def meep(self, *args):
+            players = ""
+            option = ""
+        
+            if args[0] == "*":
+                players = "*"
+            else:
+                _list = []
+                for arg in args:
+                    _list.append(arg)
+                players = ",".join(_list)
+           
+            option = "set" if args[-1] != "off" else "off"
+            self.client.sendBullePacket(Identifiers.bulle.BU_FunCorpGiveMeepPowers, self.client.roomName, base64.b64encode(players.encode()).decode(), option, self.requireLevel(["Admin", "Owner"]), self.client.playerID)
+
+        @self.command(level=['FC', 'Admin', 'Owner'])
+        async def roomevent(self):
+            self.client.sendBullePacket(Identifiers.bulle.BU_FunCorpRoomEvent, self.client.roomName, self.client.playerID)
+
+        @self.command(level=['FC', 'Admin', 'Owner'])
+        async def transformation(self, *args):
+            players = ""
+            option = ""
+        
+            if args[0] == "*":
+                players = "*"
+            else:
+                _list = []
+                for arg in args:
+                    _list.append(arg)
+                players = ",".join(_list)
+           
+            option = "set" if args[-1] != "off" else "off"
+            self.client.sendBullePacket(Identifiers.bulle.BU_FunCorpGiveTransformationPowers, self.client.roomName, base64.b64encode(players.encode()).decode(), option, self.requireLevel(["Admin", "Owner"]), self.client.playerID)
+
+        @self.command(level=['FC', 'Mod', 'Admin', 'Owner'], args=1)
+        async def tropplein(self, total_players):
+            self.client.sendBullePacket(Identifiers.bulle.BU_ChangeRoomMaximumPlayers, self.client.roomName, total_players, self.requireLevel(['Mod','Admin','Owner']), self.client.playerID)
 
 # MapCrew Commands
         @self.command(level=['MC', 'Mod', 'Admin', 'Owner'])
@@ -371,7 +470,7 @@ class Commands:
                     community = "" if player.playerLangue == self.client.playerLangue else player.playerLangue
                     self.client.sendEnterRoom(player.roomName, community)
             else:
-                self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
+                self.client.sendServerMessage(f"The player {playerName} isn't online.", True)
 
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1)
         async def ip(self, playerName):
@@ -386,7 +485,7 @@ class Commands:
                 msg += f"{country_code.upper()} - {player.ipCountry} ({continent}) - Community [{player.playerLangue.upper()}]"
                 self.client.sendServerMessage(msg, True)
             else:
-                self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
+                self.client.sendServerMessage(f"The player {playerName} isn't online.", True)
 
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1)
         async def ipnom(self, ipAddress):
@@ -407,14 +506,16 @@ class Commands:
                 self.server.sendServerMessageAll(f"The player {playerName} has been kicked by {self.client.playerName}.", self.client, False)
                 self.client.sendServerMessage(f"The player {playerName} got kicked", True)
             else:
-                self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
+                self.client.sendServerMessage(f"The player {playerName} isn't online.", True)
 
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1)
         async def l(self, xxx):
+            status = False
+        
             if "." not in xxx:
                 r = self.server.cursor['loginlog'].find({'Username':xxx})
-                if r == None:
-                    self.client.playerException.Invoke("notloggedin", xxx)
+                if len(list(r)) == 0:
+                    status = True
                 else:
                     message = "<p align='center'>Connection logs for player: <BL>"+xxx+"</BL>\n</p>"
                     for rs in r[0:200]:
@@ -422,13 +523,16 @@ class Commands:
                     self.client.sendLogMessage(message)
             else:
                 r = self.server.cursor['loginlog'].find({'IP':xxx})
-                if r == None:
-                    pass
+                if len(list(r)) == 0:
+                    status = True
                 else:
                     message = "<p align='center'>Connection logs for IP Address: <V>"+xxx.upper()+"</V>\n</p>"
                     for rs in r[0:200]:
                         message += f"<p align='left'><V>[ {rs['Username']} ]</V> <BL>{rs['Time']}</BL><G> ( <font color = '{IPTools.ColorIP(xxx)}'>{xxx}</font> - {rs['Country']} ) {rs['ConnectionID']} - {rs['Community']}</BL><br>"
                     self.client.sendLogMessage(message)
+                    
+            if status:
+                self.client.sendServerMessage("The supplied argument is neither a valid nickname nor an IP address.", True)
 
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'])
         async def lsmodo(self):
@@ -853,34 +957,21 @@ class Commands:
         async def tribulle2(self):
             self.client.sendTribulleProtocol(False)
             
-            
-    def FunCorpPlayerCommands(self):
-        message = "FunCorp Commands: \n\n"
-        #message += "<J>/changesize</J> <V>[playerNames|*] [size|off]</V> : <BL> Temporarily changes the size (between 0.1x and 5x) of players.</BL>\n"
-        #message += "<J>/colormouse </J> <V>[playerNames|*] [color|off]</V> : <BL> Temporarily gives a colorized fur.</BL>\n"
-        #message += "<J>/colornick</J> <V>[playerNames|*] [color|off]</V> : <BL> Temporarily changes the color of player nicknames.</BL>\n"
-        #message += "<J>/funcorp</J> <G>[on|off|help]</G> : <BL> Enable/disable the funcorp mode, or show the list of funcorp-related commands.</BL>\n"
-        #message += "<J>/linkmice</J> <V>[playerNames|*]</V> <G>[off]</G> : <BL> Temporarily links players.</BL>\n"
-        #message += "<J>/meep</J> <V>[playerNames|*]</V> <G>[off]</G> : <BL> Give meep to players.</BL>\n"
-        #message += "<J>/transformation</J> <V>[playerNames|*]</V> <G>[off]</G> : <BL> Temporarily gives the ability to transform.</BL>\n"
-        return message
-        
+
     def FunCorpMemberCommands(self):
         message = "FunCorp Commands: \n\n"
         #message += "<J>/changenick</J> <V>[playerName] [newNickname|off]</V> : <BL> Temporarily changes a player's nickname.</BL>\n"
-        #message += "<J>/changesize</J> <V>[playerNames|*] [size|off]</V> : <BL> Temporarily changes the size (between 0.1x and 5x) of players.</BL>\n"
-        #message += "<J>/closeroom</J> : <BL>Close the current room.</BL>\n"
+        message += "<J>/changesize</J> <V>[playerNames|*] [size|off]</V> : <BL> Temporarily changes the size (between 0.1x and 5x) of players.</BL>\n"
         #message += "<J>/colormouse </J> <V>[playerNames|*] [color|off]</V> : <BL> Temporarily gives a colorized fur.</BL>\n"
         #message += "<J>/colornick</J> <V>[playerNames|*] [color|off]</V> : <BL> Temporarily changes the color of player nicknames.</BL>\n"
-        #message += "<J>/funcorp</J> <G>[on|off|help]</G> : <BL> Enable/disable the funcorp mode, or show the list of funcorp-related commands.</BL>\n"
+        message += "<J>/funcorp</J> <G>[help]</G> : <BL> Enable/disable the funcorp mode, or show the list of funcorp-related commands.</BL>\n"
         message += "<J>/ignore</J> <V>[playerPartName]<V> : <BL> Ignore selected player. (aliases: /negeer, /ignorieren)\n"
-        #message += "<J>/linkmice</J> <V>[playerNames|*]</V> <G>[off]</G> : <BL> Temporarily links players.</BL>\n"
+        message += "<J>/linkmice</J> <V>[playerNames|*]</V> <G>[off]</G> : <BL> Temporarily links players.</BL>\n"
         message += "<J>/lsfc</J> : <BL> List of online funcorps.</BL>\n"
-        #message += "<J>/meep</J> <V>[playerNames|*]</V> <G>[off]</G> : <BL> Give meep to players.</BL>\n"
+        message += "<J>/meep</J> <V>[playerNames|*]</V> <G>[off]</G> : <BL> Give meep to players.</BL>\n"
         message += "<J>/profil</J> <V>[playerPartName]</V> : <BL> Display player's info. (aliases: /profile, /perfil, /profiel)</BL>\n"
         message += "<J>/room*</J> <V>[roomName]</V> : <BL> Allows you to entyer into any room. (aliases: /salon*, /sala*)</BL>\n"
-        #message += "<J>/roomevent</J> <G>[on|off]</G> : <BL> Highlights the current room in the room list.</BL>\n"
-        #message += "<J>/roomkick</J> <V>[playerName]</V> : <BL> Kicks a player from a room.</BL>\n"
-        #message += "<J>/transformation</J> <V>[playerNames|*]</V> <G>[off]</G> : <BL> Temporarily gives the ability to transform.</BL>\n"
-        #message += "<J>/tropplein</J> <V>[maxPlayers]</V> : <BL> Setting a limit for the number of players in a room.</BL>\n"
+        message += "<J>/roomevent</J> <G>[on|off]</G> : <BL> Highlights the current room in the room list.</BL>\n"
+        message += "<J>/transformation</J> <V>[playerNames|*]</V> <G>[off]</G> : <BL> Temporarily gives the ability to transform.</BL>\n"
+        message += "<J>/tropplein</J> <V>[maxPlayers]</V> : <BL> Setting a limit for the number of players in a room.</BL>\n"
         return message

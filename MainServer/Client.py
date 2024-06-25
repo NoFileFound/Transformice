@@ -469,6 +469,10 @@ class Client:
                 # Titles
                 self.titleNumber = rs["TitleNumber"]
                 self.titleList = list(map(float, filter(None, base64.b64decode(rs['TitlesList'].encode()).decode().split(","))))
+                for title in self.titleList:
+                    if str(title).split(".")[0] == str(self.titleNumber):
+                        self.titleStars = int(str(title).split(".")[1])
+                        break 
                 
                 # Shaman
                 self.shamanLevel = rs["ShamanLevel"]
@@ -537,8 +541,11 @@ class Client:
             self.sendTribulleProtocol()
             self.sendTribulleInitialization()
             self.sendCommunityPartners()
+            self.sendTotalCheeseToExportMap()
             self.Shop.sendPromotions()
             self.Shop.sendShamanItems()
+            self.Shop.sendShopCache()
+            self.Shop.sendShopShamanCache()
             self.Shop.checkShopGifts()
             self.sendPlayerEmotes()
             self.sendPlayerInventory()
@@ -546,13 +553,12 @@ class Client:
             self.sendDefaultGlobalChat()
             self.sendEnterRoom(startRoom)
             self.sendRegisteredAccountConsumable()
-            self.sendShopCache()
             if self.shamanNormalSaves >= 1500:
                 self.sendShamanType(self.shamanType, (self.shamanNormalSaves >= 5000 and self.shamanHardSaves >= 2000), False)
-    
+
             self.Shop.sendPromotionPopup() #######
 
-    async def connectToBulle(self, roomName, community="", isHidden=False, sendPacket=True): # UNFINISHED, shamanItems
+    async def connectToBulle(self, roomName, community="", isHidden=False, sendPacket=True): # UNFINISHED
         if self.isPrisoned:
             return
     
@@ -861,14 +867,17 @@ class Client:
             packet.writeUTF(partner["Name"]).writeUTF(partner["Icon"])
         self.sendPacket(Identifiers.send.Community_Partners, packet.toByteArray())
 
-    def sendCorrectVersion(self, language, stand_type):
+    def sendCorrectVersion(self, language, stand_type): 
         self.playerLangue = language.lower()
         self.sendPacket(Identifiers.send.Correct_Version, ByteArray().writeInt(len(self.server.players)).writeUTF(self.playerLangue).writeUTF('').writeInt(self.server.swfInfo["authkey"]).writeBoolean(self.server.serverInfo['streaming']).toByteArray())
-        self.sendPacket(Identifiers.send.Banner_Login, ByteArray().writeByte(1).writeByte(self.server.serverInfo["event"]["adventure_id"]).writeBoolean(True).writeBoolean(True).toByteArray())
-        self.sendPacket(Identifiers.send.Image_Login, ByteArray().writeUTF(self.server.serverInfo["event"]["adventure_banner"]).toByteArray())
+        self.sendPacket(Identifiers.send.Image_Login, ByteArray().writeUTF(f'{self.server.serverInfo["event"]["adventure_banner"]}').toByteArray()) # #null#0#0
+        self.sendPacket(Identifiers.send.Banner_Login, ByteArray().writeByte(1).writeByte(self.server.serverInfo["event"]["adventure_id"]).writeBoolean(True).writeBoolean(False).toByteArray())
+        self.sendPacket(Identifiers.send.Set_News_Popup_Flyer, ByteArray().writeUTF(self.server.serverInfo["event"]["adventure_flyer"]).toByteArray())
+        self.sendPacket(Identifiers.send.Set_Allow_Email_Address, ByteArray().writeBoolean(True).toByteArray())
+        #self.sendPacket([20, 4], [])
         self.sendBotVerification()
         self.isVerifiedClientVersion = True
-
+        
     def sendDefaultGlobalChat(self):
         if self.isGuest:
             return
@@ -1103,6 +1112,9 @@ class Client:
         if self.privLevel >= 8 or self.isPrivMod and message.startswith('.'):
             await self.ChannelCommands.parseCommand(message[1:], _id)
 
+    def sendTotalCheeseToExportMap(self, amount=40):
+        self.sendPacket(Identifiers.send.Amount_To_Export_Map, ByteArray().writeUnsignedShort(amount).toByteArray())
+
     def sendTradeInvite(self, playerCode):
         self.sendPacket(Identifiers.send.Trade_Invite, ByteArray().writeInt(playerCode).toByteArray())
             
@@ -1138,15 +1150,14 @@ class Client:
     def sendTribulleProtocol(self, isNew=True):
         self.sendPacket(Identifiers.send.Switch_Tribulle, ByteArray().writeBoolean(isNew).toByteArray())
            
-    def sendUpdateInventoryConsumable(self, id, count, limit=250):
+    def sendUpdateInventoryConsumable(self, id, count, limit=255):
         self.sendPacket(Identifiers.send.Update_Inventory_Consumable, ByteArray().writeShort(id).writeUnsignedByte(limit if count > limit else count).toByteArray())
            
     def sendWatchPlayerPacket(self, playerName, status):
         self.sendPacket(Identifiers.send.Watch_Player, ByteArray().writeUTF(playerName).writeBoolean(status).toByteArray())
 
 
-    def sendShopCache(self): # UNFINISHED
-        print(f"[-] THIS FUNCTION IS NOT A FINISHED DUE MISSING INFORMATION HOW THIS IN GAME WORKS. FUNC: SendShopCache ARGS: None")
+
 
 
     def useConsumable(self, _id):

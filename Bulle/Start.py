@@ -308,6 +308,164 @@ class Bulle:
             if playerID in self.bulle_players:
                 self.bulle_players[playerID].shamanColor = color
         
+        elif code == Identifiers.bulle.BU_ManageFunCorpRoom:
+            roomName = args[0]
+            if roomName in self.bulle_rooms:
+                self.bulle_rooms[roomName].sendRoomFunCorp()
+        
+        elif code == Identifiers.bulle.BU_FunCorpGiveTransformationPowers:
+            roomName = args[0]
+            players = list(map(str, base64.b64decode(args[1].encode() + b'=' * (-len(args[1]) % 4)).decode().split(',')))
+            option = args[2]
+            isSkippingFunCorpRoom = bool(args[3] == 'True')
+            playerID = int(args[4])
+            if roomName in self.bulle_rooms:
+                if self.bulle_rooms[roomName].isFuncorp or isSkippingFunCorpRoom:
+                    if players == ['*']:
+                        for player in self.bulle_rooms[roomName].players.copy().values():
+                            player.sendPacket(Identifiers.send.Can_Transformation, 1 if option == "set" else 0)
+                            player.hasFunCorpTransformations = (True if option == "set" else False)
+                            
+                        if option == "set":
+                            self.bulle_players[playerID].sendServerMessage("Transformations powers given to all players in the room.", True)
+                        else:
+                            self.bulle_players[playerID].sendServerMessage("All the transformations powers have been removed.", True)
+                    else:
+                        for player in self.bulle_rooms[roomName].players.copy().values():
+                            if player.playerName in players:
+                                player.sendPacket(Identifiers.send.Can_Transformation, 1 if option == "set" else 0)
+                                player.hasFunCorpTransformations = (True if option == "set" else False)
+                                
+                        if option == "set":
+                            self.bulle_players[playerID].sendServerMessage(f"Transformations powers given to players: <BV>{', '.join(map(str, players))}</BV>", True)
+                        else:
+                            players.remove("off")
+                            self.bulle_players[playerID].sendServerMessage(f"Transformations powers removed to players: <BV>{', '.join(map(str, players))}</BV>", True)
+                else:
+                    self.bulle_players[playerID].sendServerMessage("FunCorp commands only work when the room is in FunCorp mode.", True)
+        
+        elif code == Identifiers.bulle.BU_FunCorpGiveMeepPowers:
+            roomName = args[0]
+            players = list(map(str, base64.b64decode(args[1].encode() + b'=' * (-len(args[1]) % 4)).decode().split(',')))
+            option = args[2]
+            isSkippingFunCorpRoom = bool(args[3] == 'True')
+            playerID = int(args[4])
+            if roomName in self.bulle_rooms:
+                if self.bulle_rooms[roomName].isFuncorp or isSkippingFunCorpRoom:
+                    if players == ['*']:
+                        for player in self.bulle_rooms[roomName].players.copy().values():
+                            player.sendPacket(Identifiers.send.Can_Meep, 1 if option == "set" else 0)
+                            player.canMeep = (True if option == "set" else False)
+                            
+                        if option == "set":
+                            self.bulle_players[playerID].sendServerMessage("Meep powers given to all players in the room.", True)
+                        else:
+                            self.bulle_players[playerID].sendServerMessage("All the meep powers have been removed.", True)
+                    else:
+                        for player in self.bulle_rooms[roomName].players.copy().values():
+                            if player.playerName in players:
+                                player.sendPacket(Identifiers.send.Can_Meep, 1 if option == "set" else 0)
+                                player.canMeep = (True if option == "set" else False)
+                                
+                        if option == "set":
+                            self.bulle_players[playerID].sendServerMessage(f"Meep powers given to players: <BV>{', '.join(map(str, players))}</BV>", True)
+                        else:
+                            players.remove("off")
+                            self.bulle_players[playerID].sendServerMessage(f"Meep powers removed from players: <BV>{', '.join(map(str, players))}</BV>", True)
+                else:
+                    self.bulle_players[playerID].sendServerMessage("FunCorp commands only work when the room is in FunCorp mode.", True)
+        
+        elif code == Identifiers.bulle.BU_FunCorpRoomEvent: # UNFINISHED
+            roomName = args[0]
+            playerID = int(args[1])
+            if roomName in self.bulle_rooms:
+                if self.bulle_rooms[roomName].isFuncorp:
+                    self.bulle_rooms[roomName].isMarkFuncorpRoom = not self.bulle_rooms[roomName].isMarkFuncorpRoom
+                else:
+                    self.bulle_players[playerID].sendServerMessage("FunCorp commands only work when the room is in FunCorp mode.", True)
+        
+        elif code == Identifiers.bulle.BU_FunCorpChangePlayerSize:
+            roomName = args[0]
+            players = list(map(str, base64.b64decode(args[1].encode() + b'=' * (-len(args[1]) % 4)).decode().split(',')))
+            option = args[2]
+            isSkippingFunCorpRoom = bool(args[3] == 'True')
+            playerID = int(args[4])
+            if not option.isdigit() and not option == "off":
+                self.bulle_players[playerID].sendServerMessage("Invalid size", True)
+            else:
+                if roomName in self.bulle_rooms:
+                    if self.bulle_rooms[roomName].isFuncorp or isSkippingFunCorpRoom:
+                        if players == ['*']:
+                            for player in self.bulle_rooms[roomName].players.copy().values():
+                                self.bulle_rooms[roomName].sendAll(Identifiers.send.Mouse_Size, ByteArray().writeInt(player.playerCode).writeUnsignedShort(100 if option == "off" else int(option)).writeBoolean(False).toByteArray())
+
+                            if option != "off":
+                                self.bulle_players[playerID].sendServerMessage(f"All players now have the same size: <BV>{option}</BV>.", True)
+                            else:
+                                self.bulle_players[playerID].sendServerMessage("All players now have their regular size.", True)
+                        else:
+                            for player in self.bulle_rooms[roomName].players.copy().values():
+                                if player.playerName in players:
+                                    self.bulle_rooms[roomName].sendAll(Identifiers.send.Mouse_Size, ByteArray().writeInt(player.playerCode).writeUnsignedShort(100 if option == "off" else int(option)).writeBoolean(False).toByteArray())
+                                    
+                            if option != "off":
+                                players.remove(option)
+                                self.bulle_players[playerID].sendServerMessage(f"The following players now have the size {option}: <BV>{', '.join(map(str, players))}</BV>", True)
+                            else:
+                                players.remove("off")
+                                self.bulle_players[playerID].sendServerMessage(f"The following players now have their regular size: <BV>{', '.join(map(str, players))}</BV>", True)
+                    else:
+                        self.bulle_players[playerID].sendServerMessage("FunCorp commands only work when the room is in FunCorp mode.", True)
+        
+        elif code == Identifiers.bulle.BU_FunCorpLinkMices:
+            roomName = args[0]
+            players = list(map(str, base64.b64decode(args[1].encode() + b'=' * (-len(args[1]) % 4)).decode().split(',')))
+            option = args[2]
+            isSkippingFunCorpRoom = bool(args[3] == 'True')
+            playerID = int(args[4])
+            if roomName in self.bulle_rooms:
+                if self.bulle_rooms[roomName].isFuncorp or isSkippingFunCorpRoom:
+                    if players == ['*']:
+                        _list = []
+                        for player in self.bulle_rooms[roomName].players.copy().values():
+                            _list.append(player.playerCode)
+                            
+                        for info in _list:
+                            self.bulle_rooms[roomName].sendAll(Identifiers.send.Soulmate, ByteArray().writeBoolean(bool(option != "off")).writeInt(info).writeInt(_list[-1]).toByteArray())
+                            
+                        if option == "":
+                            self.bulle_players[playerID].sendServerMessage("All the players are now linked.", True)
+                        else:
+                            self.bulle_players[playerID].sendServerMessage("All the links have been removed.", True)
+                    else:
+                        _list = []
+                        for player in self.bulle_rooms[roomName].players.copy().values():
+                            if player.playerName in players:
+                                _list.append(player.playerCode)
+                                
+                        for info in _list:
+                            self.bulle_rooms[roomName].sendAll(Identifiers.send.Soulmate, ByteArray().writeBoolean(bool(option != "off")).writeInt(info).writeInt(_list[-1]).toByteArray())
+                            
+                        if option == "":
+                            self.bulle_players[playerID].sendServerMessage(f"The following players are now linked: <BV>{', '.join(map(str, players))}</BV>", True)
+                        else:
+                            players.remove("off")
+                            self.bulle_players[playerID].sendServerMessage(f"The links involving the following players have been removed: <BV>{', '.join(map(str, players))}</BV>", True)
+                else:
+                    self.bulle_players[playerID].sendServerMessage("FunCorp commands only work when the room is in FunCorp mode.", True)
+        
+        elif code == Identifiers.bulle.BU_ChangeRoomMaximumPlayers:
+            roomName = args[0]
+            players = int(args[1])
+            isFunCorp = bool(args[2] == 'True')
+            playerID = int(args[3])
+            if roomName in self.bulle_rooms:
+                if self.bulle_rooms[roomName].isFuncorp or isFunCorp:
+                    self.bulle_rooms[roomName].maximumPlayers = players
+                    self.bulle_players[playerID].sendServerMessage(f"Maximum number of players in the room is set to: <BV>{players}</BV>", True)
+                else:
+                    self.bulle_players[playerID].sendServerMessage("FunCorp commands only work when the room is in FunCorp mode.", True)
+        
         else:
             self.Logger.warn(f"Unregisted packet id {code} with data {args}.\n")
 

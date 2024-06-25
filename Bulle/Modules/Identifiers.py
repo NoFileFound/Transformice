@@ -25,6 +25,13 @@ class Identifiers:
         BU_ChangeShamanBadge = 1023
         BU_ChangeShamanType = 1024
         BU_ChangeShamanColor = 1025
+        BU_ManageFunCorpRoom = 1026
+        BU_FunCorpGiveTransformationPowers = 1027
+        BU_FunCorpGiveMeepPowers = 1028
+        BU_FunCorpRoomEvent = 1029
+        BU_FunCorpChangePlayerSize = 1030
+        BU_FunCorpLinkMices = 1031
+        BU_ChangeRoomMaximumPlayers = 1032
             
     
     class recv:
@@ -42,6 +49,7 @@ class Identifiers:
         Get_Cheese = (5, 19)
         Place_Object = (5, 20)
         Ice_Cube = (5, 21)
+        Defilante_Points = (5, 25)
         Send_Music = (5, 70)
         Send_PlayList = (5, 73)
         
@@ -94,7 +102,9 @@ class Identifiers:
         Spawn_Object = [5, 20]
         Enter_Room = [5, 21]
         Round_Time = [5, 22]
-        Room_Password = [5, 39]
+        Mouse_Size = [5, 31]
+        #Room_Password = [5, 39]
+        Soulmate = [5, 48]
         Music_Video = [5, 72]
         Music_Playlist = [5, 73]
         Tutorial = [5, 90]
@@ -112,7 +122,7 @@ class Identifiers:
         Player_Action = [8, 1]
         Emotion = [8, 5]
         Shaman_Info = [8, 11]
-        Meep_IMG = [8, 18]
+        #Meep_IMG = [8, 18]
         Meep = [8, 38]
         Can_Meep = [8, 39]
         Anim_Zelda = [8, 44]
@@ -183,6 +193,7 @@ class Identifiers:
         
             Player_Died = [8, 5]
             Player_Disconnect = [8, 7]
+            Shaman_Perfomance = [8, 17]
             Sync = [8, 21]
             Catch_The_Cheese_Map = [8, 23]
             

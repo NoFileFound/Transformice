@@ -24,6 +24,13 @@ class Identifiers:
         BU_ChangeShamanBadge = 1023
         BU_ChangeShamanType = 1024
         BU_ChangeShamanColor = 1025
+        BU_ManageFunCorpRoom = 1026
+        BU_FunCorpGiveTransformationPowers = 1027
+        BU_FunCorpGiveMeepPowers = 1028
+        BU_FunCorpRoomEvent = 1029
+        BU_FunCorpChangePlayerSize = 1030
+        BU_FunCorpLinkMices = 1031
+        BU_ChangeRoomMaximumPlayers = 1032
         
     class tribulle:
         class recv:
@@ -294,10 +301,11 @@ class Identifiers:
         Email_Address_Verified = [28, 13]
         Log_Message = [28, 46]
         Request_Info = [28, 50]
+        Set_Allow_Email_Address = [28, 62]
         Verify_Email_Popup = [28, 64]
         Server_Restart = [28, 88]
         Connect_To_Server = [28, 98]
-        
+
         # Cafe packets
         Cafe_Topics_List = [30, 40]
         Open_Cafe_Topic = [30, 41]
@@ -325,7 +333,8 @@ class Identifiers:
         New_Tribulle = [60, 3]
         Switch_Tribulle = [60, 4]
         
-        # New packets
+        # Transformice
+        Amount_To_Export_Map = [100, 6]
         Open_Dressing = [100, 30]
         Buy_Full_Look = [100, 31]
         Question_Popup = [100, 50]
@@ -333,11 +342,14 @@ class Identifiers:
         Change_Title = [100, 72]
         Image_Login = [100, 99]
         
-        # New-new packets
+        # New packets
         Send_Cafe_Warnings = [144, 11]
         MiniBox_New = [144, 17]
         Open_A801_Outfits_Window = [144, 22]
+        Load_Shaman_Object_Cache = [144, 27]
         Open_A801_Promotions_Window = [144, 29]
+        Load_Fur_Cache = [144, 34]
+        Set_News_Popup_Flyer = [144, 35]
         Ranking = [144, 36]
         Emote_Panel = [144, 44]
         
@@ -361,6 +373,8 @@ class Identifiers:
             Drawing_Point = (25, 5)
     
         class send:
+
+        
             Load_Map_Result = [14, 8]
             Map_Editor = [14, 14]
             

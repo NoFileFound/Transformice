@@ -46,10 +46,12 @@ class Server(asyncio.Transport):
         self.lastTribeID = 0
         
         # Boolean
-        self.disableDatabase = False #True
+        self.disableDatabase = False
         self.isDebug = False
         
         # List
+        self.shopCachedFurs = []
+        self.shopCachedShamanItems = []
         self.IPPermaBanCache = []
         self.IPTempBanCache = []
         self.reportedCafePosts = []
@@ -207,6 +209,8 @@ class Server(asyncio.Transport):
         self.shamanShopList = self.shopInfo["shamanItems"]
         self.shopEmoteList = self.shopInfo["shopEmotes"]
         self.shopOutfits = self.shopInfo["fullLooks"]
+        self.shopCachedFurs = self.shopInfo["cachedFurs"]
+        self.shopCachedShamanItems = self.shopInfo["cachedShamanItems"]
 
         for item in self.shopList:
             self.shopListCheck[f'{item["category"]}|{item["id"]}'] = [item["cheese"], item["fraise"], item["customs"]]
@@ -222,6 +226,8 @@ class Server(asyncio.Transport):
             self.Logger.info(f"Loaded {len(self.shamanShopList)} total shop shaman items.\n")
             self.Logger.info(f"Loaded {len(self.shopEmoteList)} total shop emotes.\n")
             self.Logger.info(f"Loaded {len(self.shopOutfits)} total shop outfits.\n")
+            self.Logger.info(f"Total cached furs: {len(self.shopCachedFurs)}\n")
+            self.Logger.info(f"Total cached shaman items: {len(self.shopCachedShamanItems)}\n")
 
     def LoadShopPromotions(self, sendMessage=True):
         promotions = []

@@ -27,7 +27,10 @@ class BulleProtocol(asyncio.Protocol):
         # Integer
         self.bubblesCount = 0
         self.cheeseCount = 0
+        self.defilantePoints = 0
         self.equipedShamanBadge = 0
+        self.furType = 0
+        self.furEnd = 0
         self.iceCount = 0
         self.isMutedHours = 0
         self.playerCode = 0
@@ -41,17 +44,17 @@ class BulleProtocol(asyncio.Protocol):
         self.shamanLevel = 0
         self.velocityX = 0
         self.velocityY = 0
+        self.petType = 0
+        self.petEnd = 0
         self.PInfo = 0
         self.titleNumber = 0
         self.titleStars = 0
-        
-        self.furType = 0
-        self.furEnd = 0
-        self.petType = 0
-        self.petEnd = 0
                 
         # Boolean
+        self.canMeep = False
         self.desintegration = False
+        self.hasLuaTransformations = False
+        self.hasFunCorpTransformations = False
         self.isAfk = False
         self.isClosed = False
         self.isDead = False
@@ -320,8 +323,8 @@ class BulleProtocol(asyncio.Protocol):
         self.sendPacket(Identifiers.send.Shaman_Info, ByteArray().writeInt(shamanCode).writeInt(shamanCode2).writeByte(self.server.getShamanType(shamanCode)).writeByte(self.server.getShamanType(shamanCode2)).writeShort(self.server.getShamanLevel(shamanCode)).writeShort(self.server.getShamanLevel(shamanCode2)).writeShort(self.server.getShamanBadge(shamanCode)).writeShort(self.server.getShamanBadge(shamanCode2)).writeByte(0).writeByte(0).toByteArray())
 
 
-    def sendPlayerDied(self):
-        if not self.room.isTotemEditor:
+    def sendPlayerDied(self, showPacket=True):
+        if showPacket:
             self.room.sendAll(Identifiers.old.send.Player_Died, [self.playerCode, self.playerScore])
         self.cheeseCount = 0
         
@@ -349,6 +352,7 @@ class BulleProtocol(asyncio.Protocol):
         #        player.sendShamanCode(self.playerCode, 0)
 
     def ResetAfkKillTimer(self):
+        self.isAfk = False
         if self.killafktimer != None:
             self.killafktimer.cancel()
         #self.killafktimer = call_later(3600, self.transport.loseConnection)
@@ -463,9 +467,10 @@ class BulleProtocol(asyncio.Protocol):
             if not self.playerName in self.room.mulodromeRedTeam and not self.playerName in self.room.mulodromeBlueTeam:
                 if not self.isDead:
                     self.isDead = True
-                    self.sendPlayerDied()
+                    self.sendPlayerDied(False)
 
         if self.room.isSurvivor and self.isShaman:
+            self.canMeep = True
             self.sendPacket(Identifiers.send.Can_Meep, 1)
 
         if self.room.currentMap in range(200, 211) and not self.isShaman:

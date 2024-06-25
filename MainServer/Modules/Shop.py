@@ -509,13 +509,13 @@ class Shop:
                 realItem = itemSplited[0]
                 custom = itemSplited[1] if len(itemSplited) >= 2 else ""
                 realCustom = [] if custom == "" else custom.split("+")
-                p.writeInt128(int(realItem)).writeBoolean(True).writeInt128(len(realCustom))
+                p.writeInt128(int(realItem)).writeBoolean(item in clientShopFavoriteItems).writeInt128(len(realCustom))
                 x = 0
                 while x < len(realCustom):
                     p.writeInt128(int(realCustom[x], 16))
                     x += 1
             else:
-                p.writeInt128(int(item)).writeBoolean(False).writeInt128(0)
+                p.writeInt128(int(item)).writeBoolean(item in clientShopFavoriteItems).writeInt128(0)
 
         p.writeInt(len(shopItems))
         for item in shopItems:
@@ -568,9 +568,22 @@ class Shop:
             
         self.client.sendPacket(Identifiers.send.Player_Shop_List, p.toByteArray())
 
+    def sendShopCache(self):
+        p = ByteArray().writeInt128(len(self.server.shopCachedFurs))
+        for info in self.server.shopCachedFurs:
+            p.writeInt128(info)
+        
+        self.client.sendPacket(Identifiers.send.Load_Fur_Cache, p.toByteArray())
+
     def sendShopInfo(self):            
         self.client.sendPacket(Identifiers.send.Shop_Info, ByteArray().writeInt(self.client.shopCheeses).writeInt(self.client.shopFraises).toByteArray())
 
+    def sendShopShamanCache(self):
+        p = ByteArray().writeInt128(len(self.server.shopCachedShamanItems))
+        for info in self.server.shopCachedShamanItems:
+            p.writeInt128(info)
+            
+        self.client.sendPacket(Identifiers.send.Load_Shaman_Object_Cache, p.toByteArray())
 
 
     def viewFullLook(self, visuID): # UNFINISHED
@@ -585,6 +598,4 @@ class Shop:
 
     def sendPromotions(self): # UNFINISHED
         for promotion in self.server.shopPromotions:
-            self.client.sendPacket(Identifiers.send.Promotion, ByteArray().writeBoolean(False).writeBoolean(not promotion["isShamanItem"]).writeInt((self.getShopItem(promotion["Category"], promotion["Item"])) if promotion["isShamanItem"] == False else promotion["Item"]).writeBoolean(True).writeInt(promotion["Time"] - self.server.serverTime).writeByte(0).toByteArray())
-            self.client.sendPacket(Identifiers.send.Promotion, ByteArray().writeBoolean(True).writeBoolean(not promotion["isShamanItem"]).writeInt((self.getShopItem(promotion["Category"], promotion["Item"])) if promotion["isShamanItem"] == False else promotion["Item"]).writeBoolean(True).writeInt(promotion["Time"] - self.server.serverTime).writeByte(0).toByteArray())
- 
+            self.client.sendPacket(Identifiers.send.Promotion, ByteArray().writeBoolean(not promotion["Collector"]).writeBoolean(not promotion["isShamanItem"]).writeInt((self.getShopItem(promotion["Category"], promotion["Item"])) if promotion["isShamanItem"] == False else promotion["Item"]).writeBoolean(promotion["Time"] - self.server.serverTime > 0).writeInt(promotion["Time"] - self.server.serverTime).writeByte(promotion["Discount"]).toByteArray())

@@ -962,8 +962,21 @@ class Tribulle:
 
     def sendServerChannelMessage(self, packet):
         tribulleID, chatName, message = packet.readInt(), packet.readUTF(), packet.readUTF()
-        self.sendTribullePacketWholeChat(chatName, Identifiers.tribulle.send.ET_SignalementMessageChat, ByteArray().writeUTF(self.client.playerName.lower()).writeInt(Langue.getLangueID(self.client.playerLangue.upper()) + 1).writeUTF(chatName).writeUTF(message).toByteArray(), True)
-        self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatEnvoiMessageChat, ByteArray().writeInt(tribulleID).writeByte(1).toByteArray())
+        if len(message) > self.MAX_MENSAGE_LEN:
+            self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatEnvoiMessageChat, ByteArray().writeInt(tribulleID).writeByte(22).toByteArray())
+        
+        elif self.client.isMuted:
+            timeCalc = self.client.isMutedHours
+            if timeCalc <= 0:
+                self.server.removeModMute(self.client.playerName)
+            else:
+                self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatEnvoiMessageChat, ByteArray().writeInt(tribulleID).writeByte(23).toByteArray())
+        
+        elif self.client.playerTime < 3600 * 4:
+            self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatEnvoiMessageChat, ByteArray().writeInt(tribulleID).writeByte(28).toByteArray())
+        else:
+            self.sendTribullePacketWholeChat(chatName, Identifiers.tribulle.send.ET_SignalementMessageChat, ByteArray().writeUTF(self.client.playerName.lower()).writeInt(Langue.getLangueID(self.client.playerLangue.upper()) + 1).writeUTF(chatName).writeUTF(message).toByteArray(), True)
+            self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatEnvoiMessageChat, ByteArray().writeInt(tribulleID).writeByte(1).toByteArray())
         
     # Whisper (Private) messages
     def sendWhisperMessage(self, packet):
@@ -987,8 +1000,7 @@ class Tribulle:
             return
                 
         if self.client.isMuted:
-            muteInfo = self.server.getTempPunishmentInfo(self.client.playerName, 0)
-            timeCalc = self.client.isMutedHours #Time.getHoursDiff(muteInfo[1])
+            timeCalc = self.client.isMutedHours
             if timeCalc <= 0:
                 self.server.removeModMute(self.client.playerName)
             else:

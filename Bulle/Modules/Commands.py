@@ -65,7 +65,7 @@ class Commands:
                 self.client.isDead = True
                 if self.client.room.isAutoScore: 
                     self.client.playerScore += 1
-                self.client.sendPlayerDied()
+                self.client.sendPlayerDied(True)
                 await self.client.room.checkChangeMap()
                 
         @self.command(roomOwner=True)
@@ -80,7 +80,7 @@ class Commands:
                 self.client.tempTotem = [0 , ""]
                 self.client.resetTotem = True
                 self.client.isDead = True
-                self.client.sendPlayerDied()
+                self.client.sendPlayerDied(False)
                 await self.client.room.checkChangeMap()
 
         @self.command()
@@ -88,7 +88,7 @@ class Commands:
             if self.client.room.isTotemEditor:
                 self.client.totemInfo[0] = self.client.tempTotem[0]
                 self.client.totemInfo[1] = self.client.tempTotem[1]
-                self.client.sendPlayerDied()
+                self.client.sendPlayerDied(False)
                 self.client.roomName = self.server.getRecommendedRoom(self.client.playerLangue)
                 await self.client.enterRoom()
 

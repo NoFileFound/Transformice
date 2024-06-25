@@ -64,6 +64,10 @@ class Packets:
             self.client.room.sendAll(Identifiers.send.Crouch, ByteArray().writeInt(self.client.playerCode).writeByte(crouch_type).writeByte(0).toByteArray())
 
         @self.packet(args=[])
+        async def Defilante_Points(self):
+            self.client.defilantePoints += 1
+
+        @self.packet(args=[])
         async def Detach_Ballon_To_Player(self):
             self.client.room.sendAll(Identifiers.send.Play_Shaman_Invocation_Sound, ByteArray().writeByte(-1).toByteArray())
             self.client.room.sendAll(Identifiers.send.Detach_Ballon_Player, ByteArray().writeInt(self.client.playerCode).toByteArray())
@@ -91,7 +95,7 @@ class Packets:
                             player.isDead = True
                             if self.client.room.isAutoScore: 
                                 self.client.playerScore += 1
-                            player.sendPlayerDied()
+                            player.sendPlayerDied(True)
                             self.client.sendPlaceObject(self.client.room.objectID + 2, 54, px, py, 0, 0, 0, True, True)
                             self.client.iceCount -= 1
                             await self.client.room.checkChangeMap()
@@ -124,7 +128,7 @@ class Packets:
                 self.client.isDead = True
                 if self.client.room.isAutoScore: 
                     self.client.playerScore += 1
-                self.client.sendPlayerDied()
+                self.client.sendPlayerDied(True)
 
                 if not self.client.room.currentShamanName == "":
                     player = self.client.room.players.get(self.client.room.currentShamanName)
@@ -281,6 +285,12 @@ class Packets:
         async def Player_IPS_Info(self, info):
             self.client.sendPacket(Identifiers.send.Player_IPS_Info, ByteArray().writeUTF(info).toByteArray())
 
+        @self.packet(args=['readShort', 'readShort'])
+        async def Player_Meep(self, posX, posY):
+            if not self.client.canMeep:
+                return
+            self.client.room.sendAll(Identifiers.send.Meep, ByteArray().writeInt(self.client.playerCode).writeShort(posX).writeShort(posY).writeInt(20 if self.client.isShaman else 5).toByteArray())
+
         @self.packet(args=['readInt128', 'readBoolean', 'readBoolean', 'readInt128', 'readInt128', 'readInt128', 'readInt128', 'readInt128', 'readInt128', 'readBoolean', 'readInt128', 'readInt128'], decrypt=True)
         async def Player_Movement(self, roundCode, move_right, move_left, posX, posY, velX, velY, sticky, slippery, jumping, jumping_frame_index, entered_portal):
             if roundCode == self.client.room.lastRoundCode:
@@ -297,8 +307,6 @@ class Packets:
                 if not lasty == 0 and not lastx == 0:
                     if not lasty == self.client.posY or not lastx == self.client.posX:
                         self.client.ResetAfkKillTimer()
-                        if self.client.isAfk:
-                            self.client.isAfk = False
                             
                 self.client.velocityX = velX
                 self.client.velocityY = velY
@@ -455,16 +463,10 @@ class Packets:
 
         @self.packet(args=['readShort'])
         async def Transformation_Object(self, objectID):
-            if not self.client.isDead and (self.client.room.currentMap in self.client.room.transformationMaps or self.client.room.isFuncorp or self.client.hasLuaTransformations):
+            if not self.client.isDead and (self.client.room.currentMap in self.client.room.transformationMaps or self.client.hasFunCorpTransformations or self.client.hasLuaTransformations):
                 self.client.room.sendAll(Identifiers.send.Transformation, ByteArray().writeInt(self.client.playerCode).writeShort(objectID).toByteArray())
 
-                      
-        @self.packet(args=['readShort', 'readShort'])
-        async def Player_Meep(self, posX, posY):
-            self.client.room.sendAll(Identifiers.send.Meep_IMG, ByteArray().writeInt(self.client.playerCode).toByteArray())
-            #self.client.room.sendAll(Identifiers.send.Meep, ByteArray().writeInt(self.client.playerCode).writeShort(posX).writeShort(posY).writeInt(2 if self.client.isShaman else 5).toByteArray())
-                      
-                      
+                                            
         @self.packet(args=['readShort'])
         async def Old_Protocol(self, length):
             data = self.packet.readUTFBytes(length)

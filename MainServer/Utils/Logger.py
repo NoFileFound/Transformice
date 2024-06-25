@@ -33,5 +33,5 @@ class Logger:
         self.log("ERROR", message)
         
     def logException(self, ex, file):
-        with open(f"./Includes/{file}") as F:
+        with open(f"./MainServer/Include/{file}") as F:
             F.write(ex)
