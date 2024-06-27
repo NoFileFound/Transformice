@@ -1,5 +1,6 @@
 #coding: utf-8
 import asyncio
+import time
 import zlib
 
 # Modules
@@ -21,13 +22,25 @@ class BulleProtocol(asyncio.Protocol):
         self.server = _server
         self.cursor = _cursor
         
+        # Database
+        self.firstCount = 0
+        self.cheeseCountDB = 0 # self.client.cheeseCount += . cheeseCount # DIRECTLY UPDATE IN THE SERVER
+        self.bootcampRounds = 0
+        self.racingRounds = 0
+        self.shamanCheeses = 0
+        self.shopCheeses = 0 # self.client.shopCheeses += . shopCheeses # DIRECTLY UPDATE IN THE SERVER
+        self.minimumCheesesMapEditor = 40
+        
         # Bulle
         self.bulle_id = 0
         
         # Integer
+        self.ambulanceCount = 0
         self.bubblesCount = 0
         self.cheeseCount = 0
+        self.currentPlace = 0
         self.defilantePoints = 0
+        self.drawingColor = 0
         self.equipedShamanBadge = 0
         self.furType = 0
         self.furEnd = 0
@@ -52,7 +65,9 @@ class BulleProtocol(asyncio.Protocol):
                 
         # Boolean
         self.canMeep = False
+        self.canShamanRespawn = False
         self.desintegration = False
+        self.hasEnter = False
         self.hasLuaTransformations = False
         self.hasFunCorpTransformations = False
         self.isAfk = False
@@ -69,6 +84,7 @@ class BulleProtocol(asyncio.Protocol):
         self.isShaman = False
         self.isHidden = False
         self.isNewPlayer = False
+        self.isOpportunist = False
         self.isReported = False
         self.isVampire = False
         self.isUsedTotem = False
@@ -97,6 +113,7 @@ class BulleProtocol(asyncio.Protocol):
         self.totemInfo = [0, ""]
         
         # Dictionary
+        self.playerSkills = {}
         
         # Nonetype
         self.awakeTimer = None
@@ -146,13 +163,14 @@ class BulleProtocol(asyncio.Protocol):
                 
     def connection_lost(self, *args) -> None:
         self.isClosed = True
-    
+        
+        self.sendUpdateDatabase()
         if self.room != None:
             self.server.loop.create_task(self.room.removeClient(self))
             
         if self.playerID in self.server.bulle_players:
             del self.server.bulle_players[self.playerID]
-    
+
         self.transport.close()
                 
     async def parsePacket(self, packet) -> None:
@@ -197,6 +215,29 @@ class BulleProtocol(asyncio.Protocol):
     def checkStaffPermission(self, levels):
         return any(element in self.staffRoles for element in levels)
         
+    # Get
+    def getPlayerData(self):
+        data = ByteArray()
+        data.writeUTF(self.playerName if self.tempPlayerName == "" else self.tempPlayerName)
+        data.writeInt(self.playerCode)
+        data.writeBoolean(self.isShaman)
+        data.writeBoolean(self.isDead)
+        if not self.isHidden:
+            data.writeShort(self.playerScore)
+        data.writeByte(self.cheeseCount) # New
+        data.writeShort(self.titleNumber)
+        data.writeByte(self.titleStars)
+        data.writeByte(self.playerGender) 
+        data.writeUTF("")
+        data.writeUTF("1;0,0,0,0,0,0,0,0,0,0,0,0" if self.room.isBootcamp or self.tempMouseColor != "" else (str(self.furType) + ";" + self.playerLook.split(";")[1] if self.furType != 0 else self.playerLook))
+        data.writeBoolean(self.isHidden)
+        data.writeInt(int(self.tempMouseColor.lower() if not self.tempMouseColor == "" else self.mouseColor, 16))
+        data.writeInt(int(self.shamanColor, 16))
+        data.writeInt(0)
+        data.writeInt(int(self.tempNickColor.lower() if self.tempNickColor != "" else "95d9d6", 16))
+        data.writeByte(0)
+        return data.toByteArray()
+        
         
     # Client Packets
     def sendEnterRoom(self):
@@ -214,7 +255,7 @@ class BulleProtocol(asyncio.Protocol):
     def sendGameType(self, gameType, serverType):
         self.sendPacket(Identifiers.send.Room_Type, gameType)
         self.sendPacket(Identifiers.send.Room_Server, serverType)
-
+        
     async def sendGiveCheese(self, cheeseX, cheeseY, x, distance):        
         self.room.canChangeMap = False
         if not self.cheeseCount > 0 or (not self.room.isRacing and not self.room.isBootcamp and not self.room.isSurvivor and not self.room.isDefilante):
@@ -230,6 +271,9 @@ class BulleProtocol(asyncio.Protocol):
             if self.room.isTutorial:
                 self.sendPacket(Identifiers.send.Tutorial, 1)
         self.room.canChangeMap = True
+
+    def sendGiveCurrency(self, type, count):
+        self.sendPacket(Identifiers.send.Give_Currency, ByteArray().writeByte(type).writeByte(count).toByteArray())
 
     def sendLangueMessage(self, community, message, *args):
         packet = ByteArray().writeUTF(community).writeUTF(message).writeByte(len(args))
@@ -248,6 +292,12 @@ class BulleProtocol(asyncio.Protocol):
 
     def sendMusicVideo(self):
         self.sendPacket(Identifiers.send.Music_Video, ByteArray().writeUTF(self.room.musicVideos[0]["VideoID"]).writeUTF(self.room.musicVideos[0]["Title"]).writeShort(self.room.musicVideos[0]["Duration"]).writeUTF(self.room.musicVideos[0]["By"]).toByteArray())
+
+    def sendNPCS(self):
+        npcs = self.server.npcs["NPC"]
+        for npc in npcs.items():
+            value = npc[1]
+            self.room.sendNPC(value[0], {"id":int(npc[0]), "title":value[1], "starePlayer":value[2], "look":str(value[3]), "x":value[4], "y":value[5], "isgirl":value[6], "lookLeft":value[7], "message":value[8]})
 
     def sendPlaceObject(self, objectID, code, px, py, angle, vx, vy, isVisible, isCollidable, _local1=False):
         packet = ByteArray()
@@ -272,6 +322,33 @@ class BulleProtocol(asyncio.Protocol):
             self.room.sendAllOthers(self, Identifiers.send.Spawn_Object, packet.toByteArray())
             self.room.objectID = objectID
 
+    def sendPlayerDied(self, showPacket=True):
+        if showPacket:
+            self.room.sendAll(Identifiers.old.send.Player_Died, [self.playerCode, self.playerScore])
+        self.cheeseCount = 0
+
+        for player in self.room.players.copy().values():
+            if player.isShaman and (15 in player.playerSkills and (self.room.isNormal or self.room.isVanilla or self.room.isMusic)):
+                self.room.sendAll(Identifiers.send.Dead_Bubble, ByteArray().writeShort(0).toByteArray())
+                break
+
+        if self.room.checkDeadPlayersPercentage(70) or self.room.catchTheCheeseMap or self.isAfk or self.room.isDoubleMap:
+            self.canShamanRespawn = False
+
+        if ((self.room.checkDeadPlayersPercentage(90) and not self.canShamanRespawn) or (self.room.checkIfShamanIsDead() and not self.canShamanRespawn) or (self.room.checkIfDoubleShamansAreDead())):
+            self.room.send20SecRemainingTimer()
+
+        if self.canShamanRespawn:
+            self.isDead = False
+            self.isAfk = False
+            self.cheeseCount = 0
+            self.hasEnter = False
+            self.canShamanRespawn = False
+            self.playerStartTimeMillis = time.time()
+            self.room.sendAll(Identifiers.send.Player_Respawn, ByteArray().writeBytes(self.getPlayerData()).writeBoolean(False).writeBoolean(True).toByteArray())
+            for player in self.room.players.copy().values():
+                player.sendShamanCode(self.playerCode, 0)
+
     def sendPlayerDisconnect(self):
         self.room.sendAll(Identifiers.old.send.Player_Disconnect, [self.playerCode])
 
@@ -285,12 +362,22 @@ class BulleProtocol(asyncio.Protocol):
         else:
             self.room.sendAll(Identifiers.send.Player_Action, p.toByteArray())
 
+    def sendPlayerWin(self, place, timeTaken):
+        self.room.sendAll(Identifiers.send.Player_Win, ByteArray().writeByte(1 if self.room.isDefilante else (2 if self.playerName in self.room.mulodromeRedTeam else 3 if self.playerName in self.room.mulodromeBlueTeam else 0)).writeInt(self.playerCode).writeShort(self.playerScore).writeByte(255 if place >= 255 else place).writeShort(65535 if timeTaken >= 65535 else timeTaken).toByteArray())
+        self.cheeseCount = 0
+
     def sendPlayerList(self):
         info = self.room.getPlayerList()
         self.sendPacket(Identifiers.send.Player_List, ByteArray().writeShort(info[0]).writeBytes(info[1]).toByteArray())
 
     def sendRoundTime(self, time):
         self.sendPacket(Identifiers.send.Round_Time, ByteArray().writeShort(0 if time < 0 or time > 32767 else time).toByteArray())
+
+    def sendSaveRemainingMiceMessage(self):
+        self.sendPacket(Identifiers.old.send.Save_Remaining, [])
+
+    def sendShamanCode(self, shamanCode, shamanCode2):
+        self.sendPacket(Identifiers.send.Shaman_Info, ByteArray().writeInt(shamanCode).writeInt(shamanCode2).writeByte(self.server.getShamanType(shamanCode)).writeByte(self.server.getShamanType(shamanCode2)).writeUnsignedShort(self.server.getShamanLevel(shamanCode)).writeUnsignedShort(self.server.getShamanLevel(shamanCode2)).writeShort(self.server.getShamanBadge(shamanCode)).writeShort(self.server.getShamanBadge(shamanCode2)).writeBoolean(self.server.getShamanNoSkillChallenge(shamanCode)).writeBoolean(self.server.getShamanNoSkillChallenge(shamanCode2)).toByteArray())
 
     def sendSync(self, playerCode):
         self.sendPacket(Identifiers.old.send.Sync, [playerCode, ""] if (self.room.mapCode != 1 or self.room.editeurMapCode != 0) else [playerCode])
@@ -302,66 +389,26 @@ class BulleProtocol(asyncio.Protocol):
         if self.room.isTotemEditor:
             self.sendPacket(Identifiers.send.Totem_Item_Count, ByteArray().writeShort(number * 2).toByteArray())
 
+    def sendUnlockedBadge(self, badge):
+        self.room.sendAll(Identifiers.send.Unlocked_Badge, ByteArray().writeInt(self.playerCode).writeShort(badge).toByteArray())
+
+    def sendUnlockedTitle(self, title, stars):
+        self.room.sendAll(Identifiers.old.send.Unlocked_Title, [self.playerCode, title, stars])
+
+    def sendVampireMode(self, others):
+        self.isVampire = True
+        p = ByteArray().writeInt(self.playerCode).writeInt(-1)
+        if others:
+            self.room.sendAllOthers(self, Identifiers.send.Vampire_Mode, p.toByteArray())
+        else:
+            self.room.sendAll(Identifiers.send.Vampire_Mode, p.toByteArray())
+
 
 
     # Other Functions
-    def initTotemEditor(self):
-        if self.resetTotem:
-            self.sendTotemItemCount(0)
-            self.resetTotem = False
-        else:
-            if not self.totemInfo[1] == "":
-                self.tempTotem[0] = self.totemInfo[0]
-                self.tempTotem[1] = self.totemInfo[1]
-                self.sendTotemItemCount(self.tempTotem[0])
-                self.sendTotem(self.tempTotem[1], 400, 204, self.playerCode)
-            else:
-                self.sendTotemItemCount(0)
-
-
-    def sendShamanCode(self, shamanCode, shamanCode2):
-        self.sendPacket(Identifiers.send.Shaman_Info, ByteArray().writeInt(shamanCode).writeInt(shamanCode2).writeByte(self.server.getShamanType(shamanCode)).writeByte(self.server.getShamanType(shamanCode2)).writeShort(self.server.getShamanLevel(shamanCode)).writeShort(self.server.getShamanLevel(shamanCode2)).writeShort(self.server.getShamanBadge(shamanCode)).writeShort(self.server.getShamanBadge(shamanCode2)).writeByte(0).writeByte(0).toByteArray())
-
-
-    def sendPlayerDied(self, showPacket=True):
-        if showPacket:
-            self.room.sendAll(Identifiers.old.send.Player_Died, [self.playerCode, self.playerScore])
-        self.cheeseCount = 0
-        
-        #for player in self.room.clients.copy().values():
-        #    if player.isShaman:
-        #        if 15 in player.playerSkills and (self.room.isNormRoom or self.room.isVanilla or self.room.isMusic):
-        #            self.room.sendPacket(Identifiers.send.Dead_Bubble, ByteArray().writeShort(0).toByteArray())
-        #            break
-
-        #if self.room.getPlayerCountAlive() < 1 or self.room.catchTheCheeseMap or self.isAfk:
-        #    self.canShamanRespawn = False
-
-        #if ((self.room.checkIfTooFewRemaining() and not self.canShamanRespawn) or (self.room.checkIfShamanIsDead() and not self.canShamanRespawn) or (self.room.checkIfDoubleShamansAreDead())):
-        #    self.room.send20SecRemainingTimer()
-
-        #if self.canShamanRespawn:
-        #    self.isDead = False
-        #    self.isAfk = False
-        #    self.hasCheese = False
-        #    self.hasEnter = False
-        #    self.canShamanRespawn = False
-        #    self.playerStartTimeMillis = time.time()
-        #    self.room.sendAll(Identifiers.send.Player_Respawn, ByteArray().writeBytes(self.getPlayerData()).writeBoolean(False).writeBoolean(True).toByteArray())
-        #    for player in self.room.clients.copy().values():
-        #        player.sendShamanCode(self.playerCode, 0)
-
-    def ResetAfkKillTimer(self):
-        self.isAfk = False
-        if self.killafktimer != None:
-            self.killafktimer.cancel()
-        #self.killafktimer = call_later(3600, self.transport.loseConnection)
-
-        
-
     async def enterRoom(self):
         roomName = self.roomName.replace("<", "&lt;")
-        if len(roomName) == 0 or roomName in ["\x03racing", "\x03survivor", "\x03vanilla", "\x03bootcamp"]:
+        if len(roomName) == 0 or roomName in ["\x03racing", "\x03survivor", "\x03vanilla", "\x03bootcamp", "\x03defilante"]:
             if len(roomName) > 0:
                 roomName = roomName[1:]
             roomName = self.server.getRecommendedRoom(self.playerLangue, roomName)
@@ -381,7 +428,7 @@ class BulleProtocol(asyncio.Protocol):
         if self.room != None:
             await self.room.removeClient(self)
 
-        print(f"Room name --> {roomName}")
+        print(f"[INFO] Room name --> {roomName}")
         self.roomName = roomName
         self.sendGameType(11 if "music" in roomName else 0, 0)
         self.sendEnterRoom()
@@ -406,19 +453,154 @@ class BulleProtocol(asyncio.Protocol):
             self.sendLangueMessage("", "<FC>$FunCorpActiveAvecMembres</FC>", ', '.join(map(str, self.room.roomFuncorps)))
         
         self.lastRoomName = self.roomName
-            
-
-            
-            
-    def sendVampireMode(self, others):
-        self.isVampire = True
-        p = ByteArray().writeInt(self.playerCode).writeInt(-1)
-        if others:
-            self.room.sendAllOthers(self, Identifiers.send.Vampire_Mode, p.toByteArray())
+    
+    def initTotemEditor(self):
+        if self.resetTotem:
+            self.sendTotemItemCount(0)
+            self.resetTotem = False
         else:
-            self.room.sendAll(Identifiers.send.Vampire_Mode, p.toByteArray())
-            
-            
+            if not self.totemInfo[1] == "":
+                self.tempTotem[0] = self.totemInfo[0]
+                self.tempTotem[1] = self.totemInfo[1]
+                self.sendTotemItemCount(self.tempTotem[0])
+                self.sendTotem(self.tempTotem[1], 400, 204, self.playerCode)
+            else:
+                self.sendTotemItemCount(0)
+
+    async def playerWin(self, holeType, monde, distance, holeX, holeY):
+        canGo = True
+        timeTaken = int((time.time() - (self.playerStartTimeMillis if self.room.isAutoRespawn else self.room.gameStartTimeMillis)) * 100)
+        ntimeTaken = timeTaken // 100.0 if timeTaken > 100 else timeTaken // 10.0 #for fastracing
+        if timeTaken > 7:
+            self.room.canChangeMap = False
+            canGo = self.room.checkIfShamanCanGoIn() if self.isShaman else True
+            if not canGo:
+                self.sendSaveRemainingMiceMessage()
+
+            if self.isDead or not self.cheeseCount > 0 and not self.isOpportunist:
+                canGo = False
+
+            if self.room.isTutorial:
+                self.sendPacket(Identifiers.send.Tutorial, 2)
+                self.cheeseCount = 0
+                return
+
+            if self.room.isEditeur:
+                if not self.room.EMapValidated and self.room.editeurMapCode != 0:
+                    self.room.EMapValidated = True
+                    self.sendPacket(Identifiers.old.send.Map_Validated, [""])
+                    
+            if canGo:
+                self.isDead = True
+                self.hasEnter = True
+                self.room.numCompleted += 1
+                place = self.room.numCompleted
+                if self.room.isDoubleMap:
+                    if holeType == 1:
+                        self.room.FSnumCompleted += 1
+                    elif holeType == 2:
+                        self.room.SSnumCompleted += 1
+                    else:
+                        self.room.FSnumCompleted += 1
+                        self.room.SSnumCompleted += 1
+
+                self.currentPlace = place
+                if place == 1:
+                    self.playerScore += (4 if self.room.isRacing else 4) if self.room.isAutoScore else 0
+                    if (self.room.getPlayerCountUnique() >= self.server.bulleInfo["minimum_players"] and self.room.countStats and not self.isShaman and not self.canShamanRespawn and not self.isGuest):
+                        self.firstCount += 1
+                        self.cheeseCountDB += self.cheeseCount
+                        self.sendUnlockTitle("Firsts")
+                        
+                elif place == 2:
+                    if self.room.getPlayerCountUnique() >= self.server.bulleInfo["minimum_players"] and self.room.countStats and not self.isShaman and not self.canShamanRespawn and self.room.isAutoScore:
+                        self.cheeseCount += self.cheeseCounter
+                    self.playerScore += (3 if self.room.isRacing else 3) if not self.room.isAutoScore else 0
+                            
+                elif place == 3:
+                    if self.room.getPlayerCountUnique() >= self.server.bulleInfo["minimum_players"] and self.room.countStats and not self.isShaman and not self.canShamanRespawn and self.room.isAutoScore:
+                        self.cheeseCount += self.cheeseCounter
+                    self.playerScore += (2 if self.room.isRacing else 2) if not self.room.isAutoScore else 0
+
+                if not place in [1, 2, 3]:
+                    if self.room.getPlayerCountUnique() >= self.server.bulleInfo["minimum_players"] and self.room.countStats and not self.isShaman and not self.canShamanRespawn and self.room.isAutoScore:
+                        self.cheeseCount += self.cheeseCounter
+                    self.playerScore += (1 if self.room.isRacing else 1) if not self.room.isAutoScore else 0
+
+                if self.room.isMulodrome:
+                    if self.playerName in self.room.mulodromeRedTeam:
+                        self.room.redCount += 4 if place == 1 else 3 if place == 2 else 2 if place == 2 else 1
+                    elif self.playerName in self.room.mulodromeBlueTeam:
+                        self.room.blueCount += 4 if place == 1 else 3 if place == 2 else 2 if place == 2 else 1
+                    self.room.sendMulodromeRound()
+                    
+                if self.room.isBootcamp and self.room.getPlayerCountUnique() >= self.server.bulleInfo["minimum_players"]:
+                    self.bootcampRounds += 1
+                    self.sendUnlockTitle("Bootcamp")
+                       
+                if self.room.isRacing and self.room.getPlayerCountUnique() >= self.server.bulleInfo["minimum_players"]:
+                    self.racingRounds += 1
+                    
+                if self.room.isDefilante and self.room.getPlayerCountUnique() >= self.server.bulleInfo["minimum_players"]:
+                    if self.room.isAutoScore: 
+                        self.playerScore += self.defilantePoints
+                        
+                if (self.room.getPlayerCountUnique() >= self.server.bulleInfo["minimum_players"] and self.room.countStats and not self.room.isBootcamp and not self.room.isRacing):
+                    if self.playerCode == self.room.currentShamanCode or self.playerCode == self.room.currentSecondShamanCode:
+                        self.shamanCheeses += 1
+                        self.sendUnlockTitle("ShamanCheeses")
+                    else:
+                        self.shopCheeses += 1
+                        if not self.isGuest:
+                            self.sendGiveCurrency(0, 1)
+                            self.Skills.earnExp(False, 20)
+                            self.sendUnlockTitle("Cheeses")
+                            
+                    self.room.giveShamanSave(self.room.currentSecondShamanName if holeType == 2 and self.room.isDoubleMap else self.room.currentShamanName, 0)
+                    if self.room.currentShamanType != 0:
+                        self.room.giveShamanSave(self.room.currentShamanName, self.room.currentShamanType)
+
+                    if self.room.currentSecondShamanType != 0:
+                        self.room.giveShamanSave(self.room.currentSecondShamanName, self.room.currentSecondShamanType)
+
+                self.sendPlayerWin(place, timeTaken)
+
+                if self.room.getPlayerCount() >= 2 and self.room.checkDeadPlayersPercentage(70) and not self.room.isDoubleMap:
+                    for player in self.room.clients.copy().values():
+                        if player.isShaman and player.isOpportunist:
+                            player.isOpportunist = True
+                            await player.playerWin(0)
+                            break
+                    await self.room.checkChangeMap()
+                else:
+                    await self.room.checkChangeMap()
+
+            self.room.canChangeMap = True
+        else:
+            self.isDead = True
+            self.sendPlayerDied()
+
+    def resetPlay(self):
+        self.iceCount = 2
+        self.bubblesCount = 0
+        self.currentPlace = 0
+        self.ambulanceCount = 0
+        self.defilantePoints = 0
+        self.posY = 0
+        self.posX = 0
+        self.cheeseCount = 0
+        
+        self.isAfk = True
+        self.isDead = False
+        self.isUsedTotem = False
+        self.hasEnter = False
+        self.isShaman = False
+        self.isVampire = False
+        self.isNewPlayer = False
+        self.isOpportunist = False
+        self.desintegration = False
+        self.canShamanRespawn = False
+
     def startPlay(self):
         self.playerStartTimeMillis = self.room.gameStartTimeMillis
         self.isNewPlayer = self.isDead
@@ -435,14 +617,14 @@ class BulleProtocol(asyncio.Protocol):
         if self.playerCode == shamanCode or self.playerCode == shamanCode2:
             self.isShaman = True
 
-        #if self.isShaman and not self.room.isUsingShamanSkills:
-        #    self.Skills.getSkills()
+        if self.isShaman and self.room.isUsingShamanSkills:
+            self.Skills.getSkills()
 
-        #if self.room.currentShamanName != "" and not self.room.roomDetails[1]:
-        #    self.Skills.getPlayerSkills(self.room.currentShamanSkills)
+        if self.room.currentShamanName != "" and self.room.isUsingShamanSkills:
+            self.Skills.getPlayerSkills(self.room.currentShamanSkills)
 
-        #if self.room.currentSecondShamanName != "" and not self.room.roomDetails[1]:
-        #    self.Skills.getPlayerSkills(self.room.currentSecondShamanSkills)
+        if self.room.currentSecondShamanName != "" and self.isUsingShamanSkills:
+            self.Skills.getPlayerSkills(self.room.currentSecondShamanSkills)
         
         self.sendPlayerList()
         if self.room.catchTheCheeseMap:
@@ -460,8 +642,8 @@ class BulleProtocol(asyncio.Protocol):
         if self.room.isTotemEditor:
             self.initTotemEditor()
 
-        #if self.room.isVillage:
-        #    self.server.loop.call_later(0.2, self.sendNPCS)
+        if self.room.isVillage:
+            self.server.loop.call_later(0.2, self.sendNPCS)
 
         if self.room.isMulodrome:
             if not self.playerName in self.room.mulodromeRedTeam and not self.playerName in self.room.mulodromeBlueTeam:
@@ -475,64 +657,28 @@ class BulleProtocol(asyncio.Protocol):
 
         if self.room.currentMap in range(200, 211) and not self.isShaman:
             self.sendPacket(Identifiers.send.Can_Transformation, 1)
-    
-    def resetPlay(self):
-        self.iceCount = 2
-        self.bubblesCount = 0
-        #self.currentPlace = 0
-        #self.ambulanceCount = 0
-        #self.defilantePoints = 0
-        self.posY = 0
-        self.posX = 0
-        #self.artefactID = 0
-        self.cheeseCount = 0
-        
-        self.isAfk = True
-        self.isDead = False
-        self.isUsedTotem = False
-        #self.hasEnter = False
-        self.isShaman = False
-        self.isVampire = False
-        #self.canRespawn = False
-        self.isNewPlayer = False
-        #self.isOpportunist = False
-        self.desintegration = False
-        #self.canShamanRespawn = False
 
 
-    async def playerWin(self, holeType, monde, distance, holeX, holeY):
-        print(holeType, monde, distance, holeX, holeY)
+    def ResetAfkKillTimer(self):
+        self.isAfk = False
+        if self.killafktimer != None:
+            self.killafktimer.cancel()
+        #self.killafktimer = call_later(3600, self.transport.loseConnection)
+  
+                    
+    def sendUnlockTitle(self, typ): # Cheeses, Bootcamp, Firsts, ShamanCheeses
         pass
-
-    def getPlayerData(self):
-        data = ByteArray()
-        data.writeUTF(self.playerName if self.tempPlayerName == "" else self.tempPlayerName)
-        data.writeInt(self.playerCode)
-        data.writeBoolean(self.isShaman)
-        data.writeBoolean(self.isDead)
-        if not self.isHidden:
-            data.writeShort(self.playerScore)
-        data.writeByte(self.cheeseCount) # New
-        data.writeShort(self.titleNumber)
-        data.writeByte(self.titleStars)
-        data.writeByte(self.playerGender) 
-        data.writeUTF("")
-        data.writeUTF("1;0,0,0,0,0,0,0,0,0,0" if self.room.isBootcamp else self.playerLook) # "1;0,0,0,0,0,0,0,0,0,0" if self.room.isBootcamp else (str(self.fur) + ";" + self.playerLook.split(";")[1] if self.fur != 0 else self.playerLook)
-        data.writeBoolean(self.isHidden)
-        data.writeInt(int(self.tempMouseColor if not self.tempMouseColor == "" else self.mouseColor, 16))
-        data.writeInt(int(self.shamanColor, 16))
-        data.writeInt(0)
-        data.writeInt(int(self.tempNickColor.lower() if self.tempNickColor != "" else "95d9d6", 16))
-        data.writeByte(0)
-        return data.toByteArray()
         
-    def sendMap(self, newMap=False, newMapCustom=False): ######
+    def sendMap(self, newMap=False, newMapCustom=False, fakeMap=""): # UNFINISHED
         self.room.notUpdatedScore = True
         
         if self.room.editeurMapXML != "":
             xml = self.room.editeurMapXML.encode()
         else:
-            xml = b"" if newMap else self.room.mapXML.encode() if isinstance(self.room.mapXML, str) else self.room.mapXML if newMapCustom else self.room.editeurMapXML.encode() if isinstance(self.room.editeurMapXML, str) else self.room.editeurMapXML
+            xml = b"" if newMap else self.room.mapXML.encode() if isinstance(self.room.mapXML, str) else self.room.mapXML if newMapCustom else self.room.editeurMapXML.encode() if isinstance(self.room.editeurMapXML, str) else self.room.editeurMapXMl
         xml = zlib.compress(xml)
         self.sendPacket([5, 2], ByteArray().writeInt(self.room.currentMap if newMap else self.room.mapCode if newMapCustom else -1).writeShort(self.room.getPlayerCount()).writeByte(self.room.lastRoundCode).writeInt(len(xml)).writeBytes(xml).writeUTF("" if newMap else self.room.mapName if newMapCustom else "-").writeByte(0 if newMap else self.room.mapPerma if newMapCustom else 100).writeBoolean(self.room.mapInverted if newMapCustom else False).writeBoolean(False).writeBoolean(self.room.isDisabledMiceCollision).writeBoolean(self.room.isDisabledFallDamage).writeInt(self.room.miceWeight).toByteArray())
         
+
+    def sendUpdateDatabase(self):
+        pass

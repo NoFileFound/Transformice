@@ -38,7 +38,6 @@ class Room:
         
         self.isUsingShamanSkills = True
         #self.musicTime = 0
-        #self.EMapLoaded = 0
         self.forceNextShaman = -1
         #self.musicSkipVotes = 0
         self.isPlayingMusic = False
@@ -85,8 +84,10 @@ class Room:
         # Boolean
         self.canChangeMap = True
         self.canChangeMusic = True
+        self.changed20secTimer = False
         self.catchTheCheeseMap = False
         self.countStats = False
+        self.EMapValidated = False
         self.initVotingMode = True
         self.isAutoMapFlipMode = True
         self.isAutoRespawn = False
@@ -180,7 +181,7 @@ class Room:
         
         self.checkRoomName()
 
-    def checkIfShamanIsDead(self):
+    def checkIfShamanIsDead(self) -> bool:
         player = self.players.get(self.currentShamanName)
         if player == None:
             return False
@@ -281,16 +282,59 @@ class Room:
         else:
             self.isNormal = True
 
-    def checkDeadPlayersPercentage(self, percentage):
+    def checkDeadPlayersPercentage(self, percentage) -> bool:
         dead_people = self.getDeathCountNoShaman()
         all_people = self.getPlayerCountNotNew()
         p = (percentage * 100) / all_people
         return dead_people >= p
 
-    def getDeathCountNoShaman(self):
+    def checkIfDoubleShamansAreDead(self) -> bool:
+        player1 = self.players.get(self.currentShamanName)
+        player2 = self.players.get(self.currentSecondShamanName)
+        return (False if player1 == None else player1.isDead) and (False if player2 == None else player2.isDead)
+
+    def checkIfShamanCanGoIn(self) -> bool:
+        for player in self.players.copy().values():
+            if player.playerCode != self.currentShamanCode and player.playerCode != self.currentSecondShamanCode and not player.isDead:
+                return False
+        return True
+
+    def getDeathCountNoShaman(self) -> int:
         return len(list(filter(lambda player: not player.isShaman and not player.isNewPlayer, self.players.copy().values())))
 
-    def getHighestScore(self):
+    def getDoubleShamanCode(self) -> int:
+        if self.currentShamanCode == -1 and self.currentSecondShamanCode == -1:
+            if self.forceNextShaman > 0:
+                self.currentShamanCode = self.forceNextShaman
+                self.forceNextShaman = 0
+            else:
+                self.currentShamanCode = self.getHighestScore()
+
+            if self.currentSecondShamanCode == -1:
+                self.currentSecondShamanCode = self.getSecondHighestScore()
+
+            if self.currentSecondShamanCode == self.currentShamanCode:
+                tempClient = random.choice(list(self.players.copy().values()))
+                self.currentSecondShamanCode = tempClient.playerCode
+
+            for player in self.players.copy().values():
+                if player.playerCode == self.currentShamanCode:
+                    self.currentShamanName = player.playerName
+                    self.currentShamanType = player.shamanType
+                    if not player.isNoSkill:
+                        self.currentShamanSkills = player.playerSkills
+                    break
+
+                if player.playerCode == self.currentSecondShamanCode:
+                    self.currentSecondShamanName = player.playerName
+                    self.currentSecondShamanType = player.shamanType
+                    if not player.isNoSkill:
+                        self.currentSecondShamanSkills = player.playerSkills
+                    break
+
+        return [self.currentShamanCode, self.currentSecondShamanCode]
+
+    def getHighestScore(self) -> int:
         playerScores = []
         playerID = 0
         for player in self.players.copy().values():
@@ -301,7 +345,7 @@ class Room:
                 playerID = player.playerCode
         return playerID
 
-    def getMapInfo(self, mapCode):
+    def getMapInfo(self, mapCode) -> list:
         if mapCode in self.server.cachedmaps: 
             return self.server.cachedmaps[mapCode]
         mapInfo = ["", "", 0, 0, 0]
@@ -312,19 +356,19 @@ class Room:
             self.server.cachedmaps[mapCode] = mapInfo
         return mapInfo
 
-    def getPlayerCount(self):
+    def getPlayerCount(self) -> int:
         return len(list(filter(lambda player: not player.isHidden, self.players.copy().values())))
 
-    def getPlayerCountAlive(self):
+    def getPlayerCountAlive(self) -> int:
         return len(list(filter(lambda player: not player.isDead and not player.isNewPlayer, self.players.values())))
 
-    def getPlayerCountNotNew(self):
+    def getPlayerCountNotNew(self) -> int:
         return len(list(filter(lambda player: not player.isHidden and not player.isNewPlayer, self.players.copy().values())))
 
-    def getPlayerCountUnique(self):
+    def getPlayerCountUnique(self) -> int:
         return len(list({player.ipAddress for player in self.players.copy().values()}))
 
-    def getPlayerList(self):
+    def getPlayerList(self) -> list:
         result = b""
         i = 0
         for player in self.players.copy().values():
@@ -334,7 +378,7 @@ class Room:
 
         return [i, result]
 
-    def getSecondHighestScore(self):
+    def getSecondHighestScore(self) -> int:
         playerScores = []
         playerID = 0
         for player in self.players.copy().values():
@@ -347,7 +391,30 @@ class Room:
                     playerID = player.playerCode
         return playerID
 
-    def getSyncCode(self):
+    def getShamanCode(self) -> int:
+        if self.isNoShamanMap or self.isNoShaman or self.currentMap in self.noShamanMaps:
+            return
+    
+        if self.currentShamanCode == -1:
+            if self.forceNextShaman > 0:
+                self.currentShamanCode = self.forceNextShaman
+                self.forceNextShaman = 0
+            else:
+                self.currentShamanCode = self.getHighestScore()
+
+            if self.currentShamanCode == -1:
+                self.currentShamanName = ""
+            else:
+                for player in self.players.copy().values():
+                    if player.playerCode == self.currentShamanCode:
+                        self.currentShamanName = player.playerName
+                        self.currentShamanType = player.shamanType
+                        if not player.isNoSkill:
+                            self.currentShamanSkills = player.playerSkills
+                        break
+        return self.currentShamanCode
+
+    def getSyncCode(self) -> int:
         if self.getPlayerCount() > 0:
             if self.currentSyncCode == -1:
                 player = random.choice(list(self.players.values()))
@@ -361,9 +428,28 @@ class Room:
         return self.currentSyncCode
 
 
+
+    def send20SecRemainingTimer(self):
+        if not self.changed20secTimer:
+            if not self.never20secTimer and self.roundTime + (self.gameStartTime - Time.getTime()) > 21:
+                self.changed20secTimer = True
+                self.changeMapTimers(20)
+                for player in self.players.copy().values():
+                    player.sendRoundTime(20)
+
     def sendAll(self, identifiers, packet=""):
         for player in self.players.copy().values():
             player.sendPacket(identifiers, packet)
+
+    def sendAllChat(self, playerName, message, isOnly):
+        p = ByteArray().writeUTF(playerName).writeUTF(message).writeBoolean(True)
+        if isOnly != 2:
+            for client in self.players.copy().values():
+                client.sendPacket(Identifiers.send.Chat_Message, p.toByteArray())
+        else:
+            player = self.players.get(playerName)
+            if player != None:
+                player.sendPacket(Identifiers.send.Chat_Message, p.toByteArray())
 
     def sendAllOthers(self, senderClient, identifiers, packet=""):
         for player in self.players.copy().values():
@@ -389,6 +475,21 @@ class Room:
     def sendMusicVideo(self):
         self.sendAll(Identifiers.send.Music_Video, ByteArray().writeUTF(self.musicVideos[0]["VideoID"]).writeUTF(self.musicVideos[0]["Title"]).writeShort(self.musicVideos[0]["Duration"]).writeUTF(self.musicVideos[0]["By"]).toByteArray())
 
+    def sendNPC(self, npcName, data={}, interface=11):
+        p = ByteArray().writeInt(data["id"])
+        p.writeUTF(npcName)
+        p.writeShort(data["title"])
+        p.writeBoolean(data["isgirl"])
+        p.writeUTF(data["look"])
+        p.writeInt128(int(data["x"]))
+        p.writeInt128(int(data["y"]))
+        p.writeInt128(int(data["emotie"]) if "emotie" in data else -1)
+        p.writeBoolean(bool(data["lookLeft"]))
+        p.writeBoolean(bool(data["starePlayer"]))
+        p.writeInt128(int(data["interface"]) if "interface" in data else interface)
+        p.writeUTF(data["message"])
+        self.sendAll(Identifiers.send.NPC, p.toByteArray())
+
     def sendRoomFunCorp(self):
         self.isFuncorp = not self.isFuncorp
         self.isMarkFuncorpRoom = self.isFuncorp
@@ -413,7 +514,7 @@ class Room:
             player.sendVampireMode(others)
 
 
-
+    # Other functions
 
     def addClient(self, player, newRoom=False, local_3=False, local_4=True) -> bool:
         self.players[player.playerName] = player
@@ -425,6 +526,11 @@ class Room:
             player.startPlay()
         else:
             player.room.roomCreator = player.playerName
+
+    def changeMapTimers(self, seconds):
+        if self.changeMapTimer != None: self.changeMapTimer.cancel()
+        self.canChangeMap = True
+        self.changeMapTimer = self.server.loop.call_later(seconds, self.mapChange)
 
     async def closeVoting(self):
         self.initVotingMode = False
@@ -445,6 +551,193 @@ class Room:
                         player.playerScore += 1
                     player.sendPlayerDied(True)
             await self.checkChangeMap()
+
+    async def mapChange(self):
+        if self.changeMapTimer != None: 
+            self.changeMapTimer.cancel()
+            
+        if not self.canChangeMap:
+            self.changeMapAttemps += 1
+            if self.changeMapAttemps < 5:
+                await asyncio.sleep(1)
+                return await self.mapChange()
+            
+        for timer in self.roomTimers:
+            timer.cancel()
+        self.roomTimers = []
+        
+        for timer in [self.autoRespawnTimer, self.killAfkTimer, self.startTimerLeft, self.voteCloseTimer]:
+            if timer != None:
+                timer.cancel()
+    
+        if self.initVotingMode:
+            if not self.isVotingBox and (self.mapPerma == 0 and self.mapCode != -1) and self.getPlayerCount() >= self.server.bulleInfo["minimum_players"]:
+                self.isVotingMode = True
+                self.isVotingBox = True
+                self.voteCloseTimer = call_later(8, self.closeVoting())
+                for player in self.players.copy().values():
+                    player.sendPacket(Identifiers.old.send.Vote_Box, [self.mapName, self.mapYesVotes, self.mapNoVotes])
+                return
+            else:
+                self.votingMode = False
+                return await self.closeVoting()
+        elif self.isTribeHouse and self.isTribeHouseMap:
+            pass
+        else:
+            if self.isVotingMode:
+                TotalYes = self.mapYesVotes + self.receivedYes
+                TotalNo = self.mapNoVotes + self.receivedNo
+                isDel = False
+
+                if TotalYes + TotalNo >= 100:
+                    TotalVotes = TotalYes + TotalNo
+                    Rating = (1.0 * TotalYes / TotalNo) * 100
+                    rate = str(Rating).split(".")
+                    if int(rate[0]) < 50:
+                        isDel = True
+                self.CursorMaps.execute("update Maps set YesVotes = ?, NoVotes = ?, Perma = 44 where Code = ?" if isDel else "update Maps set YesVotes = ?, NoVotes = ? where Code = ?", [TotalYes, TotalNo, self.mapCode])
+                self.isVotingMode = False
+                self.receivedNo = 0
+                self.receivedYes = 0
+            
+            self.initVotingMode = True
+            self.lastRoundCode = (self.lastRoundCode + 1) % 127
+            
+            if self.getPlayerCount() >= self.server.bulleInfo["minimum_players"]:
+                self.giveStats(0 if self.isRacing else 1 if self.isSurvivor else 2)
+            
+            if self.isSurvivor:
+                for player in self.players.values():
+                    if not player.isDead and (not player.isVampire if self.mapPerma == 11 else not player.isShaman):
+                        if self.isAutoScore: 
+                            player.playerScore += 10
+            
+            if self.catchTheCheeseMap:
+                self.catchTheCheeseMap = False
+            else:
+                if self.getPlayerCount() >= self.server.bulleInfo["minimum_players"]:
+                    numCom = self.FSnumCompleted - 1 if self.isDoubleMap else self.numCompleted - 1
+                    numCom2 = self.SSnumCompleted - 1 if self.isDoubleMap else 0
+                    if numCom < 0: numCom = 0
+                    if numCom2 < 0: numCom2 = 0
+                    
+                    player = self.players.get(self.currentShamanName)
+                    if player != None:
+                        self.sendAll(Identifiers.old.send.Shaman_Perfomance, [self.currentShamanName, numCom])
+                        if self.isAutoScore: 
+                            player.playerScore = numCom
+                        if numCom > 0:
+                            player.Skills.earnExp(True, numCom)
+
+                    player2 = self.players.get(self.currentSecondShamanName)
+                    if player2 != None:
+                        self.sendAll(Identifiers.old.send.Shaman_Perfomance, [self.currentSecondShamanName, numCom2])
+                        if self.isAutoScore: 
+                            player2.playerScore = numCom2
+                        if numCom2 > 0:
+                            player2.Skills.earnExp(True, numCom2)
+                       
+            self.currentSyncCode = -1
+            self.currentShamanCode = -1
+            self.currentShamanType = -1
+            self.currentSecondShamanCode = -1
+            self.currentSecondShamanType = -1
+
+            self.currentSyncName = ""
+            self.currentShamanName = ""
+            self.currentSecondShamanName = ""
+            
+            self.currentShamanSkills = {}
+            self.currentSecondShamanSkills = {}
+            
+            self.changed20secTimer = False
+            self.isDoubleMap = False
+            self.isNoShamanMap = False
+            self.isTribeHouseMap = False
+            self.canChangeMusic = True
+            self.canChangeMap = True
+            
+            self.FSnumCompleted = 0
+            self.SSnumCompleted = 0
+            self.objectID = 0
+            self.addTime = 0
+            self.cloudID = -1
+            self.companionBox = -1
+            self.changeMapAttemps = 0
+            self.numCompleted = 0
+            
+            self.anchors = []
+            self.lastHandymouse = [-1, -1]
+            
+            if self.getPlayerCount() > 1:
+                self.mapStatus = (self.mapStatus + 1) % 10
+            else:
+                self.mapStatus = 0
+
+            self.currentMap = await self.selectMap()
+            self.checkMapXML()
+            
+            if (self.currentMap in self.doubleShamanMaps) or (self.mapPerma == 8 and self.getPlayerCount() >= 3):
+                self.isDoubleMap = True
+
+            if self.mapPerma in [7, 17, 42] or (self.isSurvivor and self.mapStatus == 0) or (self.currentMap in self.noShamanMaps):
+                self.isNoShamanMap = True
+
+            if self.currentMap in self.catchCheeseMaps:
+                self.catchTheCheeseMap = True
+            
+            self.gameStartTime = Time.getTime()
+            self.gameStartTimeMillis = time.time()
+
+            for player in self.players.copy().values():
+                player.resetPlay()
+
+            for player in self.players.copy().values():
+                player.startPlay()
+                
+                if player.isHidden:
+                    player.isDead = True
+                    player.sendPlayerDied(False)
+                    
+            for player in self.players.copy().values():
+                if player.petType != 0:
+                    if Time.getSecondsDiff(player.petEnd) >= 0:
+                        self.sendAll(Identifiers.send.Pet, ByteArray().writeInt(player.playerCode).writeUnsignedByte(player.petType).toByteArray())
+                    else:
+                        player.petType = 0
+                        player.petEnd = 0
+                if player.furType != 0:
+                    if Time.getSecondsDiff(player.furEnd) <= 0:
+                        player.furType = 0
+                        player.furEnd = 0
+                    
+            if self.isMulodrome:
+                self.mulodromeRoundCount += 1
+                self.sendMulodromeRound()
+                if self.mulodromeRoundCount <= 10:
+                    for player in self.players.copy().values():
+                        if player.playerName in self.mulodromeBlueTeam:
+                            self.setNameColor(player.playerName, 0x979EFF)
+                        elif player.playerName in self.mulodromeRedTeam:
+                            self.setNameColor(player.playerName, 0xFF9396)
+                else:
+                    self.sendAll(Identifiers.send.Mulodrome_End)
+            
+            if (self.isRacing or self.isDefilante) and self.notUpdatedScore:
+                self.roundsCount = (self.roundsCount + 1) % 10
+                self.notUpdatedScore = False
+                self.sendAll(Identifiers.send.Rounds_Count, ByteArray().writeByte(self.roundsCount).writeInt(self.getHighestScore()).toByteArray())
+            
+            if self.isSurvivor and self.mapStatus == 0 and self.getPlayerCountAlive() > 1:
+                self.server.loop.call_later(5, self.sendVampireMode)
+            
+            self.startTimerLeft = call_later(3, self.sendRoomStartTimer)
+            if not self.isFixedMap and not self.isTribeHouse and not self.isTribeHouseMap:
+                self.changeMapTimer = call_later(self.roundTime + self.addTime, self.mapChange)
+            
+            self.killAfkTimer = call_later(30, self.killAfkPlayers)
+            if self.isAutoRespawn or self.isTribeHouseMap:
+                self.autoRespawnTimer = call_later(2, self.respawnMice)
 
     async def removeClient(self, player):
         if player.playerName in self.players:
@@ -479,77 +772,12 @@ class Room:
                     self.getSyncCode()
                 await self.checkChangeMap()
 
-    def getShamanCode(self):
-        if self.isNoShamanMap or self.isNoShaman or self.currentMap in self.noShamanMaps:
-            return
-    
-        if self.currentShamanCode == -1:
-            if self.forceNextShaman > 0:
-                self.currentShamanCode = self.forceNextShaman
-                self.forceNextShaman = 0
-            else:
-                self.currentShamanCode = self.getHighestScore()
-
-            if self.currentShamanCode == -1:
-                self.currentShamanName = ""
-            else:
-                for player in self.players.copy().values():
-                    if player.playerCode == self.currentShamanCode:
-                        self.currentShamanName = player.playerName
-                        self.currentShamanType = player.shamanType
-                        #self.currentShamanSkills = player.playerSkills
-                        break
-        return self.currentShamanCode
-
-
-    def getDoubleShamanCode(self):
-        if self.currentShamanCode == -1 and self.currentSecondShamanCode == -1:
-            if self.forceNextShaman > 0:
-                self.currentShamanCode = self.forceNextShaman
-                self.forceNextShaman = 0
-            else:
-                self.currentShamanCode = self.getHighestScore()
-
-            if self.currentSecondShamanCode == -1:
-                self.currentSecondShamanCode = self.getSecondHighestScore()
-
-            if self.currentSecondShamanCode == self.currentShamanCode:
-                tempClient = random.choice(list(self.players.copy().values()))
-                self.currentSecondShamanCode = tempClient.playerCode
-
-            for player in self.players.copy().values():
-                if player.playerCode == self.currentShamanCode:
-                    self.currentShamanName = player.playerName
-                    self.currentShamanType = player.shamanType
-                    #self.currentShamanSkills = player.playerSkills
-                    break
-
-                if player.playerCode == self.currentSecondShamanCode:
-                    self.currentSecondShamanName = player.playerName
-                    self.currentSecondShamanType = player.shamanType
-                    #self.currentSecondShamanSkills = player.playerSkills
-                    break
-
-        return [self.currentShamanCode, self.currentSecondShamanCode]
-
-
-    def sendAllChat(self, playerName, message, isOnly):
-        p = ByteArray().writeUTF(playerName).writeUTF(message).writeBoolean(True)
-        if isOnly == 0:
-            for client in self.players.copy().values():
-                client.sendPacket(Identifiers.send.Chat_Message, p.toByteArray())
-        else:
-            player = self.players.get(playerName)
-            if player != None:
-                player.sendPacket(Identifiers.send.Chat_Message, p.toByteArray())
-                #if isOnly == 1:
-                    #player.sendServerMessage("The player <BV>"+player.playerName+"</BV> has sent a filtered text: [<J>" + str(message) + "</J>].")
-
-
-    def changeMapTimers(self, seconds):
-        if self.changeMapTimer != None: self.changeMapTimer.cancel()
-        self.canChangeMap = True
-        self.changeMapTimer = self.server.loop.call_later(seconds, self.mapChange)
+    def respawnMice(self):
+        for player in self.players.copy().values():
+            self.respawnSpecific(player.playerName)
+            
+        if self.isAutoRespawn or self.isTribeHouseMap:
+            self.autoRespawnTimer = call_later(2, self.respawnMice)
 
     def respawnSpecific(self, playerName):
         player = self.players.get(playerName)
@@ -558,16 +786,6 @@ class Room:
             player.isAfk = False
             player.playerStartTimeMillis = time.time()
             self.sendAll(Identifiers.send.Player_Respawn, ByteArray().writeBytes(player.getPlayerData()).writeBoolean(False).writeBoolean(True).toByteArray())
-
-    def respawnMice(self):
-        for player in self.players.copy().values():
-            if player.isDead:
-                player.isDead = False
-                player.playerStartTimeMillis = time.time()
-                self.sendAll(Identifiers.send.Player_Respawn, ByteArray().writeBytes(player.getPlayerData()).writeBoolean(False).writeBoolean(True).toByteArray())
-                    
-        if self.isAutoRespawn or self.isTribeHouseMap:
-            self.autoRespawnTimer = call_later(2, self.respawnMice)
 
     async def selectMap(self):
         if not self.forceNextMap == "-1":
@@ -712,193 +930,14 @@ class Room:
 
 
 
+    def giveShamanSave(self, shamanName, type):
+        if not self.countStats:
+            return
+        pass
 
-        
-    async def mapChange(self):
-        if self.changeMapTimer != None: 
-            self.changeMapTimer.cancel()
-            
-        if not self.canChangeMap:
-            self.changeMapAttemps += 1
-            if self.changeMapAttemps < 5:
-                await asyncio.sleep(1)
-                return await self.mapChange()
-            
-        for timer in self.roomTimers:
-            timer.cancel()
-        self.roomTimers = []
-        
-        for timer in [self.autoRespawnTimer, self.killAfkTimer, self.startTimerLeft, self.voteCloseTimer]:
-            if timer != None:
-                timer.cancel()
-    
-        if self.initVotingMode:
-            if not self.isVotingBox and (self.mapPerma == 0 and self.mapCode != -1) and self.getPlayerCount() >= self.server.bulleInfo["minimum_players"]:
-                self.isVotingMode = True
-                self.isVotingBox = True
-                self.voteCloseTimer = call_later(8, self.closeVoting())
-                for player in self.players.copy().values():
-                    player.sendPacket(Identifiers.old.send.Vote_Box, [self.mapName, self.mapYesVotes, self.mapNoVotes])
-                return
-            else:
-                self.votingMode = False
-                return await self.closeVoting()
-        elif self.isTribeHouse and self.isTribeHouseMap:
-            pass
-        else:
-            if self.isVotingMode:
-                TotalYes = self.mapYesVotes + self.receivedYes
-                TotalNo = self.mapNoVotes + self.receivedNo
-                isDel = False
-
-                if TotalYes + TotalNo >= 100:
-                    TotalVotes = TotalYes + TotalNo
-                    Rating = (1.0 * TotalYes / TotalNo) * 100
-                    rate = str(Rating).split(".")
-                    if int(rate[0]) < 50:
-                        isDel = True
-                self.CursorMaps.execute("update Maps set YesVotes = ?, NoVotes = ?, Perma = 44 where Code = ?" if isDel else "update Maps set YesVotes = ?, NoVotes = ? where Code = ?", [TotalYes, TotalNo, self.mapCode])
-                self.isVotingMode = False
-                self.receivedNo = 0
-                self.receivedYes = 0
-            
-            self.initVotingMode = True
-            self.lastRoundCode = (self.lastRoundCode + 1) % 127
-            
-            if self.getPlayerCount() >= self.server.bulleInfo["minimum_players"]:
-                self.giveStats(0 if self.isRacing else 1 if self.isSurvivor else 2)
-            
-            if self.isSurvivor:
-                for player in self.players.values():
-                    if not player.isDead and (not player.isVampire if self.mapPerma == 11 else not player.isShaman):
-                        if self.isAutoScore: 
-                            player.playerScore += 10
-            
-            if self.catchTheCheeseMap:
-                self.catchTheCheeseMap = False
-            else:
-                numCom = self.FSnumCompleted - 1 if self.isDoubleMap else self.numCompleted - 1
-                numCom2 = self.SSnumCompleted - 1 if self.isDoubleMap else 0
-                if numCom < 0: numCom = 0
-                if numCom2 < 0: numCom2 = 0
+    def newConsumableTimer(self, code):
+        self.roomTimers.append(self.server.loop.call_later(10, lambda: self.sendAll(Identifiers.send.Remove_Object, ByteArray().writeInt(code).writeBoolean(False).toByteArray())))
                 
-                player = self.players.get(self.currentShamanName)
-                if player != None:
-                    self.sendAll(Identifiers.old.send.Shaman_Perfomance, [self.currentShamanName, numCom])
-                    if self.isAutoScore: 
-                        player.playerScore = numCom
-                #    if numCom > 0:
-                #        player.Skills.earnExp(True, numCom)
-
-                player2 = self.players.get(self.currentSecondShamanName)
-                if player2 != None:
-                    self.sendAll(Identifiers.old.send.Shaman_Perfomance, [self.currentSecondShamanName, numCom2])
-                    if self.isAutoScore: 
-                        player2.playerScore = numCom2
-                #    if numCom2 > 0:
-                #        player2.Skills.earnExp(True, numCom2)
-                       
-            self.currentSyncCode = -1
-            self.currentShamanCode = -1
-            self.currentShamanType = -1
-            self.currentSecondShamanCode = -1
-            self.currentSecondShamanType = -1
-
-            self.currentSyncName = ""
-            self.currentShamanName = ""
-            self.currentSecondShamanName = ""
-            
-            self.currentShamanSkills = {}
-            self.currentSecondShamanSkills = {}
-            
-            self.changed20secTimer = False
-            self.isDoubleMap = False
-            self.isNoShamanMap = False
-            self.isTribeHouseMap = False
-            self.canChangeMusic = True
-            self.canChangeMap = True
-            
-            self.FSnumCompleted = 0
-            self.SSnumCompleted = 0
-            self.objectID = 0
-            self.addTime = 0
-            self.cloudID = -1
-            self.companionBox = -1
-            self.changeMapAttemps = 0
-            self.numCompleted = 0
-            
-            self.anchors = []
-            self.lastHandymouse = [-1, -1]
-            
-            if self.getPlayerCount() > 1:
-                self.mapStatus = (self.mapStatus + 1) % 10
-            else:
-                self.mapStatus = 0
-
-            self.currentMap = await self.selectMap()
-            self.checkMapXML()
-            
-            if (self.currentMap in self.doubleShamanMaps) or (self.mapPerma == 8 and self.getPlayerCount() >= 3):
-                self.isDoubleMap = True
-
-            if self.mapPerma in [7, 17, 42] or (self.isSurvivor and self.mapStatus == 0) or (self.currentMap in self.noShamanMaps):
-                self.isNoShamanMap = True
-
-            if self.currentMap in self.catchCheeseMaps:
-                self.catchTheCheeseMap = True
-            
-            self.gameStartTime = Time.getTime()
-            self.gameStartTimeMillis = time.time()
-
-            for player in self.players.copy().values():
-                player.resetPlay()
-
-            for player in self.players.copy().values():
-                player.startPlay()
-                
-                if player.isHidden:
-                    player.isDead = True
-                    player.sendPlayerDied(False)
-                    
-            for player in self.players.copy().values():
-                if player.petType != 0:
-                    if Utils.getSecondsDiff(player.petEnd) >= 0:
-                        player.petType = 0
-                        player.petEnd = 0
-                    else:
-                        self.sendAll(Identifiers.send.Pet, ByteArray().writeInt(player.playerCode).writeUnsignedByte(player.pet).toByteArray())
-                if player.furType != 0:
-                    if Utils.getSecondsDiff(player.furEnd) >= 0:
-                        player.furType = 0
-                        player.furEnd = 0
-                    
-            if self.isMulodrome:
-                self.mulodromeRoundCount += 1
-                self.sendMulodromeRound()
-                if self.mulodromeRoundCount <= 10:
-                    for player in self.players.copy().values():
-                        if player.playerName in self.mulodromeBlueTeam:
-                            self.setNameColor(player.playerName, 0x979EFF)
-                        elif player.playerName in self.mulodromeRedTeam:
-                            self.setNameColor(player.playerName, 0xFF9396)
-                else:
-                    self.sendAll(Identifiers.send.Mulodrome_End)
-            
-            if (self.isRacing or self.isDefilante) and self.notUpdatedScore:
-                self.roundsCount = (self.roundsCount + 1) % 10
-                self.notUpdatedScore = False
-                self.sendAll(Identifiers.send.Rounds_Count, ByteArray().writeByte(self.roundsCount).writeInt(self.getHighestScore()).toByteArray())
-            
-            if self.isSurvivor and self.mapStatus == 0 and self.getPlayerCountAlive() > 1:
-                self.server.loop.call_later(5, self.sendVampireMode)
-            
-            self.startTimerLeft = call_later(3, self.sendRoomStartTimer)
-            if not self.isFixedMap and not self.isTribeHouse and not self.isTribeHouseMap:
-                self.changeMapTimer = call_later(self.roundTime + self.addTime, self.mapChange)
-            
-            self.killAfkTimer = call_later(30, self.killAfkPlayers)
-            if self.isAutoRespawn or self.isTribeHouseMap:
-                self.autoRespawnTimer = call_later(2, self.respawnMice)
                 
                 
     def setNameColor(self, playerName, color):

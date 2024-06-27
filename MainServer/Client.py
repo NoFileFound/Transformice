@@ -23,10 +23,6 @@ from Utils.Time import Time
 from Utils.IPTools import IPTools
 from Utils.Other import Other
 
-# Other
-import Modules as _module
-from importlib import reload
-
 class Client:
     def __init__(self, _server, _cursor):
         self.server = _server
@@ -51,6 +47,7 @@ class Client:
         self.lastSonarTime = 0
         self.loginTime = 0
         self.loginWrongAttemps = 0
+        self.mapEditorCheese = 40
         self.verifycoder = 0
         self.petType = 0
         self.petEnd = 0
@@ -114,8 +111,9 @@ class Client:
         self.playerLangue = ""
         self.flashVersion = ""
         self.mouseColor = "78583A"
-        self.ipCountry = "Brazil"
+        self.ipCountry = "Brazil" # UNFINISHED
         self.isMutedReason = ""
+        self.lastNpcName = ""
         self.modoPwetLangue = "ALL"
         self.playerEmail = ""
         self.playerLook = "1;0,0,0,0,0,0,0,0,0,0,0,0"
@@ -139,6 +137,7 @@ class Client:
         self.banVotes = []
         self.equipedConsumables = []
         self.friendList = []
+        self.invitedTribeHouses = []
         self.ignoredList = []
         self.loggedPackets = []
         self.marriageInvite = []
@@ -147,7 +146,7 @@ class Client:
         self.shamanBadges = []
         self.PInfo = [0, 0, 0]
         self.playerBadges = []
-        self.playerStats = []
+        self.playerStats = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.privRoles = []
         self.totemInfo = [0, ""]
         self.titleList = []
@@ -555,8 +554,8 @@ class Client:
             self.sendRegisteredAccountConsumable()
             if self.shamanNormalSaves >= 1500:
                 self.sendShamanType(self.shamanType, (self.shamanNormalSaves >= 5000 and self.shamanHardSaves >= 2000), False)
-
-            self.Shop.sendPromotionPopup() #######
+            self.Shop.sendPromotionPopup()
+            self.sendMessage("<VP>[SYSTEM]</VP> Be sure to wish happy birthday to Raiden Shogun today ❤️ or you will be banned forever.")
 
     async def connectToBulle(self, roomName, community="", isHidden=False, sendPacket=True): # UNFINISHED
         if self.isPrisoned:
@@ -589,7 +588,7 @@ class Client:
 
         temp_code = Other.randomGen()
         try:
-            self.server.bulles[self.bulleID["id"]].send_packet(Identifiers.bulle.BU_ConnectToGivenRoom, self.playerID, self.playerName, self.playerCode, community, base64.b64encode(self.playerLook.encode()).decode('utf-8'), self.getStaffPermissions(), self.isMuted, self.genderType, roomName, isHidden, isReported, self.titleNumber, self.titleStars, self.isMutedHours, self.isMutedReason, self.shamanType, self.shamanLevel, base64.b64encode(self.shopShamanItems.encode()).decode('utf-8'), self.equipedShamanBadge, self.shamanColor, temp_code)
+            self.server.bulles[self.bulleID["id"]].send_packet(Identifiers.bulle.BU_ConnectToGivenRoom, self.playerID, self.playerName, self.playerCode, community, base64.b64encode(self.playerLook.encode()).decode('utf-8'), self.getStaffPermissions(), self.isMuted, self.genderType, roomName, isHidden, isReported, self.titleNumber, self.titleStars, self.isMutedHours, self.isMutedReason, self.shamanType, self.shamanLevel, base64.b64encode(self.shopShamanItems.encode()).decode('utf-8'), self.equipedShamanBadge, self.shamanColor, self.petType, self.petEnd, self.furType, self.furEnd, self.mapEditorCheese, self.shopCheeses, self.cheeseCount, temp_code)
             self.Logger.debug(f"[{self.ipAddress}] Established connection to bulle{self.bulleID['id']} : {self.bulleID['ip_address']}:{bullePorts}.\n")
         except KeyError as e:
             self.Logger.error("Unable to connect to bulle. Refreshing in 10 seconds.\n")
@@ -618,6 +617,15 @@ class Client:
                 player.sendTradeResult(self.playerName, 2)
             else:
                 player.sendPacket(Identifiers.send.Trade_Close)
+
+    def giveTitle(self, _id, changenow=True):
+        self.titleStars = 1
+        self.titleNumber = _id
+        self.titleList.append(_id + 0.1)
+        self.sendBullePacket(Identifiers.bulle.BU_SendUnlockTitle, self.playerID, _id, 1)
+        if changenow:
+            self.sendPacket(Identifiers.send.Change_Title, ByteArray().writeByte(self.genderType).writeShort(_id).toByteArray())
+            self.sendBullePacket(Identifiers.bulle.BU_ReceiveTitleID, self.playerID, self.titleNumber, self.titleStars)
 
     def tradeAddConsumable(self, __id, isAdd):
         player = self.server.players.get(self.tradeName)
@@ -702,7 +710,13 @@ class Client:
         if self.playerName in self.server.modoReports and not self.isGuest:
             self.ModoPwet.sendModoNotification(self.playerName, self.playerLangue, "connect")
 
-    def checkStaffPermission(self, staff_positions) -> bool: # UNFINISHED
+    def checkPlayerTitle(self, titleID) -> bool:
+        for title in self.titleList:
+            if int(title - (title % 1)) == titleID:
+                return True
+        return False
+
+    def checkStaffPermission(self, staff_positions) -> bool:
         if "Guest" in staff_positions:
             return self.isGuest
             
@@ -899,6 +913,9 @@ class Client:
             self.server.loop.call_later(0.8, asyncio.create_task, self.connectToBulle(roomName, community, isHidden))
             self.server.loop.call_later(1.9, setattr, self, "isEnterRoom", False)
 
+    def sendGiveCurrency(self, type, count):
+        self.sendPacket(Identifiers.send.Give_Currency, ByteArray().writeByte(type).writeByte(count).toByteArray())
+
     def sendLangueMessage(self, community, message, *args):
         packet = ByteArray().writeUTF(community).writeUTF(message).writeByte(len(args))
         for arg in args:
@@ -913,6 +930,53 @@ class Client:
 
     def sendNewConsumable(self, consumable, count):
         self.sendPacket(Identifiers.send.New_Consumable, ByteArray().writeByte(0).writeShort(consumable).writeShort(count).toByteArray())
+
+    def sendNPCBuyItem(self, itemID):
+        item = self.server.npcs["Shop"][self.lastNpcName][itemID]
+        type, _id, amount, four, priceItem, priceAmount = item
+        if priceItem in self.playerConsumables and self.playerConsumables[priceItem] >= priceAmount:
+            count = self.playerConsumables[priceItem] - priceAmount
+            if count <= 0:
+                del self.playerConsumables[priceItem]
+            else:
+                self.playerConsumables[priceItem] = count
+            self.sendUpdateInventoryConsumable(priceItem, count)
+            
+            if type == 1:
+                self.sendAnimZelda(3, _id)
+                self.sendUnlockShopBadge(_id)
+                
+            elif type == 2:
+                self.sendAnimZelda(6, _id)
+                self.shamanBadges.append(_id)
+                
+            elif type == 3:
+                self.giveTitle(_id, 1)
+                
+            elif type == 4:
+                self.giveConsumable(_id, amount)
+                
+            self.sendNpcShop(self.lastNpcName)
+
+    def sendNpcShop(self, npcName):
+        npcShop = self.server.npcs["Shop"].get(npcName)
+        self.lastNpcName = npcName
+            
+        data = ByteArray()
+        data.writeUTF(npcName)
+        data.writeByte(len(npcShop))
+        
+        for item in npcShop:
+            type, id, amount, four, priceItem, priceAmount = item
+            if (type == 1 and id in self.playerBadges) or (type == 2 and id in self.shamanBadges) or (type == 3 and self.checkPlayerTitle(id)) or (type == 4 and id in self.playerConsumables and self.playerConsumables.get(id) + amount > 256):
+                data.writeByte(2)
+            elif not priceItem in self.playerConsumables or self.playerConsumables.get(priceItem) < priceAmount:
+                data.writeByte(1)
+            else:
+                data.writeByte(0)
+
+            data.writeByte(type).writeInt(id).writeShort(amount).writeByte(four).writeInt(priceItem).writeShort(priceAmount).writeInt(0)
+        self.sendPacket(Identifiers.send.NPC_Shop, data.toByteArray())
 
     def sendRestartPacket(self, seconds):
         self.sendPacket(Identifiers.send.Server_Restart, ByteArray().writeInt(seconds * 1000).toByteArray())
@@ -1113,6 +1177,7 @@ class Client:
             await self.ChannelCommands.parseCommand(message[1:], _id)
 
     def sendTotalCheeseToExportMap(self, amount=40):
+        self.mapEditorCheese = amount
         self.sendPacket(Identifiers.send.Amount_To_Export_Map, ByteArray().writeUnsignedShort(amount).toByteArray())
 
     def sendTradeInvite(self, playerCode):
@@ -1150,40 +1215,114 @@ class Client:
     def sendTribulleProtocol(self, isNew=True):
         self.sendPacket(Identifiers.send.Switch_Tribulle, ByteArray().writeBoolean(isNew).toByteArray())
            
-    def sendUpdateInventoryConsumable(self, id, count, limit=255):
-        self.sendPacket(Identifiers.send.Update_Inventory_Consumable, ByteArray().writeShort(id).writeUnsignedByte(limit if count > limit else count).toByteArray())
+    def sendUnlockShopBadge(self, badge):
+        if badge in self.playerBadges:
+            return
+    
+        self.sendBullePacket(Identifiers.bulle.BU_SendShopBadge, self.playerID, badge)
+        self.playerBadges.append(badge)
+           
+    def sendUpdateInventoryConsumable(self, _id, count, limit=65535):
+        self.sendPacket(Identifiers.send.Update_Inventory_Consumable, ByteArray().writeShort(_id).writeUnsignedShort(limit if count > limit else count).toByteArray())
            
     def sendWatchPlayerPacket(self, playerName, status):
         self.sendPacket(Identifiers.send.Watch_Player, ByteArray().writeUTF(playerName).writeBoolean(status).toByteArray())
 
-
-
-
-
     def useConsumable(self, _id):
-        pass
+        if _id in self.playerConsumables:
+            if str(_id) in self.server.inventoryConsumables:
+                obj = self.server.inventoryConsumables.get(str(_id))
+                if "launchObject" in obj:                
+                    objectCode = obj["launchObject"]
+                    self.sendBullePacket(Identifiers.bulle.BU_SendTrowableObject, self.playerID, objectCode, _id)
+               
+                elif "pet" in obj:
+                    if not self.petType > 0:
+                        self.petType = obj["pet"]
+                        self.petEnd = Time.getTime() + 3600
+                        self.sendBullePacket(Identifiers.bulle.BU_SendPlayerPet, self.roomName, self.playerID, self.petType, self.petEnd, self.playerCode)
+                        
+                elif "fur" in obj:
+                    self.furType = obj["fur"]
+                    self.furEnd = Time.getTime() + 3600
+                    self.sendBullePacket(Identifiers.bulle.BU_SendPlayerFur, self.playerID, self.furType, self.furEnd)
         
+                elif "pencil" in obj:
+                    pencilColor = int(obj["pencil"], 16)
+                    self.sendBullePacket(Identifiers.bulle.BU_SendPlayerPencil, self.playerID, pencilColor)
+                
+                elif _id == 10:
+                    self.sendBullePacket(Identifiers.bulle.BU_SendMistletoe, self.playerID)
+                
+                elif _id == 11: #UNFINISHED
+                    pass
+                
+                elif _id == 21:
+                    self.sendBullePacket(Identifiers.bulle.BU_SendPlayerEmote, self.playerID, 12, "", False)
+        
+                elif _id == 28:
+                    self.sendBullePacket(Identifiers.bulle.BU_SendPlayerBonfire, self.playerID)
+        
+                elif _id == 33:
+                    self.sendBullePacket(Identifiers.bulle.BU_SendPlayerEmote, self.playerID, 16, "", False)
+        
+                elif _id == 35:
+                    if len(self.playerBadges) == 0:
+                        return
+                    badge = random.choice(self.playerBadges)
+                    self.sendBullePacket(Identifiers.bulle.BU_SendBallonBadge, self.playerID, self.playerCode, badge)
+        
+                elif _id == 800:
+                    self.shopCheeses += 1
+                    self.sendAnimZelda(2, 0)
+                    self.sendGiveCurrency(0, 1)
+                    
+                elif _id == 801:
+                    self.shopFraises += 1
+                    self.sendAnimZelda(2, 2)
+        
+                elif _id == 2234:
+                    self.sendBullePacket(Identifiers.bulle.BU_SendPlayerMicrophone, self.playerID)
+        
+                elif _id == 2239:
+                    self.sendBullePacket(Identifiers.bulle.BU_SendPlayerCheeses, self.playerID, self.playerCode, self.shopCheeses)
+        
+                elif _id == 2246:
+                    self.sendBullePacket(Identifiers.bulle.BU_SendPlayerEmote, self.playerID, 24, "", False)
+   
+                elif _id == 2255:
+                    self.sendAnimZelda(7, 0, "$De6", random.randint(0, 6))
+   
+                elif _id == 2259:
+                    self.sendBullePacket(Identifiers.bulle.BU_SendPlayerPlayedTime, self.playerID, self.playerCode, int(self.playerTime // 86400), int(self.playerTime // 3600) % 24)
+
+                elif _id > 2473 and _id < 2493: # Chests
+                    pass
+                    
+                if not "letter" in obj:
+                    count = self.playerConsumables[_id] - 1
+                    if count <= 0:
+                        del self.playerConsumables[_id]
+                    else:
+                        self.playerConsumables[_id] = count
+                    self.sendBullePacket(Identifiers.bulle.BU_UseInventoryConsumable, self.playerID, self.playerCode, _id)
+                    self.sendUpdateInventoryConsumable(_id, count)
+
+
     def buyItemResult(self, fullitem, isShopShamanItem=False):
         self.sendAnimZelda(int(isShopShamanItem), fullitem)
-        #self.checkUnlockShopTitle()
-        #self.checkUnlockShopBadge(fullItem)
+        self.sendUnlockTitle("shop")
+        self.sendUnlockShopBadge(self.server.getShopBadge(fullitem))
         #self.client.missions.upMission('6')
-      
-    def reloadModules(self): # UNFINISHED
-        reload(_module)
-        print(f"[-] THIS FUNCTION IS NOT A FINISHED DUE MISSING INFORMATION HOW THIS IN GAME WORKS. FUNC: ReloadModules ARGS: None")
-        self.Packets = _module.Packets.Packets(self, self.server)
-        self.Cafe = _module.Cafe.Cafe(self, self.server)
-        self.Shop = _module.Shop.Shop(self, self.server)
-        self.ParseCommands =_module.Commands.Commands(self, self.server)
-        
+                
+                
+    def sendUnlockTitle(self, typ): # Shop
+        pass
+                
     def updateDatabase(self): # UNFINISHED
-        if self.isGuest:
+        if self.isGuest or self.server.disableDatabase:
             return
-    
-        if self.server.disableDatabase:
-            return
-            
+ 
         self.server.cursor['users'].update_one({'Username':self.playerName},{'$set':{
             # Identification
             "PlayerGender": self.genderType,
@@ -1203,7 +1342,7 @@ class Client:
             "DivineSavesCount": self.shamanDivineSaves,
             "DivineSavesCountNS": self.shamanDivineSavesNoSkill,
             "PlayerBadges": ",".join(map(str, filter(None, [badge for badge in self.playerBadges]))),
-            "PlayerStats": ",".join(map(str, filter(None, [stat for stat in self.playerStats]))),
+            "PlayerStats": ",".join(map(str, self.playerStats)),
             "TitleNumber": self.titleNumber,
             # Title list
             

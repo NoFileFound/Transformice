@@ -59,6 +59,20 @@ class Packets:
             self.client.room.sendAll(Identifiers.send.Play_Shaman_Invocation_Sound, ByteArray().writeByte(-1).toByteArray())
             self.client.room.sendAll(Identifiers.send.Attach_Ballon_Player, ByteArray().writeInt(playerCode).writeInt(0).writeInt(1 * 1000).toByteArray())
     
+        @self.packet(args=['readUnsignedByte'])
+        async def Crazzy_Packet(self, code):
+            p = ByteArray().writeByte(code)
+            if code == 2:
+                posX = self.packet.readInt()
+                posY = self.packet.readInt()
+                lineX = self.packet.readInt()
+                lineY = self.packet.readInt()
+                p.writeInt(self.client.playerCode).writeInt(self.client.drawingColor).writeInt(posX).writeInt(posY).writeInt(lineX).writeInt(lineY).toByteArray()
+            
+            elif code == 3:
+                p.writeUTF(self.client.playerName).toByteArray()
+            self.client.room.sendAllOthers(self.client, Identifiers.send.Crazzy_Packet, p.toByteArray())
+    
         @self.packet(args=['readByte'])
         async def Crouch(self, crouch_type):
             self.client.room.sendAll(Identifiers.send.Crouch, ByteArray().writeInt(self.client.playerCode).writeByte(crouch_type).writeByte(0).toByteArray())
@@ -134,7 +148,7 @@ class Packets:
                     player = self.client.room.players.get(self.client.room.currentShamanName)
                     if player != None and self.client.room.isUsingShamanSkills:
                         if player.bubblesCount > 0:
-                            if self.client.room.getPlayerCountAlive() != 1:
+                            if self.client.room.getPlayerCountAlive() > 1:
                                 self.client.sendPlaceObject(self.client.room.objectID + 2, 59, self.client.posX, 450, 0, 0, 0, True, True)
                         
                         if player.desintegration:
@@ -348,6 +362,13 @@ class Packets:
                 self.client.shamanItems = base64.b64decode(player[16]).decode('utf-8')
                 self.client.equipedShamanBadge = player[17]
                 self.client.shamanColor = player[18]
+                self.client.petType = player[19]
+                self.client.petEnd = player[20]
+                self.client.furType = player[21]
+                self.client.furEnd = player[22]
+                self.client.minimumCheesesMapEditor = player[23]
+                self.client.shopCheeses = player[24]
+                self.client.cheeseCountDB = player[25]
                 self.server.bulle_players[playerID] = self.client
                 del self.server.bulle_verification[verification_code]        
                 if self.server.isDebug:
@@ -466,8 +487,9 @@ class Packets:
             if not self.client.isDead and (self.client.room.currentMap in self.client.room.transformationMaps or self.client.hasFunCorpTransformations or self.client.hasLuaTransformations):
                 self.client.room.sendAll(Identifiers.send.Transformation, ByteArray().writeInt(self.client.playerCode).writeShort(objectID).toByteArray())
 
-                                            
-        @self.packet(args=['readShort'])
+                                    
+                                    
+        @self.packet(args=['readShort']) # 14:18
         async def Old_Protocol(self, length):
             data = self.packet.readUTFBytes(length)
             if isinstance(data, (bytes, bytearray)):
@@ -518,8 +540,33 @@ class Packets:
                     self.client.room.editeurMapCode = 0
                     self.client.sendPacket(Identifiers.old.send.Map_Editor, ["", ""])
                                 
+            elif (C, CC) == Identifiers.old.recv.Map_Editor_Export_Map:
+                isTribeHouse = len(values) != 0
+                isSpecial = self.client.checkStaffPermission(['MC', 'PrivMod', 'Mod', 'Admin', 'Owner'])
+                if self.client.cheeseCountDB < 1500 and not isSpecial:
+                    self.client.sendPacket(Identifiers.old.send.Editor_Message, [""])
+                    return
+                
+                elif self.client.shopCheeses < (40 if isTribeHouse else self.client.minimumCheesesMapEditor) and not isSpecial:
+                    self.client.sendPacket(Identifiers.old.send.Editor_Message, ["", ""])
+                    return
+                    
+                if self.client.room.EMapValidated or isTribeHouse:
+                    if not isSpecial:
+                        self.client.shopCheeses -= 40 if isTribeHouse else self.client.minimumCheesesMapEditor
+
+                    self.client.room.CursorMaps.execute(f"SELECT MAX(Code) FROM Maps")
+                    last_row_id = self.client.room.CursorMaps.fetchone()[0]
+                    code = last_row_id + 1
+                    self.client.room.CursorMaps.execute("insert into Maps (Code, Name, XML, YesVotes, NoVotes, Perma, Del) values (?, ?, ?, ?, ?, ?, ?)", [code, self.client.playerName, self.client.room.editeurMapXML, 0, 0, 22 if isTribeHouse else 0, 0])
+                    self.client.sendPacket(Identifiers.old.send.Map_Editor, ["0"])
+                    self.client.sendPacket(Identifiers.old.send.Map_Exported, [code])
+                    self.client.roomName = self.client.server.getRecommendedRoom(self.client.playerLangue)
+                    await self.client.enterRoom()
+                                
             elif (C,CC) == Identifiers.old.recv.Map_Editor_Reset_Map:
                 if self.client.room.isEditeur:
                     self.client.room.editeurMapCode = 0
+            
             else:
                 self.client.Logger.warn(f"[SATELLITE][{self.client.ipAddress}][OLD] The packet {C}:{CC} is not registered in the bulle.\n")

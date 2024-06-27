@@ -99,6 +99,8 @@ class Tribulle:
             self.sendCreateTribe(packet)
         elif code == Identifiers.tribulle.recv.ST_ChangerMessageJour:
             self.sendChangedTribeMessage(packet)
+        elif code == 102:
+            self.sendTribeHouseChange(packet)
         elif code == Identifiers.tribulle.recv.ST_ExclureMembre:
             self.sendTribeMemberKicked(packet)
         elif code == Identifiers.tribulle.recv.ST_DemandeInformationsTribu:
@@ -757,7 +759,6 @@ class Tribulle:
         elif type == 1:
             suma = int(perms[2]) - 2**permID
         perms[2] = str(suma)
-        print(suma)
         join = "|".join(map(str, perms))
         rankInfo[rankID] = join
         self.client.tribeRanks = ";".join(map(str, rankInfo))
@@ -910,6 +911,15 @@ class Tribulle:
                 if player.isTribeOpened:
                     player.Tribulle.sendTribeInfo()
 
+
+    def sendTribeHouseChange(self, packet):
+        tribulleID, mapCode = packet.readInt(), packet.readInt()
+        self.server.cursor['tribe'].update_one({'Code':self.client.tribeCode},{'$set':{'House':mapCode}})
+        
+        self.setTribeHistorique(self.client.tribeCode, 8, self.getTime(), self.client.playerName, mapCode)
+        
+        self.updateTribeData()
+        self.sendTribeInfo()
 
 
     # Tribe Utilities

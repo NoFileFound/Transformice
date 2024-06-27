@@ -1,0 +1,13 @@
+{
+	"NPC": {
+		"-1000": ["Oracle", 299, true, "61;0,0,0,0,0,19_3d100f+1fa896+ffe15b,0,0,0", 2187, 381, true, true, "surprise madafaka"],
+		"-1001": ["Papaille", 298, true, "4;2,0,2,2,0,0,0,0,1", 2394, 209, true, true, "Disneyclient buy NOW!"],
+		"-1002": ["Elise", 349, true, "3;10,0,1,0,1,0,0,1,0", 2329, 209, true, true, ""],
+		"-1003": ["Buffy", 347, true, "$Buffy", 1908, 499, true, true, ""],
+		"-1004": ["Indiana Mouse", 296, false, "45;0,0,0,0,0,0,0,0,0", 174, 714, true, true, ""],
+		"-1005": ["Prof", 327, false, "$Proviseur", 289, 715, true, true, ""],
+		"-1006": ["Cassidy", 280, false, "$Barman", 2770, 549, true, true, ""],
+		"-1007": ["Von Drekkemouse", 287, false, "$Halloween", 1672, 378, true, true, ""],
+		"-1008": ["Delphilante", 66, true, "93;34,9_77A7DD,53_77A7DD+E9D9DC+9A8566+F1BC2E,0,0,62,0,26,5_77A7DD+E9D9DC+F1BC2E+F1BC2E+E9D9DC", 1025, 681, true, true, ""]
+	}
+}

@@ -31,6 +31,23 @@ class Identifiers:
         BU_FunCorpChangePlayerSize = 1030
         BU_FunCorpLinkMices = 1031
         BU_ChangeRoomMaximumPlayers = 1032
+        BU_SendPlayerPet = 1033
+        BU_SendPlayerFur = 1034
+        BU_SendPlayerPencil = 1035
+        BU_SendTrowableObject = 1036
+        BU_SendPlayerEmote = 1037
+        BU_SendBallonBadge = 1038
+        BU_SendPlayerPlayedTime = 1039
+        BU_SendPlayerCheeses = 1040
+        BU_SendPlayerMicrophone = 1041
+        BU_SendPlayerBonfire = 1042
+        BU_UseInventoryConsumable = 1043
+        BU_SendMistletoe = 1044
+        BU_SendShopBadge = 1045
+        BU_SendUnlockTitle = 1046
+        BU_Change_Map = 1047
+        BU_FunCorpChangeMouseColor = 1048
+        BU_FunCorpChangeNickColor = 1049
         
     class tribulle:
         class recv:
@@ -143,6 +160,10 @@ class Identifiers:
         Player_Report = (8, 25)
         Init_Ping_System = (8, 30)
     
+        # Tribe
+        Enter_Tribe_House = (16, 1)
+        Tribe_Invite = (16, 2)
+    
         # Shop packets
         Shop_Equip_Clothe = (20, 6)
         Shop_Save_Clothe = (20, 7)
@@ -217,6 +238,7 @@ class Identifiers:
         # New game packets
         Open_Dressing = (100, 30)
         Shop_View_Full_Look = (100, 31)
+        NPC_Functions = (100, 75)
         Change_Shaman_Badge = (100, 79)
         
         # New-New game packets
@@ -250,12 +272,14 @@ class Identifiers:
         Recv_Message = [6, 20]
         
         # Player packets
+        Give_Currency = [8, 2]
         Titles_List = [8, 14]
         Profile = [8, 16]
         Player_Shop_List = [8, 20]
         Anim_Donation = [8, 50]
     
         # idk 💀
+        Tribe_Invite = [16, 2]
         Banner_Login = [16, 9]
         
         # Shop packets
@@ -291,7 +315,9 @@ class Identifiers:
         Account_Registration_Captcha = [26, 20]
         Player_IPS_Info = [26, 28]
         Login_Souris = [26, 33]
+        NPC_Shop = [26, 38]
         
+        # Informations
         Time_Stamp = [28, 2]
         Promotion_Popup = [28, 3]
         Message_Langue = [28, 5]
@@ -316,7 +342,6 @@ class Identifiers:
         # Inventory, Consumables and Trades
         Inventory = [31, 1]
         Update_Inventory_Consumable = [31, 2]
-        Use_Inventory_Consumable = [31, 3]
         Trade_Invite = [31, 5]
         Trade_Result = [31, 6]
         Trade_Start = [31, 7]
@@ -341,6 +366,7 @@ class Identifiers:
         New_Consumable = [100, 67]
         Change_Title = [100, 72]
         Image_Login = [100, 99]
+        Sanction_Panel = [100, 105]
         
         # New packets
         Send_Cafe_Warnings = [144, 11]

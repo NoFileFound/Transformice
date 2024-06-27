@@ -13,6 +13,10 @@ import Client, Bulle
 from Utils import Config, Logger
 from Utils.Time import Time
 
+# Reload
+from importlib import reload
+import Modules as _module
+
 class Server(asyncio.Transport):
     def __init__(self):
         # Config
@@ -26,6 +30,7 @@ class Server(asyncio.Transport):
         self.gameLanguages = self.jsonConfig.load_file("./Include/Server/languages.json")
         self.gameInfo = self.jsonConfig.load_file("./Include/Server/game.json")
         self.inventoryConsumables = self.jsonConfig.load_file("./Include/Server/inventory.json")
+        self.npcs = self.jsonConfig.load_file("./Include/Server/npcs.json")
         self.profileStats = self.jsonConfig.load_file("./Include/Server/profilestats.json")
         self.shopInfo = self.jsonConfig.load_file("./Include/Server/shop.json")
         self.shopPromotions = self.jsonConfig.load_file("./Include/Server/promotions.json")
@@ -97,6 +102,14 @@ class Server(asyncio.Transport):
         else:
             playerName = "*" + playerName
         return playerName
+
+    def checkAlreadyExistingSanction(self, playerName, typ) -> bool:
+        player = self.players.get(playerName)
+        if player != None:
+            return player.isMuted if typ == "Muted" else False
+        else:
+            info = self.cursor['sanctions'].find_one({'Username':playerName, 'Type':typ, 'State':'Active'})
+            return info != None
 
     def checkConnectedPlayer(self, playerName) -> bool:
         return playerName in self.players
@@ -252,8 +265,15 @@ class Server(asyncio.Transport):
             player.updateDatabase()
 
     def sendReloadModules(self):
+        reload(_module)
         for player in self.players.copy().values():
-            player.reloadModules()
+            player.Packets = _module.Packets.Packets(player)
+            player.Cafe = _module.Cafe.Cafe(player)
+            player.Shop = _module.Shop.Shop(player)
+            player.ChannelCommands = _module.ChannelCommands.ChannelCommands(player)
+            player.ParseCommands =_module.Commands.Commands(player)
+            player.ModoPwet = _module.ModoPwet.ModoPwet(player)
+            player.Tribulle = _module.Tribulle.Tribulle(player)
 
     def sendServerMessageAll(self, message, sender, isTab=False, staff_positions=[]):
         for player in self.players.copy().values():
@@ -324,7 +344,7 @@ class Server(asyncio.Transport):
 
     # Other Functions
     def banPlayer(self, playerName, hours, reason, moderator, isSilent=False, disconnectIP=True) -> int:
-        if self.checkAlreadyExistingSanction(playerName, "BAN"):
+        if self.checkAlreadyExistingSanction(playerName, "Banned"):
             return 2
     
         player = self.players.get(playerName)
@@ -334,7 +354,7 @@ class Server(asyncio.Transport):
                 player.banVotes = []
             
             if not player.isGuest:
-                self.cursor["sanctions"].insert_one({"ID":self.lastSanctionID, "Username":playerName, "Type":"Banned", "State":"Active", "Duration":int(Time.getTime() + (hours * 60 * 60)) if hours != -1 else -1, "Reason":reason, "Moderator":moderator, "CancelledAuthor":"", "CancelledReason":""})
+                self.cursor["sanctions"].insert_one({"ID":self.lastSanctionID, "Username":playerName, "IP":player.ipAddress, "Type":"Banned", "State":"Active", "StartDate":int(Time.getTime()), "Duration":int(Time.getTime() + (hours * 60 * 60)) if hours != -1 else -1, "Hours":hours, "Reason":reason, "Moderator":moderator, "CancelledAuthor":"", "CancelledReason":"", "CancelledDate":""})
                 self.lastSanctionID += 1                               
                            
             if hours != -1:
@@ -351,14 +371,14 @@ class Server(asyncio.Transport):
             return 1
         
         elif self.checkAlreadyExistingAccount(playerName):
-            self.cursor["sanctions"].insert_one({"ID":self.lastSanctionID, "Username":playerName, "Type":"Banned", "State":"Active", "Duration":int(Time.getTime() + (hours * 60 * 60)) if hours != -1 else -1, "Reason":reason, "Moderator":moderator, "CancelledAuthor":"", "CancelledReason":""})
+            self.cursor["sanctions"].insert_one({"ID":self.lastSanctionID, "Username":playerName, "IP":player.ipAddress, "Type":"Banned", "State":"Active", "StartDate":int(Time.getTime()), "Duration":int(Time.getTime() + (hours * 60 * 60)) if hours != -1 else -1, "Hours":hours, "Reason":reason, "Moderator":moderator, "CancelledAuthor":"", "CancelledReason":"", "CancelledDate":""})
             self.sendStaffMessage(f"{moderator} offline banned the player {playerName} for {hours}h ({reason}).", "PrivMod|Mod|Admin")
             self.lastSanctionID += 1
             return 1
         return 0
 
     def banIPAddress(self, ipAddress, hours, reason, moderator) -> bool:
-        if ipAddress in self.IPTempBanCache:
+        if ipAddress in self.IPTempBanCache or ipAddress in self.IPPermaBanCache:
             return False
             
         self.IPTempBanCache.append(ipAddress)
@@ -387,7 +407,7 @@ class Server(asyncio.Transport):
         return [CC, (px + 2), 17, lines]
 
     def mutePlayer(self, playerName, hours, reason, moderator, isSilent=False):
-        if self.checkAlreadyExistingSanction(playerName, "MUTE"):
+        if self.checkAlreadyExistingSanction(playerName, "Muted"):
             return 2
             
         player = self.players.get(playerName)
@@ -402,12 +422,33 @@ class Server(asyncio.Transport):
                 self.modoReports[playerName]['mutedby'] = moderator
 
             if not player.isGuest:
-                self.cursor["sanctions"].insert_one({"ID":self.lastSanctionID, "Username":playerName, "Type":"Muted", "State":"Active", "Duration":int(Time.getTime() + (hours * 60 * 60)), "Reason":reason, "Moderator":moderator, "CancelledAuthor":"", "CancelledReason":""})
+                self.cursor["sanctions"].insert_one({"ID":self.lastSanctionID, "Username":playerName, "IP":player.ipAddress, "Type":"Muted", "State":"Active", "StartDate":int(Time.getTime()), "Duration":int(Time.getTime() + (hours * 60 * 60)), "Hours":hours,  "Reason":reason, "Moderator":moderator, "CancelledAuthor":"", "CancelledReason":"", "CancelledDate":""})
                 self.lastSanctionID += 1
             
             return 1
         else:
             return 0
+
+    def removeModMute(self, playerName, isCancelled=False, moderator="", reason="") -> int:
+        if not self.checkAlreadyExistingAccount(playerName):
+            return -1
+        if not self.checkAlreadyExistingSanction(playerName, "Muted"):
+            return 0
+        else:
+            player = self.players.get(playerName)
+            if player != None:
+                player.isMuted = False
+                player.sendPlayerMute(0, "")
+        
+            if not isCancelled:
+                self.cursor["sanctions"].update_one({"Username": playerName, "Type": "Muted", "State":"Active"}, {"$set": {'State': "Expired"}})
+            else:
+                self.cursor["sanctions"].update_one({"Username": playerName, "Type": "Muted", "State":"Active"}, {"$set": {'State': "Cancelled", "CancelledAuthor":moderator, "CancelledReason":reason, "CancelledDate":int(Time.getTime())}})
+        
+            if playerName in self.modoReports:
+                self.modoReports[playerName]['isMuted'] = False
+                
+            return 1
 
     def removeTempIPBan(self, ipAddress) -> bool:
         if not ipAddress in self.IPTempBanCache:
@@ -416,6 +457,20 @@ class Server(asyncio.Transport):
         self.IPTempBanCache.remove(ipAddress)
         self.cursor["iptempban"].delete_one({"IP":ipAddress})
         return True
+
+    def removeTempUserBan(self, playerName, isCancelled=False, moderator="", reason=""):
+        if not self.checkAlreadyExistingAccount(playerName):
+            return -1
+        if not self.checkAlreadyExistingSanction(playerName, "Banned"):
+            return 0
+        else:
+            if not isCancelled:
+                self.cursor["sanctions"].update_one({"Username": playerName, "Type": "Banned", "State":"Active"}, {"$set": {'State': "Expired"}})
+            else:
+                self.cursor["sanctions"].update_one({"Username": playerName, "Type": "Banned", "State":"Active"}, {"$set": {'State': "Cancelled", "CancelledAuthor":moderator, "CancelledReason":reason, "CancelledDate":int(Time.getTime())}})
+        
+            if playerName in self.modoReports:
+                self.modoReports[playerName]['status'] = "disconnected"
                 
     def voteBanPopulaire(self, playerName, playerVoted, ip):
         player = self.players.get(playerName)
@@ -435,25 +490,19 @@ class Server(asyncio.Transport):
         
     def saveModopwet(self):
         self.jsonConfig.save_file("./Include/Client/modopwet.json", self.modoReports)
-        
+      
+    def saveOutfits(self):
+        self.jsonConfig.save_file("./Include/Server/shop.json", self.shopInfo)
+      
     def savePromotions(self):
         self.jsonConfig.save_file("./Include/Server/promotions.json", self.shopPromotions)
 
 
 
-    def checkAlreadyExistingSanction(self, playerName, typ) -> bool:
-        return False
+    def getShopBadge(self, fullItem) -> int:
+        return 0
 
 
-    def removeTempUserBan(self, playerName, isCancelled=False):
-        pass
-        
-    def removeModMute(self, playerName, isCancelled=False):
-        pass
-                
-    def saveOutfits(self):
-        pass
-       
     async def exit_server_loop(self):                                              
         loop = asyncio.get_event_loop()
         loop.stop()
@@ -481,20 +530,15 @@ class Server(asyncio.Transport):
         self.LoadShopItems()
         self.LoadShopPromotions()
         self.LoadDebug()
-        
-        
         try:
             for port in self.swfInfo["ports"]:
                 self.loop.run_until_complete(self.loop.create_server(lambda: Client.Client(self, self.cursor), self.serverInfo["ip_address"], port))
                 
-            self.loop.run_until_complete(self.loop.create_server(lambda: Bulle.Bulle(self, self.cursor), self.serverInfo["ip_address"], self.swfInfo["bulle_port"])) # do bulle recv pls
-
-            
+            self.loop.run_until_complete(self.loop.create_server(lambda: Bulle.Bulle(self, self.cursor), self.serverInfo["ip_address"], self.swfInfo["bulle_port"]))
             self.Logger.info(f"Server connected on {self.serverInfo['ip_address']}:{self.swfInfo['ports']}\n")
         except OSError:
             self.Logger.error("The server is already running.\n")
             return
-            
         self.loop.run_forever()
         
 if __name__ == "__main__":

@@ -250,6 +250,11 @@ class ByteArray:
         return self
        
     def writeInt128(self, arg_1): # LEB128 / VLQ Encoding also works
+        if arg_1 < 0:
+            self.writeByte(arg_1)
+            self.writeByte(0)
+            return self
+    
         arr = []
         while True:
             byte = arg_1 & 0x7F

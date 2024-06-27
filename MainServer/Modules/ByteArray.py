@@ -249,22 +249,37 @@ class ByteArray:
         self.write(value)
         return self
         
-    def writeUTFBytes(self, __bytes):
-       _len = zlib.compress(__bytes.encode())
+    def writeUTFBytes(self, string):
+       _len = zlib.compress(string.encode())
        self.writeInt(len(_len))
        self.write(_len)
        return self
-       
+              
     def writeInt128(self, arg_1):
-        local_2 = arg_1 >> 7
-        local_3 = True
-        local_4 = -1 if arg_1 >= 2147483648 else 0
-        
-        while local_3:
-            local_3 = (local_2 != local_4) or ((local_2 & 1) != ((arg_1 >> 6) & 1))
-            self.writeByte((arg_1 & 0x7F) | (128 if local_3 else 0))
-            arg_1 = local_2
-            local_2 = local_2 >> 7
+        if arg_1 < 0:
+            self.writeByte(arg_1)
+            self.writeByte(0)
+            return self
+    
+        arr = []
+        while True:
+            byte = arg_1 & 0x7F
+            arg_1 >>= 7
+            
+            if arg_1 != 0:
+                byte |= 0x80
+            arr.append(byte)
+            
+            if not arg_1:
+                break
+
+        # Special tfm cases
+        if arr[-1] >= 64 and arr[-1] < 128:
+            arr[-1] += 128
+            arr.append(0)
+            
+        for info in arr:
+            self.writeByte(info)
         return self
         
     # Decryption

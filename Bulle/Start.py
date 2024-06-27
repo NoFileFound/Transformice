@@ -28,6 +28,7 @@ class Bulle:
         self.bulleInfo = Config.Json().load_file("./Include/bulle.json")
         self.mapsInfo = Config.Json().load_file("./Include/map_db.json")
         self.chatEmojies = Config.Json().load_file("./Include/chat_emoji.json", encoding='utf-8')
+        self.npcs = Config.Json().load_file("./Include/npcs.json")
     
         # Boolean
         self.isDebug = False
@@ -114,8 +115,15 @@ class Bulle:
             shamanItems = args[17]
             shamanBadge = int(args[18])
             shamanColor = args[19]
-            verification_code = int(args[20])
-            self.bulle_verification[verification_code] = [playerName, playerCode, playerLangue, playerLook, staffRoles, isMuted, playerGender, roomName, isHidden, isReported, titleNumber, titleStars, isMutedHours, isMutedReason, shamanType, shamanLevel, shamanItems, shamanBadge, shamanColor]
+            petType = int(args[20])
+            petEnd = int(args[21])
+            furType = int(args[22])
+            furEnd = int(args[23])
+            mapCheeses = int(args[24])
+            shopCheeses = int(args[25])
+            cheeseCount = int(args[26])
+            verification_code = int(args[27])
+            self.bulle_verification[verification_code] = [playerName, playerCode, playerLangue, playerLook, staffRoles, isMuted, playerGender, roomName, isHidden, isReported, titleNumber, titleStars, isMutedHours, isMutedReason, shamanType, shamanLevel, shamanItems, shamanBadge, shamanColor, petType, petEnd, furType, furEnd, mapCheeses, shopCheeses, cheeseCount]
                 
         elif code == Identifiers.bulle.BU_SendAnimZelda:
             playerID = int(args[0])
@@ -321,7 +329,15 @@ class Bulle:
             playerID = int(args[4])
             if roomName in self.bulle_rooms:
                 if self.bulle_rooms[roomName].isFuncorp or isSkippingFunCorpRoom:
-                    if players == ['*']:
+                    if players == ['']:
+                        info = 0
+                        for player in self.bulle_rooms[roomName].players.copy().values():
+                            if player.hasFunCorpTransformations:
+                                info += 1
+                    
+                        self.bulle_players[playerID].sendServerMessage(f"Players with transformations: <BV>{info}</BV>", True)
+                
+                    elif players == ['*']:
                         for player in self.bulle_rooms[roomName].players.copy().values():
                             player.sendPacket(Identifiers.send.Can_Transformation, 1 if option == "set" else 0)
                             player.hasFunCorpTransformations = (True if option == "set" else False)
@@ -352,7 +368,15 @@ class Bulle:
             playerID = int(args[4])
             if roomName in self.bulle_rooms:
                 if self.bulle_rooms[roomName].isFuncorp or isSkippingFunCorpRoom:
-                    if players == ['*']:
+                    if players == ['']:
+                        info = 0
+                        for player in self.bulle_rooms[roomName].players.copy().values():
+                            if player.canMeep:
+                                info += 1
+                    
+                        self.bulle_players[playerID].sendServerMessage(f"Players with meep: <BV>{info}</BV>", True)
+                
+                    elif players == ['*']:
                         for player in self.bulle_rooms[roomName].players.copy().values():
                             player.sendPacket(Identifiers.send.Can_Meep, 1 if option == "set" else 0)
                             player.canMeep = (True if option == "set" else False)
@@ -466,6 +490,243 @@ class Bulle:
                 else:
                     self.bulle_players[playerID].sendServerMessage("FunCorp commands only work when the room is in FunCorp mode.", True)
         
+        elif code == Identifiers.bulle.BU_SendPlayerPet:
+            roomName = args[0]
+            playerID = int(args[1])
+            petType = int(args[2])
+            petEnd = int(args[3])
+            playerCode = int(args[4])
+            if playerID in self.bulle_players:
+                if not self.bulle_players[playerID].isDead:
+                    self.bulle_players[playerID].petType = petType
+                    self.bulle_players[playerID].petEnd = petEnd
+                
+                    if roomName in self.bulle_rooms:
+                        self.bulle_rooms[roomName].sendAll(Identifiers.send.Pet, ByteArray().writeInt(playerCode).writeByte(petType).toByteArray())
+                        
+        elif code == Identifiers.bulle.BU_SendPlayerFur:
+            playerID = int(args[0])
+            furType = int(args[1])
+            furEnd = int(args[2])
+            if playerID in self.bulle_players:
+                if not self.bulle_players[playerID].isDead:
+                    self.bulle_players[playerID].furType = furType
+                    self.bulle_players[playerID].furEnd = furEnd
+        
+        elif code == Identifiers.bulle.BU_SendPlayerPencil:
+            playerID = int(args[0])
+            pencilColor = int(args[1])
+            if playerID in self.bulle_players:
+                self.bulle_players[playerID].drawingColor = pencilColor
+                self.bulle_players[playerID].sendPacket(Identifiers.send.Crazzy_Packet, ByteArray().writeByte(1).writeShort(650).writeInt(pencilColor).toByteArray())
+        
+        elif code == Identifiers.bulle.BU_SendTrowableObject: # UNFINISHED
+            playerID = int(args[0])
+            objectCode = int(args[1])
+            consumableID = int(args[2])
+            if playerID in self.bulle_players:
+                if objectCode == 11:
+                    self.bulle_players[playerID].room.objectID += 2
+                self.bulle_players[playerID].sendPlaceObject(self.bulle_players[playerID].room.objectID if consumableID == 11 else 0, objectCode, self.bulle_players[playerID].posX + 28 if self.bulle_players[playerID].isFacingRight else self.bulle_players[playerID].posX - 28, self.bulle_players[playerID].posY, 0, 0 if consumableID == 11 or objectCode in [24, 63] else 10 if self.bulle_players[playerID].isFacingRight else 40, 50, True, True)
+       
+        elif code == Identifiers.bulle.BU_SendPlayerEmote:
+            playerID = int(args[0])
+            emoteID= int(args[1])
+            flag = args[2]
+            others = bool(args[3] == 'True')
+            if playerID in self.bulle_players:
+                self.bulle_players[playerID].sendPlayerEmote(emoteID, flag, others, False)
+                
+        elif code == Identifiers.bulle.BU_SendBallonBadge:
+            playerID = int(args[0])
+            playerCode = int(args[1])
+            code = int(args[2])
+            if playerID in self.bulle_players:
+                self.bulle_players[playerID].room.sendAll(Identifiers.send.Baloon_Badge, ByteArray().writeInt(playerCode).writeShort(code).toByteArray())
+                
+        elif code == Identifiers.bulle.BU_SendPlayerPlayedTime:
+            playerID = int(args[0])
+            playerCode = int(args[1])
+            _local1 = int(args[2]) # days
+            _local2 = int(args[3]) # hours ?
+            if playerID in self.bulle_players:
+                self.bulle_players[playerID].room.sendAll(Identifiers.send.Crazzy_Packet, ByteArray().writeByte(5).writeInt(playerCode).writeShort(_local1).writeByte(_local2).toByteArray())
+        
+        elif code == Identifiers.bulle.BU_SendPlayerCheeses:
+            playerID = int(args[0])
+            playerCode = int(args[1])
+            _local1 = int(args[2])
+            if playerID in self.bulle_players:
+                self.bulle_players[playerID].room.sendAll(Identifiers.send.Crazzy_Packet, ByteArray().writeByte(4).writeInt(playerCode).writeInt(_local1).toByteArray())
+       
+        elif code == Identifiers.bulle.BU_SendPlayerMicrophone:
+            playerID = int(args[0])
+            if playerID in self.bulle_players:
+                self.bulle_players[playerID].sendPlayerEmote(20, "", False, False)
+                if len(self.bulle_players[playerID].room.players) > 5:
+                    for player in self.bulle_players[playerID].room.players.copy().values():
+                        if player != self.bulle_players[playerID]:
+                            if player.posX >= self.bulle_players[playerID].posX - 400 and player.posX <= self.bulle_players[playerID].posX + 400:
+                                if player.posY >= self.bulle_players[playerID].posY - 300 and player.posY <= self.bulle_players[playerID].posY + 300:
+                                    player.sendPlayerEmote(6, "", False, False)
+       
+        elif code == Identifiers.bulle.BU_SendPlayerBonfire:
+            playerID = int(args[0])
+            if playerID in self.bulle_players:
+                self.bulle_players[playerID].Skills.sendBonfireSkill(self.bulle_players[playerID].posX, self.bulle_players[playerID].posY, 15)
+        
+        elif code == Identifiers.bulle.BU_UseInventoryConsumable:
+            playerID = int(args[0])
+            playerCode = int(args[1])
+            _id = int(args[2])
+            if playerID in self.bulle_players:
+                self.bulle_players[playerID].room.sendAll(Identifiers.send.Use_Inventory_Consumable, ByteArray().writeInt(playerCode).writeShort(_id).toByteArray())
+        
+        elif code == Identifiers.bulle.BU_SendMistletoe:
+            playerID = int(args[0])
+            if playerID in self.bulle_players:
+                if len(self.bulle_players[playerID].room.players) > 5:
+                    for player in self.bulle_players[playerID].room.players.copy().values():
+                        if player != self.bulle_players[playerID]:
+                            if player.posX >= self.bulle_players[playerID].posX - 400 and player.posX <= self.bulle_players[playerID].posX + 400:
+                                if player.posY >= self.bulle_players[playerID].posY - 300 and player.posY <= self.bulle_players[playerID].posY + 300:
+                                    player.sendPlayerEmote(3, "", False, False)
+        
+        elif code == Identifiers.bulle.BU_SendShopBadge:
+            playerID = int(args[0])
+            item2 = int(args[1])
+            if playerID in self.bulle_players:
+                self.bulle_players[playerID].sendUnlockedBadge(item2)
+        
+        elif code == Identifiers.bulle.BU_SendUnlockTitle:
+            playerID = int(args[0])
+            title_id = int(args[1])
+            stars = int(args[2])
+            if playerID in self.bulle_players:
+                self.bulle_players[playerID].sendUnlockedTitle(title_id, stars)
+        
+        elif code == Identifiers.bulle.BU_Change_Map:
+            roomName = args[0]
+            mapChange = args[1]
+            fakeMap = args[2]
+            command_name = args[3]
+            playerID = int(args[4])
+            if roomName in self.bulle_rooms:
+                if command_name == "np":
+                    if mapChange == '0':
+                        self.loop.create_task(self.bulle_rooms[roomName].mapChange())
+                    else:
+                        mapInfo = self.bulle_rooms[roomName].getMapInfo(int(mapChange[1:]) if mapChange.startswith('@') else int(mapChange))
+                        if mapInfo[0] != '':
+                            if fakeMap != '0':
+                                self.bulle_rooms[roomName].forceNextMap = fakeMap
+                                #self.bulle_rooms[roomName].forceNextMapCode = mapChange
+                            else:
+                                self.bulle_rooms[roomName].forceNextMap = mapChange
+                            if self.bulle_rooms[roomName].changeMapTimer != None:
+                                try:self.bulle_rooms[roomName].changeMapTimer.cancel()
+                                except:self.bulle_rooms[roomName].changeMapTimer = None
+                            self.loop.create_task(self.bulle_rooms[roomName].mapChange())
+                        else:
+                            self.bulle_players[playerID].sendLangueMessage("", "$CarteIntrouvable")
+                else:
+                    mapInfo = self.bulle_rooms[roomName].getMapInfo(int(mapChange[1:]) if mapChange.startswith('@') else int(mapChange))
+                    if mapInfo[0] == '':
+                        self.bulle_players[playerID].sendLangueMessage("", "$CarteIntrouvable")
+                    else:
+                        self.bulle_rooms[roomName].forceNextMap = f"{mapChange}"
+                        self.bulle_players[playerID].sendLangueMessage("", f"$ProchaineCarte : Vanilla - {mapChange}")
+        
+        elif code == Identifiers.bulle.BU_FunCorpChangeMouseColor:
+            roomName = args[0]
+            players = list(map(str, base64.b64decode(args[1].encode() + b'=' * (-len(args[1]) % 4)).decode().split(',')))
+            option = args[2]
+            isSkippingFunCorpRoom = bool(args[3] == 'True')
+            playerID = int(args[4])
+            if roomName in self.bulle_rooms:
+                if self.bulle_rooms[roomName].isFuncorp or isSkippingFunCorpRoom:
+                    if players == ['']:
+                        info = 0
+                        for player in self.bulle_rooms[roomName].players.copy().values():
+                            if player.tempMouseColor != "":
+                                info += 1
+                        self.bulle_players[playerID].sendServerMessage(f"Colored furs: <BV>{info}</BV>", True) # colored nicknames
+                        
+                    elif players == ['*']:
+                        for player in self.bulle_rooms[roomName].players.copy().values():
+                            player.tempMouseColor = str(option)
+                            
+                        if option != "off":
+                            option = int(option)
+                            self.bulle_players[playerID].sendServerMessage(f"All the players now have the fur color <font color='#{hex(option)[2:]}'>{hex(option)}</font>.", True)
+                        else:
+                            for player in self.bulle_rooms[roomName].players.copy().values():
+                                if player.tempMouseColor != "":
+                                    player.tempMouseColor = ""
+                            self.bulle_players[playerID].sendServerMessage("All the fur colors have been removed.", True)
+                    else:
+                        for player in self.bulle_rooms[roomName].players.copy().values():
+                            if player.playerName in players:
+                                player.tempMouseColor = str(option)
+                                
+                        if option != "off":
+                            players.remove(option)
+                            option = int(option)
+                            self.bulle_players[playerID].sendServerMessage(f"New fur color (<font color='#{hex(option)[2:]}'>{hex(option)}</font>) for players: <BV>{', '.join(map(str, players))}</BV>", True)
+                        else:
+                            players.remove("off")
+                            for player in self.bulle_rooms[roomName].players.copy().values():
+                                if player.playerName in players:
+                                    player.tempMouseColor = ""
+                            self.bulle_players[playerID].sendServerMessage(f"Fur colors removed from players: <BV>{', '.join(map(str, players))}</BV>", True)
+                else:
+                    self.bulle_players[playerID].sendServerMessage("FunCorp commands only work when the room is in FunCorp mode.", True)
+        
+        elif code == Identifiers.bulle.BU_FunCorpChangeNickColor:
+            roomName = args[0]
+            players = list(map(str, base64.b64decode(args[1].encode() + b'=' * (-len(args[1]) % 4)).decode().split(',')))
+            option = args[2]
+            isSkippingFunCorpRoom = bool(args[3] == 'True')
+            playerID = int(args[4])
+            if roomName in self.bulle_rooms:
+                if self.bulle_rooms[roomName].isFuncorp or isSkippingFunCorpRoom:
+                    if players == ['']:
+                        info = 0
+                        for player in self.bulle_rooms[roomName].players.copy().values():
+                            if player.tempNickColor != "":
+                                info += 1
+                        self.bulle_players[playerID].sendServerMessage(f"Colored nicknames: <BV>{info}</BV>", True) # colored nicknames
+                        
+                    elif players == ['*']:
+                        for player in self.bulle_rooms[roomName].players.copy().values():
+                            player.tempNickColor = str(option)
+                            
+                        if option != "off":
+                            option = int(option)
+                            self.bulle_players[playerID].sendServerMessage(f"All the players now have the nickname color <font color='#{hex(option)[2:]}'>{hex(option)}</font>.", True)
+                        else:
+                            for player in self.bulle_rooms[roomName].players.copy().values():
+                                if player.tempNickColor != "":
+                                    player.tempNickColor = ""
+                            self.bulle_players[playerID].sendServerMessage("All the nickname colors have been removed.", True)
+                    else:
+                        for player in self.bulle_rooms[roomName].players.copy().values():
+                            if player.playerName in players:
+                                player.tempNickColor = str(option)
+                                
+                        if option != "off":
+                            players.remove(option)
+                            option = int(option)
+                            self.bulle_players[playerID].sendServerMessage(f"New nickname color (<font color='#{hex(option)[2:]}'>{hex(option)}</font>) for players: <BV>{', '.join(map(str, players))}</BV>", True)
+                        else:
+                            players.remove("off")
+                            for player in self.bulle_rooms[roomName].players.copy().values():
+                                if player.playerName in players:
+                                    player.tempNickColor = ""
+                            self.bulle_players[playerID].sendServerMessage(f"Nickname colors removed from players: <BV>{', '.join(map(str, players))}</BV>", True)
+                else:
+                    self.bulle_players[playerID].sendServerMessage("FunCorp commands only work when the room is in FunCorp mode.", True)
+        
         else:
             self.Logger.warn(f"Unregisted packet id {code} with data {args}.\n")
 
@@ -486,23 +747,7 @@ class Bulle:
                 self.vanillaMaps[int(fileName[:-4])] = f.read()
             cnt += 1
         self.Logger.info(f"Loaded {cnt} total vanilla maps.\n")
-            
-    def Main(self):
-        self.CursorMaps = self.ConnectMAPDatabase()
-        self.LoadVanillaMaps()
-        self.isDebug = self.bulleInfo["debug"]
-        self.connect_to_main_server()
-
-        try:
-            for port in self.bulleInfo["port"]:
-                self.loop.run_until_complete(self.loop.create_server(lambda: BulleProtocol(self, self.CursorMaps), self.bulleInfo["ip_address"], port))
-            self.Logger.info(f"Bulle connected on {self.bulleInfo['ip_address']}:{'-'.join(map(str, self.bulleInfo['port']))}.\n")
-        except OSError:
-            self.Logger.error("The bulle is already running.\n")
-            return
-        
-        self.loop.run_forever()
-        
+                    
     # Bulle Functions
     async def addClientToRoom(self, player, roomName):
         if roomName in self.bulle_rooms:
@@ -532,29 +777,51 @@ class Bulle:
         
         return result
         
-    def getShamanBadge(self, playerCode):
+    def getShamanBadge(self, playerCode) -> int:
         for player in self.bulle_players.copy().values():
             if player.playerCode == playerCode:
                 return player.Skills.getShamanBadge()
         return 0
 
-    def getShamanLevel(self, playerCode):
+    def getShamanLevel(self, playerCode) -> int:
         for player in self.bulle_players.copy().values():
             if player.playerCode == playerCode:
                 return player.shamanLevel
         return 0
 
-    def getShamanType(self, playerCode): 
+    def getShamanNoSkillChallenge(self, playerCode) -> bool:
+        for player in self.bulle_players.copy().values():
+            if player.playerCode == playerCode:
+                return player.isNoSkill
+        return False
+
+    def getShamanType(self, playerCode) -> int: 
         for player in self.bulle_players.copy().values():
             if player.playerCode == playerCode:
                 return player.shamanType
         return 0
         
         
-        
-        
-    def checkMessage(self, message):
+    def checkMessage(self, message) -> bool:
         return False
+        
+        
+    def Main(self):
+        self.CursorMaps = self.ConnectMAPDatabase()
+        self.LoadVanillaMaps()
+        self.isDebug = self.bulleInfo["debug"]
+        self.connect_to_main_server()
+
+        try:
+            for port in self.bulleInfo["port"]:
+                self.loop.run_until_complete(self.loop.create_server(lambda: BulleProtocol(self, self.CursorMaps), self.bulleInfo["ip_address"], port))
+            self.Logger.info(f"Bulle connected on {self.bulleInfo['ip_address']}:{'-'.join(map(str, self.bulleInfo['port']))}.\n")
+        except OSError:
+            self.Logger.error("The bulle is already running.\n")
+            return
+        
+        self.loop.run_forever()
+        
         
 if __name__ == "__main__":
     _Bulle = Bulle()

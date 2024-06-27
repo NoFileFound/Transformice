@@ -32,6 +32,23 @@ class Identifiers:
         BU_FunCorpChangePlayerSize = 1030
         BU_FunCorpLinkMices = 1031
         BU_ChangeRoomMaximumPlayers = 1032
+        BU_SendPlayerPet = 1033
+        BU_SendPlayerFur = 1034
+        BU_SendPlayerPencil = 1035
+        BU_SendTrowableObject = 1036
+        BU_SendPlayerEmote = 1037
+        BU_SendBallonBadge = 1038
+        BU_SendPlayerPlayedTime = 1039
+        BU_SendPlayerCheeses = 1040
+        BU_SendPlayerMicrophone = 1041
+        BU_SendPlayerBonfire = 1042
+        BU_UseInventoryConsumable = 1043
+        BU_SendMistletoe = 1044
+        BU_SendShopBadge = 1045
+        BU_SendUnlockTitle = 1046
+        BU_Change_Map = 1047
+        BU_FunCorpChangeMouseColor = 1048
+        BU_FunCorpChangeNickColor = 1049
             
     
     class recv:
@@ -81,6 +98,7 @@ class Identifiers:
         Invocation = (100, 2)
         Remove_Invocation = (100, 3)
         Strm_Force_Next_Shaman = (100, 20)
+        Crazzy_Packet = (100, 40)
         Map_Info = (100, 80)
         
         # New-New packets
@@ -104,6 +122,7 @@ class Identifiers:
         Round_Time = [5, 22]
         Mouse_Size = [5, 31]
         #Room_Password = [5, 39]
+        Bonfire_Skill = [5, 45]
         Soulmate = [5, 48]
         Music_Video = [5, 72]
         Music_Playlist = [5, 73]
@@ -121,10 +140,13 @@ class Identifiers:
         # Player packets
         Player_Action = [8, 1]
         Emotion = [8, 5]
+        Player_Win = [8, 6]
         Shaman_Info = [8, 11]
         #Meep_IMG = [8, 18]
+        NPC = [8, 30]
         Meep = [8, 38]
         Can_Meep = [8, 39]
+        Unlocked_Badge = [8, 42]
         Anim_Zelda = [8, 44]
         Vampire_Mode = [8, 66]
         
@@ -156,14 +178,21 @@ class Identifiers:
         Mulodrome_Join = [30, 15]
         Mulodrome_Leave = [30, 16]
         Mulodrome_Winner = [30, 21]
+        
+        # Inventory, Consumables and Trades
+        Use_Inventory_Consumable = [31, 3]
 
-        # New packets
+        # Transformice
         Invocation = [100, 2]
         Remove_Invocation = [100, 3]
         Jankenpon = [100, 5]
+        Dead_Bubble = [100, 7]
+        Crazzy_Packet = [100, 40]
+        Pet = [100, 70]
+        Baloon_Badge = [100, 71]
         Collectible_Action = [100, 101]
         
-        # New-New packets
+        # New packets
         Player_List = [144, 1]
         Player_Respawn = [144, 2]
         Player_Get_Cheese = [144, 6]
@@ -184,6 +213,7 @@ class Identifiers:
             Map_Editor_Validate_Map = (14, 10)
             Map_Editor_Map_Xml = (14, 11)
             Return_To_Map_Editor = (14, 14)
+            Map_Editor_Export_Map = (14, 18)
             Map_Editor_Reset_Map = (14, 19)
     
         class send:
@@ -193,14 +223,20 @@ class Identifiers:
         
             Player_Died = [8, 5]
             Player_Disconnect = [8, 7]
+            Unlocked_Title = [8, 14]
             Shaman_Perfomance = [8, 17]
+            Save_Remaining = [8, 18]
             Sync = [8, 21]
             Catch_The_Cheese_Map = [8, 23]
             
             Vote_Box = [14, 4]
+            Map_Exported = [14, 5]
             Load_Map_Result = [14, 8]
             Load_Map = [14, 9]
             Map_Editor = [14, 14]
+            Map_Validated = [14, 17]
+            Editor_Message = [14, 20]
+
 
             Totem = [22, 22]
         

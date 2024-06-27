@@ -2,6 +2,7 @@ import base64
 import datetime
 import re
 import time
+import traceback
 import zlib
 
 # Modules
@@ -274,8 +275,13 @@ class Packets:
             self.client.Cafe.deleteCafePost(postID)
 
         @self.packet(args=['readUTF', 'readUTF'])
-        async def Enter_Room(self, community, roomName):
+        async def Enter_Room(self, community, roomName): # UNFINISHED
             self.client.sendEnterRoom(f"{roomName}", community)
+
+        @self.packet(args=[])
+        async def Enter_Tribe_House(self):
+            if not self.client.tribeName == "":
+                self.client.sendEnterRoom(f"*\x03{self.client.tribeName}")
 
         @self.packet(args=['readShort', 'readBoolean'])
         async def Equip_Consumable(self, _id, equip):
@@ -349,7 +355,7 @@ class Packets:
                 except Exception as e:
                     # server error
                     self.client.sendPacket(Identifiers.send.Login_Result, ByteArray().writeByte(6).writeUTF(playerName).writeUTF("").toByteArray())
-                    self.client.Logger.logException(e, "Serveur.log")
+                    self.client.Logger.logException(e, "Serveur.log", traceback.format_exc())
 
         @self.packet(args=[])
         async def Login_Time(self):
@@ -401,6 +407,13 @@ class Packets:
         async def Modopwet_Watch(self, playerName, isFollowing):
             if self.client.privLevel >= 8 or self.client.isPrivMod:
                 self.client.ModoPwet.sendWatchPlayer(playerName, isFollowing)
+
+        @self.packet(args=['readByte'])
+        async def NPC_Functions(self, _typ):
+            if _typ == 4:
+                self.client.sendNpcShop(self.packet.readUTF())
+            else:
+                self.client.sendNPCBuyItem(self.packet.readByte())
 
         @self.packet(args=['readShort'])
         async def Old_Protocol(self, length):
@@ -849,6 +862,13 @@ class Packets:
         async def Trade_Result(self, isAccept):
             self.client.tradeResult(isAccept)
 
+        @self.packet(args=['readUTF'])
+        async def Tribe_Invite(self, playerName):
+            player = self.server.players.get(playerName)
+            if player != None and player.tribeName in self.client.invitedTribeHouses:
+                if self.client.roomName != "*%s%s" %(chr(3), player.tribeName):
+                    self.client.sendEnterRoom(f"*\x03{player.tribeName}")
+
         @self.packet(args=['readShort'])
         async def Use_Consumable(self, _id):
             self.client.useConsumable(_id)
@@ -865,15 +885,12 @@ class Packets:
         async def Vote_Cafe_Post(self, topicID, postID, mode):
             self.client.Cafe.voteCafePost(topicID, postID, mode)
 
-                
-                
+                                
         @self.packet(args=['readUTF'])
         async def Verify_Email_Address(self, emailAddress):
             if self.client.isEmailAddressVerified:
                 return
             print(emailAddress)
-
-
 
 
 

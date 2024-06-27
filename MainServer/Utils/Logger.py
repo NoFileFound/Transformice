@@ -32,6 +32,7 @@ class Logger:
     def error(self, message : str) -> None:
         self.log("ERROR", message)
         
-    def logException(self, ex, file):
-        with open(f"./MainServer/Include/{file}") as F:
-            F.write(ex)
+    def logException(self, ex, file, info):
+        with open(f"../MainServer/Include/{file}", "a") as F:
+            F.write(info)
+        self.error(f"An exception was throwned {ex} please check the error logs for more information.\n")

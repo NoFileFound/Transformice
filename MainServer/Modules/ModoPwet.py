@@ -25,14 +25,18 @@ class ModoPwet:
             hours = 24
         else:
             hours = Time.getHoursDiff(info) * 2
+        result = 0
         
         if hours > 8766:
             reason = self.banhackreasonperm
-            self.server.banPlayer(playerName, -1, reason, self.client.playerName, False, True)
+            result = self.server.banPlayer(playerName, -1, reason, self.client.playerName, False, True)
         else:
             reason = self.banhackreason
-            self.server.banPlayer(playerName, hours, reason, self.client.playerName, iban, True)
-        self.sendReportersKarma(playerName, hours, reason, self.client.playerName, "ban")
+            result = self.server.banPlayer(playerName, hours, reason, self.client.playerName, not iban, True)
+        if result == 1:
+            self.sendReportersKarma(playerName, hours, reason, self.client.playerName, "ban")
+        elif result == 2:
+            self.client.sendServerMessage(f"Player [{playerName}] is already banned, please wait.", True)
 
     def makeReport(self, playerName, type, reason, reporter):
         if playerName != reporter or self.server.isDebug:

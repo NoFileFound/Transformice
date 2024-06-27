@@ -47,8 +47,8 @@ class Commands:
     def requireLevel(self, level=[]):
         return self.client.checkStaffPermission(level) != False
         
-    def requireTribePerm(self, permId):
-        return False
+    def requireTribePerm(self, permId): # UNFINISHED
+        return True
         
     async def parseCommand(self, command):
         values = command.split(" ")
@@ -76,7 +76,7 @@ class Commands:
             
     def __init_2(self):
 # Guest / Souris Commands   
-        @self.command(alias=['bootcamp', 'racing', 'survivor', 'vanilla'])
+        @self.command(alias=['bootcamp', 'racing', 'survivor', 'vanilla', 'defilante'])
         async def normal(self):
             if self.commandName == "normal":
                 self.client.sendEnterRoom("")
@@ -101,6 +101,31 @@ class Commands:
         @self.command
         async def tutorial(self):
             self.client.sendEnterRoom("\x03[Tutorial] %s" %(self.client.playerName))
+                        
+# Tribe Commands
+        @self.command(tribe=2046, args=1)
+        async def inv(self, playerName):
+            if self.server.checkConnectedPlayer(playerName) and not playerName in self.client.Tribulle.getTribeMembers(self.client.tribeCode):
+                player = self.server.players.get(playerName)
+                player.invitedTribeHouses.append(self.client.tribeName)
+                player.sendPacket(Identifiers.send.Tribe_Invite, ByteArray().writeUTF(self.client.playerName).writeUTF(self.client.tribeName).toByteArray())
+                self.client.sendLangueMessage("", "$InvTribu_InvitationEnvoyee", "<V>"+player.playerName+"</V>")
+
+        @self.command(tribe=2046, args=1)
+        async def invkick(self, playerName):
+            if self.server.checkConnectedPlayer(playerName) and not playerName in self.client.Tribulle.getTribeMembers(self.client.tribeCode):
+                player = self.server.players.get(playerName)
+                if self.client.tribeName in player.invitedTribeHouses and not player.roomName == self.client.roomName and self.client.roomName == f"\x03{self.client.tribeName}":
+                    player.invitedTribeHouses.remove(self.client.tribeName)
+                    player.sendLangueMessage("", "$InvTribu_AnnulationRecue", "<V>"+player.playerName+"</V>")
+                    self.client.sendLangueMessage("", "$InvTribu_AnnulationEnvoyee", "<V>"+player.playerName+"</V>")
+                
+                elif self.client.tribeName in player.invitedTribeHouses:
+                    player.invitedTribeHouses.remove(self.client.tribeName)
+                    self.client.sendLangueMessage("", "$InvTribu_AnnulationEnvoyee", "<V>" + player.playerName + "</V>")
+                    player.sendLangueMessage("", "$InvTribu_AnnulationRecue", "<V>" + self.client.playerName + "</V>")
+                    if player.roomName == "*" + chr(3) + self.client.tribeName:
+                        player.sendEnterRoom(self.server.recommendRoom(self.client.playerLangue))
                         
 # Player Commands
         @self.command(nosouris=True, args=1)
@@ -274,6 +299,46 @@ class Commands:
             self.client.sendBullePacket(Identifiers.bulle.BU_FunCorpChangePlayerSize, self.client.roomName, base64.b64encode(players.encode()).decode(), option, self.requireLevel(["Admin", "Owner"]), self.client.playerID)
 
         @self.command(level=['FC', 'Admin', 'Owner'])
+        async def colormouse(self, *args):
+            players = ""
+            option = ""
+            
+            if len(args) == 0:
+                players = ""
+        
+            elif args[0] == "*":
+                players = "*"
+            else:
+                _list = []
+                for arg in args:
+                    _list.append(arg)
+                players = ",".join(_list)
+           
+            if len(args) > 0:
+                option = args[-1] if args[-1] != "off" else "off"
+            self.client.sendBullePacket(Identifiers.bulle.BU_FunCorpChangeMouseColor, self.client.roomName, base64.b64encode(players.encode()).decode(), option, self.requireLevel(["Admin", "Owner"]), self.client.playerID)
+
+        @self.command(level=['FC', 'Admin', 'Owner'])
+        async def colornick(self, *args):
+            players = ""
+            option = ""
+            
+            if len(args) == 0:
+                players = ""
+        
+            elif args[0] == "*":
+                players = "*"
+            else:
+                _list = []
+                for arg in args:
+                    _list.append(arg)
+                players = ",".join(_list)
+           
+            if len(args) > 0:
+                option = args[-1] if args[-1] != "off" else "off"
+            self.client.sendBullePacket(Identifiers.bulle.BU_FunCorpChangeNickColor, self.client.roomName, base64.b64encode(players.encode()).decode(), option, self.requireLevel(["Admin", "Owner"]), self.client.playerID)
+
+        @self.command(level=['FC', 'Admin', 'Owner'])
         async def funcorp(self, args=''):
             if args == "help":
                 self.client.sendLogMessage(self.FunCorpMemberCommands())
@@ -315,8 +380,11 @@ class Commands:
         async def meep(self, *args):
             players = ""
             option = ""
+            
+            if len(args) == 0:
+                players = ""
         
-            if args[0] == "*":
+            elif args[0] == "*":
                 players = "*"
             else:
                 _list = []
@@ -324,7 +392,8 @@ class Commands:
                     _list.append(arg)
                 players = ",".join(_list)
            
-            option = "set" if args[-1] != "off" else "off"
+            if len(args) > 0:
+                option = "set" if args[-1] != "off" else "off"
             self.client.sendBullePacket(Identifiers.bulle.BU_FunCorpGiveMeepPowers, self.client.roomName, base64.b64encode(players.encode()).decode(), option, self.requireLevel(["Admin", "Owner"]), self.client.playerID)
 
         @self.command(level=['FC', 'Admin', 'Owner'])
@@ -335,8 +404,11 @@ class Commands:
         async def transformation(self, *args):
             players = ""
             option = ""
+            
+            if len(args) == 0:
+                players = ""
         
-            if args[0] == "*":
+            elif args[0] == "*":
                 players = "*"
             else:
                 _list = []
@@ -344,7 +416,8 @@ class Commands:
                     _list.append(arg)
                 players = ",".join(_list)
            
-            option = "set" if args[-1] != "off" else "off"
+            if len(args) > 0:
+                option = "set" if args[-1] != "off" else "off"
             self.client.sendBullePacket(Identifiers.bulle.BU_FunCorpGiveTransformationPowers, self.client.roomName, base64.b64encode(players.encode()).decode(), option, self.requireLevel(["Admin", "Owner"]), self.client.playerID)
 
         @self.command(level=['FC', 'Mod', 'Admin', 'Owner'], args=1)
@@ -362,6 +435,20 @@ class Commands:
                 self.client.sendMessage(MCs.rstrip("\n"))
             else:
                 self.client.sendServerMessage("Don't have any online funcorps at moment.", True)
+            
+        @self.command(level=['MC', 'PrivMod', 'Mod', 'Admin', 'Owner'], alias=['npp'])
+        async def np(self, *args):
+            mapCode = "0"
+            fakeMap = "0"
+            if len(args) == 0:
+                mapCode = "0"
+                fakeMap = "0"
+            else:
+                mapCode = args[0]
+                fakeMap = "0"
+                if len(args) == 2:
+                    fakeMap = args[1]
+            self.client.sendBullePacket(Identifiers.bulle.BU_Change_Map, self.client.roomName, mapCode, fakeMap, self.commandName, self.client.playerID)
             
 # Modo commands
         @self.command(nosouris=True, alias=['iban'])
@@ -401,6 +488,36 @@ class Commands:
             else:
                 self.server.sendServerMessageAll(f"{self.client.playerName} banned the IP {ip} for {hours}h ({reason}).", self.client, False)
                 self.client.sendServerMessage(f"The IP {ip} got banned.", True)
+
+        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1, alias=['sanctions'])
+        async def casier(self, playerName):
+            player = self.server.players.get(Other.parsePlayerName(playerName))
+            message = f"<p align='center'><N>Sanction Logs for <V>{playerName}</V></N>\n</p><p align='left'>Currently running sanctions: </p><br>"
+            r = self.server.cursor['sanctions'].find({"Username":playerName})
+            for rs in r[0:200]:
+                fromtime = datetime.datetime.fromtimestamp(float(int(rs["StartDate"])))
+                fromtime1 = datetime.datetime.utcfromtimestamp(float(int(rs["StartDate"])))
+                totime = datetime.datetime.fromtimestamp(float(int(rs["Duration"])))
+                hours = f"{rs['Hours']}h" if int(rs['Hours']) != -1 else "Permanently"
+                
+                if rs['State'] == 'Expired':
+                    message += f"- <G><B>{rs['Type'].upper()} {hours}h </B> ({IPTools.EncodeIP(player.ipAddress) if player != None else 'offline'}) by {rs['Moderator']} : {rs['Reason']}</G><br>"
+                else:
+                    message += f"- <V><B>{rs['Type'].upper()} {hours}h </B></V> <N>({IPTools.EncodeIP(player.ipAddress) if player != None else 'offline'}) by {rs['Moderator']} :</N> <BL>{rs['Reason']}</BL><br>"
+                
+                if rs['State'] == 'Cancelled':
+                    message += f"<p align='left'><font size='9'><BL>    Cancelled by {rs['CancelledAuthor']}"
+                    if len(rs['CancelledReason']) > 0:
+                        message += f" : {rs['CancelledReason']}</BL></font></p>"
+                    else:
+                        message += "</BL></font></p>"
+                
+                if rs['State'] == 'Expired':
+                    color = 'G>'
+                else:
+                    color = 'N2>'
+                message += f"<p align='left'><font size='9'><{color}    {fromtime} | {fromtime1} → {totime}</{color}</font></p><br>"
+            self.client.sendLogMessage(message)
 
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'])
         async def chatfilter(self, option, *args):
@@ -686,6 +803,17 @@ class Commands:
             else:
                 self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
 
+        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1, alias=['deban'])
+        async def unban(self, playerName, reason=''):
+            result = self.server.removeTempUserBan(playerName, True, self.client.playerName, reason)
+            if result == -1:
+                self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
+            elif result == 0:
+                self.client.sendServerMessage(f"The player {playerName} is not banned.", True)
+            else:
+                self.server.sendServerMessageAll(f"{self.client.playerName} unbanned the player {playerName}.", self.client, False)
+                self.client.sendServerMessage(f"The player {playerName} got unbanned.", True)
+
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1, alias=['debanip'])
         async def unbanip(self, ipAddress):
             decip = IPTools.DecodeIP(ipAddress)
@@ -695,6 +823,17 @@ class Commands:
             else:
                 self.server.sendServerMessageAll(f"The player {self.client.playerName} unbanned the ip address {ipAddress}.", self.client, False)
                 self.client.sendServerMessage(f"The IP address {ipAddress} got unbanned.", True)
+
+        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1, alias=['demute'])
+        async def unmute(self, playerName, reason=''):
+            result = self.server.removeModMute(playerName, True, self.client.playerName, reason)
+            if result == -1:
+                self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
+            elif result == 0:
+                self.client.sendServerMessage(f"The player {playerName} is not muted.", True)
+            else:
+                self.server.sendServerMessageAll(f"{self.client.playerName} unmuted the player {playerName}.", self.client, False)
+                self.client.sendServerMessage(f"The player {playerName} got unmuted.", True)
 
 # Admin Commands
         @self.command(level=['Admin', 'Owner'], alias=['askplayers', 'asktfm'])
@@ -775,16 +914,62 @@ class Commands:
             else:
                 self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
 
+        @self.command(level=['Admin', 'Owner'], args=2)
+        async def givetitle(self, playerName, _id):
+            player = self.server.players.get(Other.parsePlayerName(playerName))
+            if player != None:
+                if not player.checkPlayerTitle(int(_id)):
+                    player.giveTitle(int(_id))
+                    self.client.sendServerMessage(f"Done.", True)
+                else:
+                    self.client.sendServerMessage(f"The player {playerName} already has this title.", True)
+            else:
+                self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
+
         @self.command(level=['Admin', 'Owner'], args=1)
         async def openlink(self, url):
             for player in self.server.players.copy().values():
                 player.sendPacket(Identifiers.send.Open_Link, ByteArray().writeUTF(url).toByteArray())
+
+        @self.command(level=['Admin', 'Owner'], args=3, alias=['remcon', 'removecon'])
+        async def removeconsumable(self, playerName, _id, amount):
+            player = self.server.players.get(Other.parsePlayerName(playerName))
+            _id = int(_id)
+            amount = int(amount)
+            if player != None:
+                if _id in player.playerConsumables and player.playerConsumables[_id] >= amount:
+                    count = player.playerConsumables[_id] - amount
+                    if count <= 0:
+                        del player.playerConsumables[_id]
+                    else:
+                        player.playerConsumables[_id] = count
+                    player.sendUpdateInventoryConsumable(_id, count)
+                    self.client.sendServerMessage(f"Successfully remove {_id}:{amount} from {playerName}", True)
+                else:
+                    self.client.sendServerMessage(f"The player {playerName} doesn't have this consumable or amount is too much.", True)
+            else:
+                self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
 
         @self.command(level=['Admin', 'Owner'])
         async def removeipbancache(self):
             self.server.IPPermaBanCache = []
             self.server.IPTempBanCache = []
             self.client.sendServerMessage("Done!", True)
+
+        @self.command(level=['Admin', 'Owner'], args=2)
+        async def removetitle(self, playerName, title_id):
+            player = self.server.players.get(Other.parsePlayerName(playerName))
+            title_id = float(title_id)
+            if player != None:
+                try:
+                    player.titleList.remove(title_id)
+                    player.titleNumber = 0
+                    player.titleStars = 0
+                    self.client.sendServerMessage(f"Done!")
+                except:
+                    self.client.sendServerMessage(f"The player {playerName} don't have this title.", True)
+            else:
+                self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
 
         @self.command(level=['Admin', 'Owner'], args=1, alias=['re', 'revive'])
         async def respawn(self, playerName):
@@ -923,17 +1108,39 @@ class Commands:
             self.server.sendServerRestartSEC()
 
         @self.command(level=['Owner'])
-        async def reload(self, playerName=''):
+        async def reload(self):
             try:
-                if len(playerName) == 0:
-                    self.server.sendReloadModules()
-                else:
-                    player = self.server.players.get(playerName)
-                    if player != None:
-                        player.reloadModules()
+                self.server.sendReloadModules()
                 self.client.sendServerMessage("Done!", True)
             except Exception as e:
                 self.client.sendServerMessage(f"Failed reload all modules. Error: {e}", True)
+
+        @self.command(level=['Mod', 'Admin', 'Owner'], args=1, alias=['staffmemberlog', 'sml'])
+        async def stafflog(self, playerName):
+            staff_role = "Admin" if self.client.privLevel == 10 else "Moderator" if self.client.privLevel >= 8 else "Private Moderator" if self.client.isPrivMod else "Undefined"
+            info = self.server.cursor["sanctions"].find({"Moderator":playerName})
+            info2 = self.server.cursor["sanctions"].find({"CancelledAuthor":playerName})
+            given_sanctions = ""
+            cancelled_sanctions = ""
+            cnt, cnt2 = 0, 0
+            
+            for sanction in info:
+                given_sanctions += f"- <V><B>{sanction['Type']}</B></V> <J>({sanction['Username']})</J> : <BL>{sanction['Reason']}</BL><br>"
+                cnt += 1
+            
+            for sanction in info2:
+                cancelled_sanctions += f"- <V><B>{sanction['Type']}</B></V> <J>({sanction['Username']})</J> : <BL>{'No reason' if sanction['CancelledReason'] == '' else sanction['CancelledReason']}</BL><br>"
+                cnt2 += 1
+            
+            p = ByteArray()
+            p.writeUTF(playerName)
+            p.writeUTF(f"Staff Role: {staff_role}")
+            p.writeUTF("")
+            p.writeInt(cnt)
+            p.writeUTFBytes(given_sanctions)
+            p.writeInt(cnt2)
+            p.writeUTFBytes(cancelled_sanctions)
+            self.client.sendPacket(Identifiers.send.Sanction_Panel, p.toByteArray())
 
         @self.command(level=['Owner'])
         async def serverconfig(self):
@@ -956,14 +1163,13 @@ class Commands:
         @self.command(level=['Owner'])
         async def tribulle2(self):
             self.client.sendTribulleProtocol(False)
-            
-
+        
     def FunCorpMemberCommands(self):
         message = "FunCorp Commands: \n\n"
         #message += "<J>/changenick</J> <V>[playerName] [newNickname|off]</V> : <BL> Temporarily changes a player's nickname.</BL>\n"
         message += "<J>/changesize</J> <V>[playerNames|*] [size|off]</V> : <BL> Temporarily changes the size (between 0.1x and 5x) of players.</BL>\n"
-        #message += "<J>/colormouse </J> <V>[playerNames|*] [color|off]</V> : <BL> Temporarily gives a colorized fur.</BL>\n"
-        #message += "<J>/colornick</J> <V>[playerNames|*] [color|off]</V> : <BL> Temporarily changes the color of player nicknames.</BL>\n"
+        message += "<J>/colormouse </J> <V>[playerNames|*] [color|off]</V> : <BL> Temporarily gives a colorized fur.</BL>\n"
+        message += "<J>/colornick</J> <V>[playerNames|*] [color|off]</V> : <BL> Temporarily changes the color of player nicknames.</BL>\n"
         message += "<J>/funcorp</J> <G>[help]</G> : <BL> Enable/disable the funcorp mode, or show the list of funcorp-related commands.</BL>\n"
         message += "<J>/ignore</J> <V>[playerPartName]<V> : <BL> Ignore selected player. (aliases: /negeer, /ignorieren)\n"
         message += "<J>/linkmice</J> <V>[playerNames|*]</V> <G>[off]</G> : <BL> Temporarily links players.</BL>\n"
