@@ -18,3 +18,43 @@ Traceback (most recent call last):
   File "C:\Users\believix\Desktop\TFM\MainServer\Modules\ByteArray.py", line 274, in writeInt128
     if arr[-1] >= 64 and arr[-1] < 128:
 IndexError: list index out of range
+Traceback (most recent call last):
+  File "C:\Users\believix\Desktop\TFM\MainServer\Modules\Packets.py", line 393, in Login_Account
+    await self.client.loginPlayer(playerName, password, startRoom)
+  File "C:\Users\believix\Desktop\TFM\MainServer\Client.py", line 537, in loginPlayer
+    self.send2FAAuthorization()
+  File "C:\Users\believix\Desktop\TFM\MainServer\Client.py", line 1335, in send2FAAuthorization
+    self.sendPacket(Identifiers.send.Login_Result, ByteArray().writeByte(15).writeUTF(self.client.playerEmail).writeUTF("").toByteArray())
+AttributeError: 'Client' object has no attribute 'client'
+Traceback (most recent call last):
+  File "C:\Users\believix\Desktop\TFM\MainServer\Modules\Packets.py", line 399, in Login_Account
+    await self.client.loginPlayer(playerName, password, startRoom)
+  File "C:\Users\believix\Desktop\TFM\MainServer\Client.py", line 564, in loginPlayer
+    self.Skills.sendShamanSkills(False)
+  File "C:\Users\believix\Desktop\TFM\MainServer\Modules\Skills.py", line 14, in sendShamanSkills
+    packet = ByteArray().writeByte(len(self.client.playerSkills))
+AttributeError: 'Client' object has no attribute 'playerSkills'
+Traceback (most recent call last):
+  File "C:\Users\believix\Desktop\TFM\MainServer\Modules\Packets.py", line 399, in Login_Account
+    await self.client.loginPlayer(playerName, password, startRoom)
+  File "C:\Users\believix\Desktop\TFM\MainServer\Client.py", line 570, in loginPlayer
+    self.Skills.sendShamanSkills(False)
+  File "C:\Users\believix\Desktop\TFM\MainServer\Modules\Skills.py", line 17, in sendShamanSkills
+    packet = ByteArray().writeByte(len(self.client.playerSkills))
+AttributeError: 'Client' object has no attribute 'playerSkills'
+Traceback (most recent call last):
+  File "C:\Users\believix\Desktop\TFM\MainServer\Modules\Packets.py", line 399, in Login_Account
+    await self.client.loginPlayer(playerName, password, startRoom)
+  File "C:\Users\believix\Desktop\TFM\MainServer\Client.py", line 584, in loginPlayer
+    self.DailyQuests.loadMissions()
+AttributeError: 'Client' object has no attribute 'DailyQuests'
+Traceback (most recent call last):
+  File "C:\Users\believix\Desktop\TFM\MainServer\Modules\Packets.py", line 399, in Login_Account
+    await self.client.loginPlayer(playerName, password, startRoom)
+  File "C:\Users\believix\Desktop\TFM\MainServer\Client.py", line 585, in loginPlayer
+    self.DailyQuests.loadMissions()
+  File "C:\Users\believix\Desktop\TFM\MainServer\Modules\DailyQuests.py", line 31, in loadMissions
+    self.sendMissions()
+  File "C:\Users\believix\Desktop\TFM\MainServer\Modules\DailyQuests.py", line 55, in sendMissions
+    p.writeShort(int(self.missionsCompleted))
+AttributeError: 'DailyQuests' object has no attribute 'missionsCompleted'

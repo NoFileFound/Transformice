@@ -279,6 +279,10 @@ class Room:
             self.countStats = False
             self.isDefilante = True
             self.isNoShaman = True
+            
+        elif roomNameCheck.startswith("*strm_"):
+            self.countStats = False
+            
         else:
             self.isNormal = True
 
@@ -945,4 +949,7 @@ class Room:
             self.sendAll(Identifiers.send.Set_Name_Color, ByteArray().writeInt(self.players.get(playerName).playerCode).writeInt(color).toByteArray())
             
     def giveStats(self, typ):
+        pass
+        
+    def removeObject(self):
         pass

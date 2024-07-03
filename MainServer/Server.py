@@ -28,12 +28,14 @@ class Server(asyncio.Transport):
         self.gameCodes = self.jsonConfig.load_file("./Include/Server/codes.json")
         self.gameCommands = self.jsonConfig.load_file("./Include/Client/commands.json")
         self.gameLanguages = self.jsonConfig.load_file("./Include/Server/languages.json")
+        self.gameLuaInfo = self.jsonConfig.load_file("./Include/Client/luatree.json")
         self.gameInfo = self.jsonConfig.load_file("./Include/Server/game.json")
         self.inventoryConsumables = self.jsonConfig.load_file("./Include/Server/inventory.json")
         self.npcs = self.jsonConfig.load_file("./Include/Server/npcs.json")
         self.profileStats = self.jsonConfig.load_file("./Include/Server/profilestats.json")
         self.shopInfo = self.jsonConfig.load_file("./Include/Server/shop.json")
         self.shopPromotions = self.jsonConfig.load_file("./Include/Server/promotions.json")
+        self.shopPurchaseInfo = self.jsonConfig.load_file("./Include/Server/purchase.json")
         self.serverInfo = self.jsonConfig.load_file("./Include/Server/server.json")
         self.swfInfo = self.jsonConfig.load_file("./Include/Server/swf.json")
         self.modoReports = self.jsonConfig.load_file("./Include/Client/modopwet.json")
@@ -246,8 +248,6 @@ class Server(asyncio.Transport):
         promotions = []
     
         for promotion in self.shopPromotions:
-            #print(self.serverTime, promotion["Time"])
-            #print(self.serverTime - promotion["Time"])
             if (self.serverTime < promotion["Time"]):
                 promotions.append(promotion)
                 self.shopPromotionsCheck[f"{promotion['Category']}|{promotion['Item']}"] = promotion["Time"]
@@ -257,6 +257,10 @@ class Server(asyncio.Transport):
             self.Logger.info(f"Loaded {len(self.shopPromotions)} total shop promotions.\n")
         
     # Packets
+    def sendBullePacket(self, packet_id, *args):
+        for bulle in self.bulles:
+            self.bulles[bulle].send_packet(packet_id, *args)
+    
     def sendDatabaseUpdate(self):
         if self.disableDatabase:
             return
@@ -497,6 +501,9 @@ class Server(asyncio.Transport):
     def savePromotions(self):
         self.jsonConfig.save_file("./Include/Server/promotions.json", self.shopPromotions)
 
+
+    def sendEmailMessage(self, emailCode, emailAdress, playerName):
+        pass
 
 
     def getShopBadge(self, fullItem) -> int:

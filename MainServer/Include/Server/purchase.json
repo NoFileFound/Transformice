@@ -1,0 +1,26 @@
+[
+	{
+		"ID": 0,
+		"Amount": 150,
+		"Price": 444,
+		"Currency": "USD"
+	},
+	{
+		"ID": 1,
+		"Amount": 210,
+		"Price": 555,
+		"Currency": "USD"
+	},
+	{
+		"ID": 2,
+		"Amount": 345,
+		"Price": 666,
+		"Currency": "USD"
+	},
+	{
+		"ID": 3,
+		"Amount": 9999,
+		"Price": 0,
+		"Currency": "USD"
+	}
+]

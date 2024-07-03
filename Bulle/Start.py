@@ -122,8 +122,9 @@ class Bulle:
             mapCheeses = int(args[24])
             shopCheeses = int(args[25])
             cheeseCount = int(args[26])
-            verification_code = int(args[27])
-            self.bulle_verification[verification_code] = [playerName, playerCode, playerLangue, playerLook, staffRoles, isMuted, playerGender, roomName, isHidden, isReported, titleNumber, titleStars, isMutedHours, isMutedReason, shamanType, shamanLevel, shamanItems, shamanBadge, shamanColor, petType, petEnd, furType, furEnd, mapCheeses, shopCheeses, cheeseCount]
+            playerSkills = args[27]
+            verification_code = int(args[28])
+            self.bulle_verification[verification_code] = [playerName, playerCode, playerLangue, playerLook, staffRoles, isMuted, playerGender, roomName, isHidden, isReported, titleNumber, titleStars, isMutedHours, isMutedReason, shamanType, shamanLevel, shamanItems, shamanBadge, shamanColor, petType, petEnd, furType, furEnd, mapCheeses, shopCheeses, cheeseCount, playerSkills]
                 
         elif code == Identifiers.bulle.BU_SendAnimZelda:
             playerID = int(args[0])
@@ -726,6 +727,18 @@ class Bulle:
                             self.bulle_players[playerID].sendServerMessage(f"Nickname colors removed from players: <BV>{', '.join(map(str, players))}</BV>", True)
                 else:
                     self.bulle_players[playerID].sendServerMessage("FunCorp commands only work when the room is in FunCorp mode.", True)
+        
+        elif code == Identifiers.bulle.BU_ReceiveBulleInformation:
+            playerID = int(args[0])
+            if playerID in self.bulle_players:
+                self.bulle_players[playerID].sendServerMessage(f"[bulle{self.bulleInfo['id']}] {len(self.bulle_players)} / {len(self.bulle_rooms)} rooms", True)
+        
+        elif code == Identifiers.bulle.BU_UpdateShamanSkill:
+            playerID = int(args[0])
+            if playerID in self.bulle_players:
+                for skill in list(map(str, filter(None, base64.b64decode(args[1]).decode('utf-8').split(";")))):
+                    values = skill.split(":")
+                    self.bulle_players[playerID].playerSkills[int(values[0])] = int(values[1])
         
         else:
             self.Logger.warn(f"Unregisted packet id {code} with data {args}.\n")

@@ -1,8 +1,12 @@
 import base64
 import datetime
+import hashlib
+import random
 import re
+import string
 import time
 import traceback
+import uuid
 import zlib
 
 # Modules
@@ -121,6 +125,18 @@ class Packets:
         async def Cancel_Trade(self, playerName):
             self.client.cancelTrade(playerName)
 
+        @self.packet(args=['readUTF'])
+        async def Cancel_Transaction(self, token):
+            self.client.transactionToken = ""
+
+        @self.packet(args=[])
+        async def Cancel_Verify_Email_Adress(self):
+            self.client.lastEmailCode = ""
+
+        @self.packet(args=['readShort'])
+        async def Change_Mission(self, missionID):
+            self.client.DailyQuests.changeMission(str(missionID))
+
         @self.packet(args=['readByte'])
         async def Change_Shaman_Badge(self, badge):
             if badge == 0 or badge in self.client.shamanBadges:
@@ -153,8 +169,8 @@ class Packets:
                 self.client.Logger.warn(f"[CLIENT][{self.client.ipAddress}] Connect to the server with older flash player version ({flashver}).\n")
         
             self.client.computerLanguage = osLang
-            self.client.computerInformation = osinfo
-            self.client.flashVersion = flashver
+            self.client.playerInfo.append(osinfo)
+            self.client.playerInfo.append(flashver)
 
         @self.packet(args=['readShort', 'readUTF', 'readUTF', 'readUTF'])
         async def Correct_Version(self, version, language, con_key, stand):
@@ -164,6 +180,14 @@ class Packets:
                     self.client.transport.close()
                     return
             self.client.sendCorrectVersion(language, stand)
+            self.client.playerInfo.append(stand)
+            self.client.playerInfo.append(self.packet.readUTF())
+            self.client.playerInfo.append(self.packet.readInt())
+            self.packet.readUTF()
+            self.client.playerInfo.append(self.packet.readUTF())
+            self.client.playerInfo.append(self.packet.readUTF())
+            self.client.playerInfo.append(self.packet.readInt())
+            self.client.playerInfo.append(self.packet.readInt())
 
         @self.packet(args=['readUTF', 'readUTF', 'readUTF', 'readUTF', 'readShort', 'readUTF'], decrypt=True)
         async def Create_Account(self, playerName, password, email, captcha, unknown, flash_url):
@@ -319,6 +343,31 @@ class Packets:
                     for info in self.server.gameLanguages[lang]:
                         data.writeUTF(info)
             self.client.sendPacket(Identifiers.send.Language_List, data.toByteArray())
+
+        @self.packet(args=['readUTF', 'readByte'])
+        async def Letter(self, playerName, type_letter):
+            consumables = {0:29, 1:30, 2:2241, 3:2330, 4:2351, 5:2522, 6:2576, 7:2581, 8:2585, 9:2591, 10:2609, 11:2612}
+            if type_letter in consumables:
+                count = self.client.playerConsumables[consumables[type_letter]] - 1
+                if count <= 0:
+                    del self.client.playerConsumables[consumables[type_letter]]
+                else:
+                    self.client.playerConsumables[consumables[type_letter]] = count
+                    
+                self.client.sendBullePacket(Identifiers.bulle.BU_UseInventoryConsumable, self.client.playerID, self.client.playerCode, consumables[type_letter])
+                self.client.sendUpdateInventoryConsumable(consumables[type_letter], count)
+
+                player = self.server.players.get(playerName)
+                if (player != None):
+                    p = ByteArray()
+                    p.writeUTF(self.client.playerName)
+                    p.writeUTF(self.client.playerLook)
+                    p.writeUnsignedByte(type_letter)
+                    p.writeBytes(self.packet.readUTFBytes(self.packet.getLength()))
+                    player.sendPacket(Identifiers.send.Letter, p.toByteArray())
+                    self.client.sendLangueMessage("", "$MessageEnvoye")
+                else:
+                    self.client.sendLangueMessage("", "$Joueur_Existe_Pas")
 
         @self.packet(args=['readUTF', 'readUTF', 'readUTF','readUTF', 'readInt'], decrypt=True)
         async def Login_Account(self, playerName, password, flash_url, startRoom, authKey):
@@ -529,6 +578,10 @@ class Packets:
         async def Open_Inventory(self):
             self.client.sendPlayerInventory()
 
+        @self.packet(args=[])
+        async def Open_Missions(self):
+            self.client.DailyQuests.sendMissions()
+
         @self.packet(args=['readBoolean'])
         async def Open_Modopwet(self, isOpen):
             if self.client.privLevel >= 8 or self.client.isPrivMod:
@@ -542,6 +595,10 @@ class Packets:
         @self.packet(args=['readShort'], decrypt=True)
         async def Parse_Tribulle_Old(self, code):
             self.client.Tribulle.parseTribulleCodeOld(code, self.packet)
+
+        @self.packet(args=['readByte'])
+        async def Player_Buy_Skill(self, skill):
+            self.client.Skills.sendPurchaseSkill(skill)
 
         @self.packet(args=['readUTF'])
         async def Player_IPS_Info(self, info):
@@ -560,6 +617,10 @@ class Packets:
                 self.client.PInfo[2] = int((time.time() - self.client.PInfo[1]) * 1000) + VC
                 if prev*2 < self.client.PInfo[2]:
                     self.client.PInfo[2] = prev + 1
+
+        @self.packet(args=[])
+        async def Player_Redistribute_Skills(self):
+            self.client.Skills.sendRedistributeSkills()
 
         @self.packet(args=['readUTF', 'readByte', 'readUTF'])
         async def Player_Report(self, playerName, type, comments):
@@ -593,6 +654,43 @@ class Packets:
                     self.server.sendStaffMessage(f"The IP Address <font color='{IPTools.ColorIP(self.client.ipAddress)}'>{IPTools.EncodeIP(self.client.ipAddress)}</font> is a BOT.\n", "PrivMod|Mod|Admin")
                     self.client.transport.close()
                     return
+
+        @self.packet(args=['readBoolean'])
+        async def Purchase_Fraises(self, isSteam):
+            if not self.server.isDebug:
+                self.client.sendPacket(Identifiers.send.Purchase_Error)
+                return
+        
+            r1 = self.server.shopPurchaseInfo
+            p = ByteArray().writeByte(len(r1))
+            for i in r1:
+                p.writeInt(i["ID"]).writeShort(i["Amount"]).writeInt(i["Price"]).writeUTF(i["Currency"])
+            self.client.sendPacket(Identifiers.send.Main_Purchase_Menu, p.toByteArray())
+
+        @self.packet(args=['readInt'])
+        async def Purchase_Fraises_Begin(self, option): # UNFINISHED
+            if self.client.isEmailAddressVerified:
+                self.client.transactionToken = hashlib.md5(str(uuid.uuid4()).encode()).hexdigest()
+                self.client.transactionOption = int(option)
+                self.client.sendPacket(Identifiers.send.Purchase_Fraises_Paypal, ByteArray().writeUTF(f"https://www.paypal.com/webscr?cmd=_express-checkout&useraction=commit&token={self.client.transactionToken}").writeUTF(self.client.transactionToken).toByteArray())
+                self.client.sendServerMessage("Tip: If you close the window you can restore it with this command <J>/openpurchaselink</J>", True)
+            else:
+                self.client.sendPacket(Identifiers.send.Purchase_Fraises_Transaction_Error, ByteArray().writeUTF("").toByteArray())
+                self.client.sendServerMessage("<R>Your email address need to be validated before purchase fraises.</R>", True)
+
+        @self.packet(args=['readUTF', 'readUTF']) # UNFINISHED
+        async def Purchase_Fraises_Transaction_Confirm(self, transactionTokenA, transactionTokenB):
+            if transactionTokenA != transactionTokenB:
+                self.client.transport.close()
+                
+            if transactionTokenA != self.client.transactionToken:
+                self.client.transport.close()
+                
+            self.client.sendPacket(Identifiers.send.Purchase_Fraises_Transaction_Done, ByteArray().writeShort(self.server.shopPurchaseInfo[self.client.transactionOption]["Amount"]).toByteArray())
+            self.client.shopFraises += self.server.shopPurchaseInfo[self.client.transactionOption]["Amount"]
+            self.client.sendAnimZelda(2, 2)
+            self.client.transactionToken = ""
+            self.client.transactionOption = -1
 
         @self.packet(args=[])
         async def Ranking(self):
@@ -873,9 +971,34 @@ class Packets:
         async def Use_Consumable(self, _id):
             self.client.useConsumable(_id)
 
+        @self.packet(args=['readUTF'])
+        async def Validate_Email_Address_Code(self, code):
+            if self.client.isEmailAddressVerified:
+                return
+        
+            if self.client.lastEmailCode == code:
+                self.client.shopCheeses += 40
+                self.client.giveShopItem(209, False)
+        
+                self.client.sendPacket(Identifiers.send.Email_Address_Verified, '\x01')
+                self.client.sendPacket(Identifiers.send.Email_Address_Code_Validated, '\x01')
+                self.client.isEmailAddressVerified = True
+            else:
+                self.client.sendPacket(Identifiers.send.Send_Email_Code, ByteArray().writeByte(0).writeUTF("").toByteArray())
+                self.client.sendServerMessage("The code you provided is an invalid. Please try again the process", True)
+
         @self.packet(args=['readInt', 'readBoolean'])
         async def Verify_Cafe_Post(self, topicID, status):
             self.client.Cafe.verifyCafePost(topicID, status)
+
+        @self.packet(args=['readUTF'])
+        async def Verify_Email_Address(self, emailAddress):
+            if self.client.isEmailAddressVerified:
+                return
+                
+            self.client.lastEmailCode = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+            self.server.sendEmailMessage(self.client.lastEmailCode, emailAddress, self.client.playerName)
+            self.client.sendPacket(Identifiers.send.Send_Email_Code, ByteArray().writeByte(1).writeUTF(emailAddress).toByteArray())
 
         @self.packet(args=['readUTF'])
         async def View_Cafe_Posts(self, playerName):
@@ -884,18 +1007,3 @@ class Packets:
         @self.packet(args=['readInt', 'readInt', 'readBoolean'])
         async def Vote_Cafe_Post(self, topicID, postID, mode):
             self.client.Cafe.voteCafePost(topicID, postID, mode)
-
-                                
-        @self.packet(args=['readUTF'])
-        async def Verify_Email_Address(self, emailAddress):
-            if self.client.isEmailAddressVerified:
-                return
-            print(emailAddress)
-
-
-
-        @self.packet(args=['readUTF'])
-        async def Send_Code(self, lang):
-            #print(lang, packet_id)
-            #if packet_id == 2 and self.client.isEmailAddressVerified:
-            self.client.sendPacket(Identifiers.send.Email_Address_Code_Validated, ByteArray().writeBoolean(True).toByteArray())

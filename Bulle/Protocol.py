@@ -70,6 +70,8 @@ class BulleProtocol(asyncio.Protocol):
         self.hasEnter = False
         self.hasLuaTransformations = False
         self.hasFunCorpTransformations = False
+        self.hasShamanTransformations = False
+        self.hasShamanMeep = False
         self.isAfk = False
         self.isClosed = False
         self.isDead = False
@@ -467,11 +469,11 @@ class BulleProtocol(asyncio.Protocol):
             else:
                 self.sendTotemItemCount(0)
 
-    async def playerWin(self, holeType, monde, distance, holeX, holeY):
+    async def playerWin(self, holeType, monde, distance, holeX, holeY, isShamanWin=False):
         canGo = True
         timeTaken = int((time.time() - (self.playerStartTimeMillis if self.room.isAutoRespawn else self.room.gameStartTimeMillis)) * 100)
         ntimeTaken = timeTaken // 100.0 if timeTaken > 100 else timeTaken // 10.0 #for fastracing
-        if timeTaken > 7:
+        if timeTaken > 7 or isShamanWin:
             self.room.canChangeMap = False
             canGo = self.room.checkIfShamanCanGoIn() if self.isShaman else True
             if not canGo:
@@ -594,6 +596,8 @@ class BulleProtocol(asyncio.Protocol):
         self.isDead = False
         self.isUsedTotem = False
         self.hasEnter = False
+        self.hasShamanTransformations = False
+        self.hasShamanMeep = False
         self.isShaman = False
         self.isVampire = False
         self.isNewPlayer = False
@@ -657,6 +661,12 @@ class BulleProtocol(asyncio.Protocol):
 
         if self.room.currentMap in range(200, 211) and not self.isShaman:
             self.sendPacket(Identifiers.send.Can_Transformation, 1)
+
+    def sendRemoveCheese(self):
+        pass
+
+    def movePlayer(self):
+        pass
 
 
     def ResetAfkKillTimer(self):

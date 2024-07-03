@@ -1,0 +1,23 @@
+{
+    "Tree": [
+        {"Name": "", "indent":0}
+    ],
+    
+    "Functions": [
+        {
+            "Name": "",
+            "Description": "",
+            "Arguments": [
+                {
+                    "Name": "",
+                    "Type": "",
+                    "Description": "",
+					"Default": ""
+                }
+            ],
+            "isStaff": true,
+            "ReturnType": "",
+            "ReturnInfo": ""
+        }
+    ]
+}

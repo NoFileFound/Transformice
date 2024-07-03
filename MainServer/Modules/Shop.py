@@ -341,7 +341,6 @@ class Shop:
             return ""
 
     def getItemPriceInfo(self, item_category, item_id): #########
-        #print(item_category, item_id)
         concat = str(item_category) + "|" + str(item_id)
         if concat in self.server.shopListCheck:
             return self.server.shopListCheck[concat]

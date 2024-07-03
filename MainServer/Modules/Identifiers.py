@@ -48,6 +48,8 @@ class Identifiers:
         BU_Change_Map = 1047
         BU_FunCorpChangeMouseColor = 1048
         BU_FunCorpChangeNickColor = 1049
+        BU_ReceiveBulleInformation = 1050
+        BU_UpdateShamanSkill = 1051
         
     class tribulle:
         class recv:
@@ -157,8 +159,16 @@ class Identifiers:
         
         # Player packets
         Player_Shop_List = (8, 20)
+        Player_Buy_Skill = (8, 21)
+        Player_Redistribute_Skills = (8, 22)
         Player_Report = (8, 25)
         Init_Ping_System = (8, 30)
+        
+        # Purchase
+        Purchase_Fraises_Begin = (12, 1) # paypal
+        Purchase_Fraises_Transaction_Confirm = (12, 2)
+        Cancel_Transaction = (12, 3)
+        Purchase_Fraises = (12, 10)
     
         # Tribe
         Enter_Tribe_House = (16, 1)
@@ -206,9 +216,11 @@ class Identifiers:
         Game_Log = (28, 4)
         Player_Ping = (28, 6)
         Change_Shaman_Type = (28, 10)
-        Send_Code = (28, 16)
+        Validate_Email_Address_Code = (28, 12)
+        Letter = (28, 15)
         Computer_Info = (28, 17)
         Change_Shaman_Color = (28, 18)
+        Cancel_Verify_Email_Adress = (28, 19)
         Slash_Command = (28, 48)
         Verify_Email_Address = (28, 64)
         
@@ -242,6 +254,8 @@ class Identifiers:
         Change_Shaman_Badge = (100, 79)
         
         # New-New game packets
+        Open_Missions = (149, 1)
+        Change_Mission = (149, 2)
         Report_Cafe_Post = (149, 4)
         Open_Cafe_Warnings = (149, 5)
         Verify_Cafe_Post = (149, 6)
@@ -257,7 +271,6 @@ class Identifiers:
         Shop_Purchase_Emote = (149, 25)
         Shop_Set_Favorite_Item = (149, 27)
 
-        
         # Language Packets
         Set_Language = (176, 1)
         Language_List = (176, 2)
@@ -273,10 +286,21 @@ class Identifiers:
         
         # Player packets
         Give_Currency = [8, 2]
+        Shaman_Exp = [8, 8]
         Titles_List = [8, 14]
         Profile = [8, 16]
         Player_Shop_List = [8, 20]
+        Shaman_Skills = [8, 22]
         Anim_Donation = [8, 50]
+        
+        # Purchase
+        Purchase_Fraises_Paypal = [12, 2]
+        Purchase_Fraises_Transaction_Error = [12, 3]
+        Purchase_Fraises_Transaction_Confirm = [12, 5]
+        Main_Purchase_Menu = [12, 12]
+        Purchase_Fraises_Transaction_Done = [12, 20]
+        Purchase_Fraises_Open_URL = [12, 30]
+        Purchase_Error = [12, 60]
     
         # idk 💀
         Tribe_Invite = [16, 2]
@@ -291,6 +315,10 @@ class Identifiers:
         Shaman_Items = [20, 27]
         Gift_result = [20, 29]
         Shop_Gift = [20, 30]
+        
+        # Skill tree
+        Redistribute_Error_Time = [24, 3]
+        Redistribute_Error_Cheeses = [24, 4]
         
         # Modopwet
         Modopwet_Open = [25, 2]
@@ -316,6 +344,7 @@ class Identifiers:
         Player_IPS_Info = [26, 28]
         Login_Souris = [26, 33]
         NPC_Shop = [26, 38]
+        Tribulle_Token = [26, 41]
         
         # Informations
         Time_Stamp = [28, 2]
@@ -325,8 +354,12 @@ class Identifiers:
         Shaman_Type = [28, 10]
         Email_Address_Code_Validated = [28, 12]
         Email_Address_Verified = [28, 13]
+        Letter = [28, 15]
+        Send_Email_Code = [28, 16]
         Log_Message = [28, 46]
         Request_Info = [28, 50]
+        Notification_Box = [28, 60]
+        Login_Queue = [28, 61]
         Set_Allow_Email_Address = [28, 62]
         Verify_Email_Popup = [28, 64]
         Server_Restart = [28, 88]
@@ -369,6 +402,9 @@ class Identifiers:
         Sanction_Panel = [100, 105]
         
         # New packets
+        Send_Missions = [144, 3]
+        Complete_Mission = [144, 4]
+        DailyQuests_Mark = [144, 5]
         Send_Cafe_Warnings = [144, 11]
         MiniBox_New = [144, 17]
         Open_A801_Outfits_Window = [144, 22]

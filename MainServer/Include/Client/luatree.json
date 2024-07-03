@@ -1,0 +1,23 @@
+{
+	"Tree": [
+		{"Name": "bit32", "indent":1},
+		{"Name": "arshift", "indent":3}
+	],
+	
+	"Functions": [
+		{
+			"Name": "system.loadPlayerData",
+			"Description": "Requests the loading of the player's data for this module. The event eventPlayerDataLoaded is triggered when the player data gets loaded.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "the player about whom you want to get the data"
+				}
+			],
+			"isStaff": true,
+			"ReturnType": "Boolean",
+			"ReturnInfo": "whether the loading got started"
+		}
+	]
+}

@@ -49,6 +49,8 @@ class Identifiers:
         BU_Change_Map = 1047
         BU_FunCorpChangeMouseColor = 1048
         BU_FunCorpChangeNickColor = 1049
+        BU_ReceiveBulleInformation = 1050
+        BU_UpdateShamanSkill = 1051
             
     
     class recv:
@@ -62,11 +64,19 @@ class Identifiers:
         Crouch = (4, 9)
         
         Shaman_Message = (5, 9)
+        Convert_Skill = (5, 14)
+        Demolition_Skill = (5, 15)
+        Projection_Skill = (5, 16)
         Enter_Hole = (5, 18)
         Get_Cheese = (5, 19)
         Place_Object = (5, 20)
         Ice_Cube = (5, 21)
         Defilante_Points = (5, 25)
+        Restorative_Skill = (5, 26)
+        Recycling_Skill = (5, 27)
+        Gravitational_Skill = (5, 28)
+        Antigravity_Skill = (5, 29)
+        Handymouse_Skill = (5, 35)
         Send_Music = (5, 70)
         Send_PlayList = (5, 73)
         
@@ -77,6 +87,7 @@ class Identifiers:
         # Player
         Player_Action = (8, 1)
         Player_Emotions = (8, 5)
+        Player_Shaman_Fly = (8, 15)
         Player_Meep = (8, 39)
     
         Player_MS_Info = (26, 25)
@@ -115,15 +126,34 @@ class Identifiers:
     
         Rounds_Count = [5, 1]
         Shaman_Message = [5, 9]
+        Convert_Skill = [5, 13]
         Skill_Object = [5, 14]
+        Demolition_Skill = [5, 15]
+        Projection_Skill = [5, 16]
         Map_Start_Timer = [5, 10]
         Spawn_Object = [5, 20]
         Enter_Room = [5, 21]
         Round_Time = [5, 22]
+        Restorative_Skill = [5, 26]
+        Recycling_Skill = [5, 27]
+        Gravitation_Skill = [5, 28]
+        Antigravity_Skill = [5, 29]
+        Rollout_Mouse_Skill = [5, 30]
         Mouse_Size = [5, 31]
+        Remove_All_Objects_Skill = [5, 32]
+        Leaf_Mouse_Skill = [5, 33]
+        Iced_Mouse_Skill = [5, 34]
+        Handymouse_Skill = [5, 35]
+        Spider_Mouse_Skill = [5, 36]
+        Grapnel_Mouse_Skill = [5, 37]
+        Evolution_Skill = [5, 38]
         #Room_Password = [5, 39]
+        Skill = [5, 40]
+        Reset_Shaman_Skills = [5, 42]
+        Gatman_Skill = [5, 43]
         Bonfire_Skill = [5, 45]
         Soulmate = [5, 48]
+        Teleport = [5, 50]
         Music_Video = [5, 72]
         Music_Playlist = [5, 73]
         Tutorial = [5, 90]
@@ -141,7 +171,9 @@ class Identifiers:
         Player_Action = [8, 1]
         Emotion = [8, 5]
         Player_Win = [8, 6]
+        Enable_Skill = [8, 10]
         Shaman_Info = [8, 11]
+        Shaman_Fly = [8, 15]
         #Meep_IMG = [8, 18]
         NPC = [8, 30]
         Meep = [8, 38]
@@ -149,7 +181,6 @@ class Identifiers:
         Unlocked_Badge = [8, 42]
         Anim_Zelda = [8, 44]
         Vampire_Mode = [8, 66]
-        
 
         # Modopwet
         Modopwet_Room_Password_Protected = [25, 4]
