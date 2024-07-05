@@ -58,3 +58,15 @@ Traceback (most recent call last):
   File "C:\Users\believix\Desktop\TFM\MainServer\Modules\DailyQuests.py", line 55, in sendMissions
     p.writeShort(int(self.missionsCompleted))
 AttributeError: 'DailyQuests' object has no attribute 'missionsCompleted'
+Traceback (most recent call last):
+  File "C:\Users\believix\Desktop\TFM\MainServer\Modules\Packets.py", line 403, in Login_Account
+    await self.client.loginPlayer(playerName, password, startRoom)
+  File "C:\Users\believix\Desktop\TFM\MainServer\Client.py", line 525, in loginPlayer
+    self.tribePermissions = list(map(str, filter(None, rs['TribePermissions'].split(","))))
+KeyError: 'TribePermissions'
+Traceback (most recent call last):
+  File "C:\Users\believix\Desktop\TFM\MainServer\Modules\Packets.py", line 474, in Login_Account
+    await self.client.loginPlayer(playerName, password, startRoom)
+  File "C:\Users\believix\Desktop\TFM\MainServer\Client.py", line 543, in loginPlayer
+    self.tribeInfo = self.Tribulle.getTribeInfo(self.tribeCode)
+AttributeError: 'Client' object has no attribute 'Tribulle'

@@ -10451,24 +10451,26 @@
 	],
 	"fullLooks": [
 		{
-			"id": 1253,
-			"look": "70;0,4_c3b85,0,4_c3b85+cc237a,11_cc237a+f7f1e5,24_babaf9+bbbbde+b8b8df+bebef3,1_3d9e3c+bae5f9,0,0",
+			"id": 1367,
+			"look": "5;277_573610+636d3f+965a4b+d9a162+c38687+e8ceaf+6d371a+98664b+c38687+d1891c,0,0,0,83_c38687+c38687+838344+e1b066+a97b4f,76_392005+4d2e09,36_838344+8e5547+603f17+5f5e31+d99125+a66400+cbab67+e8ceaf+ffff95,0,31_965a4b+e8ceaf+e1b066,0,0,0",
 			"bg": 0,
-			"discount": 20,
-			"start": 1717939611,
-			"perm": true,
-			"name": "TestAlpha",
-			"addedBy": "Server"
-		},
-		{
-			"id": 1254,
-			"look": "93;155_cbac7b+eae3d7,0,29_dbc6b1+ed80c4+efe9ca+fac860+d9c595+faf5ef+bfbcac,40_f5dc5b+cdaa6f,0,3_6c542b,31_e9ca96+f8e4ed,10,0",
-			"bg": 0,
-			"discount": 20,
+			"discount": 0,
 			"start": 1717930811,
 			"perm": true,
 			"name": "TestBeta",
-			"addedBy": "Server"
+			"addedBy": "Server",
+			"info":"B/////8CAAUAAAMAAAAAAAACQAEAPAAwAgAUAAAAAAHjAQBLADwBABQAEAAAKCUBAFAAQAEAFAAQAAACfAEAeABgAQAUABAAAAidAQEsAPADAAAAAAAAAz8BAMgAoAIAFAAAA6wCzA=="
+		},
+		{
+			"id": 1368,
+			"look": "191;251_61291a+ff8b39+ff8b39+9fd9ae+fff6b3+ffa463+7fb49c+e5e688+ff8b39,9_ffc038+ff8b39+0+1d130e,0,0,0,91_7a3c2b+9fd9ae+e5e688+ff9238+9fd9ae,68_d28e52+fbefd9+662a19+d28e52+cf9046,12,71_9fd9ae+61291a+e5e688+e5e688+d8a654+241306+c75d40+f39f44+dfeb9a+7a3c2b,0,0,0",
+			"bg": 4,
+			"discount": 0,
+			"start": 1717930811,
+			"perm": true,
+			"name": "TestBeta",
+			"addedBy": "Server",
+			"info":"CP////8CAAUAAAMAAAAAAAADZwEAeABgAQAUABAAAALIAQAeABgDAAAAAAAAKAsBADcALAIAFAAAAAACnAEAeABgAQAUABAAA4MvAQGQAUADAAAAAAAAAG0BAAUABAEAFAAQAAACTwEAQQA0AQAUABADhAK8"
 		}
 	],
 	"cachedFurs": [315, 314, 312, 311, 310, 309, 308, 307, 305, 304, 303, 302, 301, 300, 299, 298, 297, 296, 295, 293, 292, 291, 290, 289, 286, 285, 283, 282, 281, 280, 279, 278, 277, 276, 275, 274, 273, 272, 271, 270, 269, 268, 267, 266, 265, 264, 262, 261, 260, 259, 258, 256, 255, 254, 253, 252, 251, 250, 249, 248, 247, 246, 245, 244, 243, 241, 240, 239, 238, 237, 236, 235, 234, 233, 229, 228, 227, 226, 225, 223, 222, 221],

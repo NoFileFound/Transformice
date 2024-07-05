@@ -24,12 +24,30 @@ class Tribulle:
         self.MAX_CANAL_LEN = 42
         self.MAX_MENSAGE_LEN = 90
         self.TRIBE_RANKS = "0|${trad#TG_0}|0;0|${trad#TG_1}|0;2|${trad#TG_2}|0;3|${trad#TG_3}|0;4|${trad#TG_4}|32;5|${trad#TG_5}|160;6|${trad#TG_6}|416;7|${trad#TG_7}|932;8|${trad#TG_8}|2044;9|${trad#TG_9}|2046"
+        self.rankStatus = {10: "AdminForum", 9: "ChangeMap", 8: "ChangeTribeHouse", 7: "PlayMusic", 6: "KickMembers", 5: "CanInvite", 4: "ChangePlayerRank", 3: "EditRanks", 2: "ChangeTribeMessage", 1: "Chief"}
 
-    def checkTribePermisson(self, permId): # UNFINISHED
-        if self.client.tribeRanks == "":
+    def checkTribePermisson(self, permId):
+        tribeRankPerms = self.client.tribeRanks.split(";")[self.client.tribeRank].split("|")[2]
+            
+        if tribeRankPerms == '2044' or tribeRankPerms == '2046':
+            return True # Chief, Tribe's Shaman
+            
+        elif tribeRankPerms == '932': # Shaman apprentice
+            return permId in ["ChangeTribeMessage", "CanInvite", "PlayMusic", "ChangeMap", "ChangeTribeHouse"]
+            
+        elif tribeRankPerms == '416': # Initiated
+            return permId in ["CanInvite", "PlayMusic", "ChangeTribeHouse"]
+            
+        elif tribeRankPerms == '160': # Hunteress
+            return permId in ["CanInvite", "PlayMusic"]
+            
+        elif tribeRankPerms == '32': # Recruiter
+            return permId == "CanInvite"
+            
+        elif tribeRankPerms == '0' or self.client.tribeRanks == '': # Empty ranks.
             return False
-    
-        return True
+            
+        return permId in self.client.tribePermissions
 
     def sendTribullePacketWholeChat(self, chatName, code, result, all=False):
         for player in self.server.players.copy().values():
@@ -388,7 +406,7 @@ class Tribulle:
 
     # Tribe
     def sendChangedTribeMessage(self, packet):
-        if not self.checkTribePermisson(4):
+        if not self.checkTribePermisson("ChangeTribeMessage"):
             return
     
         tribulleID, message = packet.readInt(), packet.readUTF()
@@ -431,11 +449,12 @@ class Tribulle:
             self.client.tribeJoined = creationTime
             self.client.tribeMessage = ""
             self.client.tribeRanks = self.TRIBE_RANKS
+            self.client.tribePermissions.append(["AdminForum", "ChangeMap", "ChangeTribeHouse", "PlayMusic", "KickMembers", "CanInvite", "ChangePlayerRank", "EditRanks", "ChangeTribeMessage", "Chief"])
             self.setTribeHistorique(self.client.tribeCode, 1, creationTime, self.client.playerName, tribeName)
             self.client.sendTribullePacket(Identifiers.tribulle.send.ET_SignaleInformationsMembreTribu, ByteArray().writeUTF(self.client.tribeName).writeInt(self.client.tribeCode).writeUTF(self.client.tribeMessage).writeInt(0).writeUTF(self.client.tribeRanks.split(";")[9].split("|")[1]).writeInt(2049).toByteArray())
 
     def sendTribeChangeLeader(self, packet):
-        if not self.checkTribePermisson(2046):
+        if not self.checkTribePermisson("Chief"):
             return
     
         tribulleID, playerName = packet.readInt(), packet.readUTF()
@@ -444,9 +463,10 @@ class Tribulle:
         player = self.server.players.get(playerName)
         if player:
             player.tribeRank = (len(rankInfo)-1)
+            player.tribePermissions.append(["AdminForum", "ChangeMap", "ChangeTribeHouse", "PlayMusic", "KickMembers", "CanInvite", "ChangePlayerRank", "EditRanks", "ChangeTribeMessage", "Chief"])
             info = [playerName, player.playerID, player.genderType, player.lastOn]
         else:
-            self.server.cursor['users'].update_one({'Username': playerName}, {'$set':{'TribeRank':len(rankInfo)-1}})
+            self.server.cursor['users'].update_one({'Username': playerName}, {'$set':{'TribeRank':len(rankInfo)-1, 'TribePermissions':"AdminForum,ChangeMap,ChangeTribeHouse,PlayMusic,KickMembers,CanInvite,ChangePlayerRank,EditRanks,ChangeTribeMessage,Chief"}})
             rs = self.server.cursor['users'].find_one({'Username': playerName})
             info = [rs['Username'], rs['PlayerID'], rs['PlayerGender'], rs['LastOn']]
 
@@ -468,7 +488,7 @@ class Tribulle:
             self.sendTribullePacketWholeTribe(Identifiers.tribulle.send.ET_SignalementMessageTribu, ByteArray().writeUTF(self.client.playerName).writeUTF(message).toByteArray(), True)
 
     def sendTribeDissolve(self, packet):
-        if not self.checkTribePermisson(2046):
+        if not self.checkTribePermisson("Chief"):
             return
     
         tribulleID = packet.readInt()
@@ -485,9 +505,10 @@ class Tribulle:
                 player.tribeMessage = ""
                 player.tribeName = ""
                 player.tribeRanks = ""
+                player.tribePermissions = ""
                 player.sendTribullePacket(Identifiers.tribulle.send.ET_SignaleExclusionMembre, ByteArray().writeUTF(player.playerName).writeUTF(self.client.playerName).toByteArray())
             else:
-                self.server.cursor['users'].update_one({'Username':member},{'$set':{'TribeCode':0,'TribeRank':0,'TribeJoined':0}})
+                self.server.cursor['users'].update_one({'Username':member},{'$set':{'TribeCode':0,'TribeRank':0,'TribeJoined':0, "TribePermissions":""}})
         self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatDemandeDissoudreTribu, ByteArray().writeInt(tribulleID).writeByte(1).toByteArray())
 
     def sendTribeHistorique(self, packet):
@@ -574,7 +595,7 @@ class Tribulle:
             self.client.isTribeOpened = True
 
     def sendTribeInvitation(self, packet):
-        if not self.checkTribePermisson(32):
+        if not self.checkTribePermisson("CanInvite"):
             return
     
         tribulleID, playerName = packet.readInt(), Other.parsePlayerName(packet.readUTF())
@@ -646,7 +667,7 @@ class Tribulle:
                             player.Tribulle.sendTribeInfo()
 
     def sendTribeNewRankCreation(self, packet):
-        if not self.checkTribePermisson(8):
+        if not self.checkTribePermisson("EditRanks"):
             return
     
         tribulleID, rankName = packet.readInt(), packet.readUTF()
@@ -680,7 +701,7 @@ class Tribulle:
                     player.Tribulle.sendTribeInfo()
 
     def sendTribeMemberKicked(self, packet):
-        if not self.checkTribePermisson(64):
+        if not self.checkTribePermisson("KickMembers"):
             return
     
         tribulleID, playerName = packet.readInt(), Other.parsePlayerName(packet.readUTF())
@@ -747,10 +768,16 @@ class Tribulle:
         self.client.sendTribullePacket(Identifiers.tribulle.send.ET_ResultatDemandeQuitterTribu, p.toByteArray())
 
     def sendTribeRankChangePermission(self, packet):
-        if not self.checkTribePermisson(8):
+        if not self.checkTribePermisson("EditRanks"):
             return
     
         tribulleID, rankID, permID, type = packet.readInt(), packet.readByte(), packet.readInt(), packet.readByte()
+        
+        if self.rankStatus[permID] in self.client.tribePermissions:
+            self.client.tribePermissions.remove(self.rankStatus[permID])
+        else:
+            self.client.tribePermissions.append(self.rankStatus[permID])
+        
         rankInfo = self.client.tribeRanks.split(";")
         perms = rankInfo[rankID].split("|")
         suma = 0
@@ -773,7 +800,7 @@ class Tribulle:
                     player.Tribulle.sendTribeInfo()
 
     def sendTribeRankDeletion(self, readPacket):
-        if not self.checkTribePermisson(8):
+        if not self.checkTribePermisson("EditRanks"):
             return
     
         tribulleID, rankID = readPacket.readInt(), readPacket.readByte()
@@ -816,7 +843,7 @@ class Tribulle:
                     player.Tribulle.sendTribeInfo()
 
     def sendTribeRankPlayerChanged(self, packet):
-        if not self.checkTribePermisson(16):
+        if not self.checkTribePermisson("ChangePlayerRank"):
             return
     
         tribulleID, playerName, rankID = packet.readInt(), Other.parsePlayerName(packet.readUTF()), packet.readByte()
@@ -843,7 +870,7 @@ class Tribulle:
                     player.Tribulle.sendTribeInfo()
 
     def sendTribeRankPositionChanged(self, packet):
-        if not self.checkTribePermisson(8):
+        if not self.checkTribePermisson("EditRanks"):
             return
     
         tribulleID, rankID, rankID2 = packet.readInt(), packet.readByte(), packet.readByte()
@@ -892,7 +919,7 @@ class Tribulle:
                     player.Tribulle.sendTribeInfo()
 
     def sendTribeRankRename(self, packet):
-        if not self.checkTribePermisson(8):
+        if not self.checkTribePermisson("EditRanks"):
             return
     
         tribulleID, rankID, rankName = packet.readInt(), packet.readByte(), packet.readUTF()

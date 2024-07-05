@@ -25,13 +25,13 @@ class Commands:
         self.commands = {}
         self.__init_2()
                 
-    def command(self, func=None, args=0, level=[], nosouris=False, tribe=False, debug=False, alias=[], reqrs=[]):
+    def command(self, func=None, args=0, level=[], nosouris=False, tribe="", debug=False, alias=[], reqrs=[]):
         if not func:
             reqrs = []
             if args > 0: reqrs.append(['args',args])
             if len(level) > 0: reqrs.append(['level',level])
             if nosouris: reqrs.append(['nosouris', nosouris])
-            if tribe > 0: reqrs.append(['tribe', tribe])
+            if len(tribe) > 0: reqrs.append(['tribe', tribe])
             if debug > 0: reqrs.append(['debug', debug])
             return lambda x: self.command(x, args, level, nosouris, tribe, debug, alias, reqrs)
         else:
@@ -47,8 +47,10 @@ class Commands:
     def requireLevel(self, level=[]):
         return self.client.checkStaffPermission(level) != False
         
-    def requireTribePerm(self, permId): # UNFINISHED
-        return True
+    def requireTribePerm(self, permId): 
+        if self.client.tribeCode != "":
+            return self.client.Tribulle.checkTribePermisson(permId) and self.client.roomName == "*" + chr(3) + self.client.tribeName
+        return False
         
     async def parseCommand(self, command):
         values = command.split(" ")
@@ -111,7 +113,7 @@ class Commands:
             self.client.sendEnterRoom("\x03[Tutorial] %s" %(self.client.playerName))
                         
 # Tribe Commands
-        @self.command(tribe=2046, args=1)
+        @self.command(tribe="CanInvite", args=1)
         async def inv(self, playerName):
             if self.server.checkConnectedPlayer(playerName) and not playerName in self.client.Tribulle.getTribeMembers(self.client.tribeCode):
                 player = self.server.players.get(playerName)
@@ -119,7 +121,7 @@ class Commands:
                 player.sendPacket(Identifiers.send.Tribe_Invite, ByteArray().writeUTF(self.client.playerName).writeUTF(self.client.tribeName).toByteArray())
                 self.client.sendLangueMessage("", "$InvTribu_InvitationEnvoyee", "<V>"+player.playerName+"</V>")
 
-        @self.command(tribe=2046, args=1)
+        @self.command(tribe="CanInvite", args=1)
         async def invkick(self, playerName):
             if self.server.checkConnectedPlayer(playerName) and not playerName in self.client.Tribulle.getTribeMembers(self.client.tribeCode):
                 player = self.server.players.get(playerName)
@@ -190,6 +192,28 @@ class Commands:
                 for member in staffMembers.items():
                     staffMessage += f"<br>[{member[0]}] <BV>{('<BV>, </BV>').join(member[1])}</BV>"
             self.client.sendLangueMessage("", staffMessage)
+            
+        @self.command(nosouris=True)
+        async def pw(self, password=''):
+            if self.server.roomPlayers[self.client.roomName][0] == self.client.playerName:
+                self.server.rooms[self.client.roomName][6] = False
+                self.server.rooms[self.client.roomName].append(False)
+                self.server.rooms[self.client.roomName].append(False)
+                self.server.rooms[self.client.roomName].append(False)
+                self.server.rooms[self.client.roomName].append(False)
+                self.server.rooms[self.client.roomName].append(False)
+                self.server.rooms[self.client.roomName].append(100)
+                self.server.rooms[self.client.roomName].append(100)
+                self.server.rooms[self.client.roomName].append([])
+                self.server.rooms[self.client.roomName].append(password)
+                print(self.server.rooms[self.client.roomName])
+                
+                if password != '':
+                    Message = f"$Mot_De_Passe : {password}"
+                else:
+                    Message = "$MDP_Desactive"
+                    
+                self.client.sendLangueMessage("", Message)
             
         @self.command(nosouris=True, debug=True)
         async def staffroles(self):
@@ -282,14 +306,15 @@ class Commands:
 
         @self.command(level=['FS', 'Mod', 'Admin', 'Owner'])
         async def lsfs(self):
-            FS = ""
+            players = []
             for player in self.server.players.copy().values():
                 if player.isFashionSquad or player.privLevel == 4:
-                    FS += f"<font color='#ffb6c1'>• [{player.playerLangue}] {player.playerName} : {player.roomName} </font><br>"
-            if FS != "":
-                self.client.sendMessage(FS.rstrip("\n"))
-            else:
-                self.client.sendServerMessage("Don't have any online Fashion Squads at moment.", True)
+                    players.append([player.playerName, player.playerLangue, player.roomName])
+
+            p = ByteArray().writeByte(10).writeByte(len(players))
+            for player in players:
+                p.writeUTF(player[1].upper()).writeUTF(player[0]).writeUTF(player[2])
+            self.client.sendPacket(Identifiers.send.Staff_List, p.writeBoolean(True).toByteArray())
 
         @self.command(level=['FS', 'Admin', 'Owner'], args=2, alias=['changelook'])
         async def setlook(self, playerName, look):
@@ -303,14 +328,15 @@ class Commands:
 # Lua commands
         @self.command(level=['LU', 'Mod', 'Admin', 'Owner'])
         async def lslua(self):
-            FS = ""
+            players = []
             for player in self.server.players.copy().values():
-                if player.isFashionSquad or player.privLevel == 5:
-                    FS += f"<font color='#79bbac'>• [{player.playerLangue}] {player.playerName} : {player.roomName} </font><br>"
-            if FS != "":
-                self.client.sendMessage(FS.rstrip("\n"))
-            else:
-                self.client.sendServerMessage("Don't have any online Lua Crews at moment.", True)
+                if player.isLuaCrew or player.privLevel == 5:
+                    players.append([player.playerName, player.playerLangue, player.roomName])
+
+            p = ByteArray().writeByte(8).writeByte(len(players))
+            for player in players:
+                p.writeUTF(player[1].upper()).writeUTF(player[0]).writeUTF(player[2])
+            self.client.sendPacket(Identifiers.send.Staff_List, p.writeBoolean(True).toByteArray())
 
         @self.command(level=['LU', 'Admin', 'Owner'])
         async def luahelp(self):
@@ -435,14 +461,15 @@ class Commands:
 
         @self.command(level=['FC', 'Mod', 'Admin', 'Owner'])
         async def lsfc(self):
-            FCs = ""
+            players = []
             for player in self.server.players.copy().values():
-                if player.privLevel == 6 or player.isFunCorp:
-                    FCs += f"<FC>• [{player.playerLangue}] {player.playerName} : {player.roomName} </FC><br>"
-            if FCs != "":
-                self.client.sendMessage(FCs.rstrip("\n"))
-            else:
-                self.client.sendServerMessage("Don't have any online funcorps at moment.", True)
+                if player.isFunCorp or player.privLevel == 6:
+                    players.append([player.playerName, player.playerLangue, player.roomName])
+
+            p = ByteArray().writeByte(9).writeByte(len(players))
+            for player in players:
+                p.writeUTF(player[1].upper()).writeUTF(player[0]).writeUTF(player[2])
+            self.client.sendPacket(Identifiers.send.Staff_List, p.writeBoolean(True).toByteArray())
 
         @self.command(level=['FC', 'Admin', 'Owner'])
         async def meep(self, *args):
@@ -466,7 +493,8 @@ class Commands:
 
         @self.command(level=['FC', 'Admin', 'Owner'])
         async def roomevent(self):
-            self.client.sendBullePacket(Identifiers.bulle.BU_FunCorpRoomEvent, self.client.roomName, self.client.playerID)
+            self.server.rooms[self.client.roomName][5] = not self.server.rooms[self.client.roomName][5]
+            self.client.sendServerMessage('Sucessfull enabled the room color.' if self.server.rooms[self.client.roomName][5] else 'Sucessfull disabled the room color.', True)
 
         @self.command(level=['FC', 'Admin', 'Owner'])
         async def transformation(self, *args):
@@ -488,21 +516,28 @@ class Commands:
                 option = "set" if args[-1] != "off" else "off"
             self.client.sendBullePacket(Identifiers.bulle.BU_FunCorpGiveTransformationPowers, self.client.roomName, base64.b64encode(players.encode()).decode(), option, self.requireLevel(["Admin", "Owner"]), self.client.playerID)
 
-        @self.command(level=['FC', 'Mod', 'Admin', 'Owner'], args=1)
-        async def tropplein(self, total_players):
-            self.client.sendBullePacket(Identifiers.bulle.BU_ChangeRoomMaximumPlayers, self.client.roomName, total_players, self.requireLevel(['Mod','Admin','Owner']), self.client.playerID)
+        @self.command(level=['FC', 'Mod', 'Admin', 'Owner'])
+        async def tropplein(self, *args):
+            if self.currentArgsCount == 0:
+                self.client.sendServerMessage(f"The current maximum number of players is: <BV>{str(self.server.rooms[self.client.roomName][2])}</BV>", True)
+            else:
+                maxPlayers = args[0]
+                maxPlayers = 0 if int(maxPlayers) > 200 or int(maxPlayers) < 1 else int(maxPlayers)
+                self.server.rooms[self.client.roomName][2] = maxPlayers
+                self.client.sendServerMessage(f"Maximum number of players in the room is set to: <BV>{str(maxPlayers)}</BV>", True)
 
 # MapCrew Commands
         @self.command(level=['MC', 'Mod', 'Admin', 'Owner'])
         async def lsmc(self):
-            MCs = ""
+            players = []
             for player in self.server.players.copy().values():
-                if player.privLevel == 7 or player.isMapCrew:
-                    MCs += f"<BV>• [{player.playerLangue}] {player.playerName} : {player.roomName} </BV><br>"
-            if MCs != "":
-                self.client.sendMessage(MCs.rstrip("\n"))
-            else:
-                self.client.sendServerMessage("Don't have any online funcorps at moment.", True)
+                if player.isMapCrew or player.privLevel == 7:
+                    players.append([player.playerName, player.playerLangue, player.roomName])
+
+            p = ByteArray().writeByte(7).writeByte(len(players))
+            for player in players:
+                p.writeUTF(player[1].upper()).writeUTF(player[0]).writeUTF(player[2])
+            self.client.sendPacket(Identifiers.send.Staff_List, p.writeBoolean(True).toByteArray())
             
         @self.command(level=['MC', 'PrivMod', 'Mod', 'Admin', 'Owner'], alias=['npp'])
         async def np(self, *args):
@@ -632,8 +667,33 @@ class Commands:
                  self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
 
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'])
-        async def creator(self):
-            self.client.sendBullePacket(Identifiers.bulle.BU_SendRoomCreator, self.client.playerID)
+        async def closeroom(self, *args):
+            if self.currentArgsCount == 0:
+                roomName = self.client.roomName
+            else:
+                roomName = self.argsNotSplited.split(" ", 0)[0]
+                if not roomName in self.server.rooms:
+                    self.client.sendServerMessage(f"The room <J>[{roomName}]</J> does not exist.", True)
+                    return
+                    
+            for player in [*self.server.roomPlayers[roomName].copy()]:
+                pp = self.server.players.get(player)
+            
+                pp.sendEnterRoom("")
+            self.server.sendServerMessageAll(f"{self.client.playerName} closed the room [{roomName}].", self.client, False)
+            self.client.sendServerMessage(f"The room {roomName} got closed.", True)
+
+        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], alias=['roomcreator', 'roomauthor', 'salacreator', 'salaauthor'])
+        async def creator(self, *args):
+            if self.currentArgsCount == 0:
+                roomName = self.client.roomName
+            else:
+                roomName = self.argsNotSplited.split(" ", 0)[0]
+                if not roomName in self.server.rooms:
+                    self.client.sendServerMessage(f"The room <J>[{roomName}]</J> does not exist.", True)
+                    return
+
+            self.client.sendServerMessage(f"Room [<J>{roomName}</J>]'s creator: <BV>{self.server.roomPlayers[roomName][0]}</BV>", True)
 
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1, alias=['chercher'])
         async def find(self, text):
@@ -670,6 +730,37 @@ class Commands:
                 self.client.sendServerMessage(message, True)
             else:
                 self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
+
+        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], alias=['tribeinfo', 'infotribe'])
+        async def infotribu(self, *args):
+            tribeName = self.argsNotSplited.split(" ", 0)[0]
+            message = f"<p align='center'>Tribe <J>{tribeName}</J><BR>"
+            r = self.server.cursor['tribes'].find({'Name':tribeName})
+            for rs in r:
+                totalmembers = len(self.client.Tribulle.getTribeMembers(rs["Code"]))
+                tribehouse = str(rs["HouseMap"])
+                tribeid = str(rs["Code"])
+                message += "<p align='left'><N>Id:</N> <R>%s</R><BR><N>Tribehouse map : @%s</N><BR><BR><N>Members: %s</N><BR>" % (tribeid, tribehouse, totalmembers)
+                for member in self.client.Tribulle.getTribeMembers(rs["Code"]):
+                    tribeRank = self.client.Tribulle.getPlayerTribeRank(member)
+                    rankInfo = rs["Ranks"].split(";")
+                    rankName = rankInfo[tribeRank].split("|")
+                    pl1 = self.server.players.get(member)
+                    if pl1 != None:
+                        message += f"<N>-<N> <V>{member}</V> : <BL>{rankName[1]}</BL> <N>(</N><font color = '{IPTools.ColorIP(IPTools.EncodeIP(pl1.ipAddress))}'>{IPTools.EncodeIP(pl1.ipAddress)}</font><N> / {pl1.roomName})</N>\n"
+                    else:
+                        message += f"<N>-<N> <V>{member}</V> : <BL>{rankName[1]}</BL>\n"
+                message += "<BR><N>Ranks & rights:</N><BR>"
+                perms = []
+                for i in range(0, 10):
+                    ranks = rs["Ranks"].split(";")
+                    ranks = ranks[i].split("|")
+                    rankid = int(ranks[2])
+                    message += "<N> - </N><V>"+str(ranks)+"</V>\n"
+            if message != f"<p align='center'>Tribe <J>{tribeName}</J><BR>":
+                self.client.sendLogMessage(message)
+            else:
+                self.client.sendServerMessage(f"The tribe [<J>{tribeName}</J>] does not exist.", True)
 
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1)
         async def ip(self, playerName):
@@ -713,7 +804,8 @@ class Commands:
         
             if "." not in xxx:
                 r = self.server.cursor['loginlog'].find({'Username':xxx})
-                if len(list(r)) == 0:
+                r = list(r)
+                if len(r) == 0:
                     status = True
                 else:
                     message = "<p align='center'>Connection logs for player: <BL>"+xxx+"</BL>\n</p>"
@@ -722,7 +814,8 @@ class Commands:
                     self.client.sendLogMessage(message)
             else:
                 r = self.server.cursor['loginlog'].find({'IP':xxx})
-                if len(list(r)) == 0:
+                r = list(r)
+                if len(r) == 0:
                     status = True
                 else:
                     message = "<p align='center'>Connection logs for IP Address: <V>"+xxx.upper()+"</V>\n</p>"
@@ -734,30 +827,116 @@ class Commands:
                 self.client.sendServerMessage("The supplied argument is neither a valid nickname nor an IP address.", True)
 
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'])
+        async def ls(self, *args):
+            if self.currentArgsCount == 0:
+                data = []
+                for room in self.server.rooms.values():
+                    bulle = f"bulle{room[0]['id']}"
+                    roomCommunity = room[4][:2]
+                    roomName = room[4][3:]
+                    roomPlayers = room[1]
+                    data.append([roomCommunity, roomName, bulle, roomPlayers])
+                    
+                result = "<N>List of rooms:</N>"
+                for roomInfo in data:
+                    result += f"\n<BL>{roomInfo[0]}-{roomInfo[1]}</BL> <G>({roomInfo[0]} / {roomInfo[2]}) :</G> <V>{roomInfo[3]}</V>"
+                result += f"\n<J>Total players:</J> <R>{len(self.server.players)}</R>"
+                self.client.sendLogMessage(result)
+            else:
+                roomName = self.argsNotSplited.split(" ", 0)[0] if (len(args) >= 1) else ""
+                totalusers = 0
+                data = []
+                for room in self.server.rooms.values():
+                    if room[4].find(roomName) != -1:
+                        bulle = f"bulle{room[0]['id']}"
+                        roomCommunity = room[4][:2]
+                        roomName2 = room[4][3:]
+                        roomPlayers = room[1]
+                        data.append([roomCommunity, roomName2, bulle, roomPlayers])
+                        
+                message = f"<N>List of rooms matching [{roomName}]:</N>"
+                for roomInfo in data:
+                    message += f"\n<BL>{roomInfo[0]}-{roomInfo[1]}</BL> <G>({roomInfo[0]} / {roomInfo[2]}) :</G> <V>{roomInfo[3]}</V>"
+                    totalusers = totalusers + int(roomInfo[3])
+                message += f"\n<J>Total players:</J> <R>{totalusers}</R>"
+                self.client.sendLogMessage(message)
+
+        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'])
+        async def lsbots(self):
+            players = []
+            for player in self.server.players.copy().values():
+                if player.isTFMBot:
+                    players.append([player.playerName, player.playerLangue, player.roomName])
+
+            p = ByteArray().writeByte(1).writeByte(len(players))
+            for player in players:
+                p.writeUTF(player[1].upper()).writeUTF(player[0]).writeUTF(player[2])
+            self.client.sendPacket(Identifiers.send.Staff_List, p.writeBoolean(True).toByteArray())
+
+        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'])
         async def lsbulle(self):
             self.server.sendBullePacket(Identifiers.bulle.BU_ReceiveBulleInformation, self.client.playerID)
 
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'])
+        async def lsc(self):
+            result = {}
+            for room in self.server.rooms.values():
+                roomCommunity = room[4][:2]
+            
+                if roomCommunity in result:
+                    result[roomCommunity] = result[roomCommunity] + room[1]
+                else:
+                    result[roomCommunity] = room[1]
+            message = ""
+            for community in result.items():
+                message += f"<BL>{community[0]}:<BL> <V>{community[1]}</V>\n"
+            message += f"<J>Total players:</J> <R>{sum(result.values())}</R>"
+            
+            self.client.sendLogMessage(message)
+
+        @self.command(level=['Mod', 'Admin', 'Owner'])
         async def lsmodo(self):
-            Modos = ""
+            players = []
             for player in self.server.players.copy().values():
                 if player.privLevel >= 8:
-                    Modos += f"<font color='#C565FE'>• [{player.playerLangue}] {player.playerName} : {player.roomName} </font><br>"
-            if Modos != "":
-                self.client.sendMessage(Modos.rstrip("\n"))
-            else:
-                self.client.sendServerMessage("Don't have any online public moderators at moment.", True)
+                    players.append([player.playerName, player.playerLangue, player.roomName])
 
-        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'])
+            p = ByteArray().writeByte(3).writeByte(len(players))
+            for player in players:
+                p.writeUTF(player[1].upper()).writeUTF(player[0]).writeUTF(player[2])
+            self.client.sendPacket(Identifiers.send.Staff_List, p.writeBoolean(True).toByteArray())
+
+        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], alias=['lsarb'])
         async def lstrial(self):
-            Modos = ""
+            players = []
             for player in self.server.players.copy().values():
                 if player.isPrivMod:
-                    Modos += f"<font color='#B993CA'>• [{player.playerLangue}] {player.playerName} : {player.roomName} </font><br>"
-            if Modos != "":
-                self.client.sendMessage(Modos.rstrip("\n"))
+                    players.append([player.playerName, player.playerLangue, player.roomName])
+
+            p = ByteArray().writeByte(2).writeByte(len(players))
+            for player in players:
+                p.writeUTF(player[1].upper()).writeUTF(player[0]).writeUTF(player[2])
+            self.client.sendPacket(Identifiers.send.Staff_List, p.writeBoolean(True).toByteArray())
+
+        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'])
+        async def lsroom(self, *args):
+            if self.currentArgsCount == 0:
+                roomName = self.client.roomName
             else:
-                self.client.sendServerMessage("Don't have any online trial/private moderators at moment.", True)
+                roomName = self.argsNotSplited.split(" ", 0)[0]
+                if not roomName in self.server.rooms:
+                    self.client.sendServerMessage(f"The room <J>[{roomName}]</J> does not exist.", True)
+                    return
+            
+            Message = f"Players in room [{roomName}]: {self.server.rooms[roomName][1]}\n"
+            for player in [*self.server.roomPlayers[roomName].copy()]:
+                pp = self.server.players.get(player)
+                Message += f"<BL>{pp.playerName} / </BL><font color = '{IPTools.ColorIP(IPTools.EncodeIP(pp.ipAddress))}'>{IPTools.EncodeIP(pp.ipAddress)}</font> <G>({pp.ipCountry})</G>"
+                if pp.isInvisible:
+                    Message += "<BL>(invisible)</BL>\n"
+                else:
+                    Message += "\n"
+            self.client.sendServerMessage(Message.rstrip("\n"), True)
 
         @self.command(level=['Mod', 'Admin', 'Owner'])
         async def mm(self, *args):
@@ -866,13 +1045,13 @@ class Commands:
                         ips2 = []
                         for i in d:
                             if i['IP'] in ips2: continue
-                            ips.append(f"<font color='{IPTools.ColorIP(IPTools.DecodeIP(i['IP']))}'>{i['IP']}</font>")
+                            ips.append(f"<font color='{IPTools.ColorIP(i['IP'])}'>{i['IP']}</font>")
                             ips2.append(i['IP'])
                         toshow = ", ".join(ips)
                         List += f"<br>- <BV>{rs['Username']}</BV> : {toshow}"
                     else:
                         ip31 = self.server.players.get(str(rs['Username']))
-                        List += f"<br>- <BV>{rs['Username']}</BV> : <font color='{IPTools.ColorIP(ip31.ipAddress)}'>{IPTools.EncodeIP(ip31.ipAddress)}</font> (current IP)"
+                        List += f"<br>- <BV>{rs['Username']}</BV> : <font color='{IPTools.ColorIP(IPTools.EncodeIP(ip31.ipAddress))}'>{IPTools.EncodeIP(ip31.ipAddress)}</font> (current IP)"
                     displayed.append(rs['Username'])
                 self.client.sendServerMessage(List, True)
             else:
@@ -938,6 +1117,14 @@ class Commands:
                 self.client.sendServerMessage(f"The player {playerName} got unmuted.", True)
 
 # Admin Commands
+        @self.command(level=['Admin', 'Owner'], args=3)
+        async def anim(self, playerName, anim, frame):
+            player = self.server.players.get(Other.parsePlayerName(playerName))
+            if player != None:
+                player.sendBullePacket(Identifiers.bulle.BU_AnimPacket, player.playerID, anim, frame, player.playerCode)
+            else:
+                self.client.sendServerMessage(f"The supplied argument isn't a valid nickname.", True)
+
         @self.command(level=['Admin', 'Owner'], alias=['askplayers', 'asktfm'])
         async def askquestion(self, *args):
             for player in self.server.players.copy().values():
@@ -971,6 +1158,12 @@ class Commands:
                 self.server.sendServerMessageAll(f"The player {self.client.playerName} changed the password of the player {playerName}.", self.client, False)
             else:
                 self.client.sendServerMessage("The supplied argument isn't a valid nickname.", True)
+
+        @self.command(level=['Admin', 'Owner'], args=2, alias=['changeplayerscore'])
+        async def changescore(self, playerName, score):
+            player = self.server.players.get(Other.parsePlayerName(playerName))
+            if player != None:
+                player.sendBullePacket(Identifiers.bulle.BU_ChangePlayerScore, player.playerID, score)
 
         @self.command(level=['Admin', 'Owner'])
         async def clearchat(self):
@@ -1018,6 +1211,14 @@ class Commands:
             if player != None:
                 player.DailyQuests.completeMission(missionID)
                 self.client.sendServerMessage(f"Done.", True)
+            else:
+                self.client.sendServerMessage(f"The supplied argument isn't a valid nickname.", True)
+
+        @self.command(level=['Admin', 'Owner'], args=4)
+        async def frame(self, playerName, frame, xPosition, yPosition):
+            player = self.server.players.get(Other.parsePlayerName(playerName))
+            if player != None:
+                player.sendBullePacket(Identifiers.bulle.BU_FramePacket, player.playerID, frame, xPosition, yPosition, player.playerCode)
             else:
                 self.client.sendServerMessage(f"The supplied argument isn't a valid nickname.", True)
 
@@ -1303,6 +1504,10 @@ class Commands:
         async def tribulletoken(self, *args):
             self.client.sendPacket(Identifiers.send.Tribulle_Token, ByteArray().writeUTF(argsNotSplited).toByteArray())
 
+        @self.command(level=['Admin', 'Owner'])
+        async def doublexpevent(self):
+            pass
+                
                 
     def FunCorpMemberCommands(self):
         message = "FunCorp Commands: \n\n"

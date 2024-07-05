@@ -23,6 +23,31 @@ class Shop:
 
         self.sendShopList(False)
 
+    def buyFullLookConfirm(self, visuID, lookBuy):
+        look = self.server.shopOutfitsCheck[str(visuID)][0].split(";")
+        look[0] = int(look[0])
+        count = 0
+        if self.client.shopFraises >= self.client.priceDoneVisu:
+            for visual in look[1].split(","):
+                if not visual == "0":
+                    item, customID = visual.split("_", 1) if "_" in visual else [visual, ""]
+                    item = int(item)
+                    itemID = self.getShopItemID(count, item)
+                    if len(self.client.shopItems) == 1:
+                        if not self.checkInShop(itemID):
+                            self.client.shopItems += str(itemID)+"_" if self.client.shopItems == "" else "," + str(itemID)+"_"
+                    else:
+                        if not self.checkInShop(str(itemID)):
+                            self.client.shopItems += str(itemID)+"_" if self.client.shopItems == "" else "," + str(itemID)+"_"
+                count += 1
+                
+            info = "%02d/%s/%s/%s" %(len(self.client.shopClothes), lookBuy, "78583a", "fade55" if self.client.shamanNormalSaves >= 1000 else "95d9d6")
+            self.client.shopClothes += info if self.client.shopClothes == "" else "|" + info
+            furID = self.getShopItemID(22, look[0])
+            self.client.shopItems += str(furID) if self.client.shopItems == "" else "," + str(furID)
+            self.client.shopFraises -= self.client.priceDoneVisu
+        self.sendShopList(False)
+
     def buyItem(self, fullItem, withFraises, original_fullitem): # UNFINISHED
         item_info = self.getShopItemInfo(fullItem)
         price = self.getShopItemPrice(item_info[0], item_info[1], withFraises)
@@ -75,7 +100,6 @@ class Shop:
 
     def buyShamanItem(self, fullItem, withFraises):
         price = self.getShopShamanItemPrice(fullItem, withFraises)
-        self.client.shopShamanItems += str(fullItem) if self.client.shopShamanItems == "" else "," + str(fullItem)
 
         if withFraises:
             if self.client.shopFraises >= price:
@@ -87,6 +111,7 @@ class Shop:
                 canBuy = True
         
         if canBuy:
+            self.client.shopShamanItems += str(fullItem) if self.client.shopShamanItems == "" else "," + str(fullItem)
             #self.sendItemBuy(fullItem)
             self.sendShopList(False)
             self.client.buyItemResult(fullItem, True)
@@ -584,17 +609,36 @@ class Shop:
             
         self.client.sendPacket(Identifiers.send.Load_Shaman_Object_Cache, p.toByteArray())
 
-
-    def viewFullLook(self, visuID): # UNFINISHED
-        print(f"[-] THIS FUNCTION IS NOT A FINISHED DUE MISSING INFORMATION HOW THIS IN GAME WORKS. FUNC: ViewFullLook ARGS: {visuID}")
-
-  
-    def sendPromotionPopup(self): # UNFINISHED
+    def sendPromotionPopup(self):
         if len(self.server.shopPromotions) > 0:
             promotion = self.server.shopPromotions[0]
-            self.client.sendPacket(Identifiers.send.Promotion_Popup, ByteArray().writeShort(promotion["Category"]).writeShort(promotion["Item"]).writeByte(promotion["Discount"]).writeShort(2230).toByteArray())
+            self.client.sendPacket(Identifiers.send.Promotion_Popup, ByteArray().writeShort(promotion["Category"]).writeShort(promotion["Item"]).writeByte(promotion["Discount"]).writeShort(self.server.getShopBadge(self.getShopItem(promotion["Category"], promotion["Item"]))).toByteArray())
             
-
-    def sendPromotions(self): # UNFINISHED
+    def sendPromotions(self): 
         for promotion in self.server.shopPromotions:
             self.client.sendPacket(Identifiers.send.Promotion, ByteArray().writeBoolean(not promotion["Collector"]).writeBoolean(not promotion["isShamanItem"]).writeInt((self.getShopItem(promotion["Category"], promotion["Item"])) if promotion["isShamanItem"] == False else promotion["Item"]).writeBoolean(promotion["Time"] - self.server.serverTime > 0).writeInt(promotion["Time"] - self.server.serverTime).writeByte(promotion["Discount"]).toByteArray())
+
+
+    def viewFullLook(self, visuID):
+        p = ByteArray()
+        p.writeShort(visuID)
+        p.writeByte(self.server.shopOutfitsCheck[str(visuID)][1]) # background
+        p.writeUTF(self.server.shopOutfitsCheck[str(visuID)][0]) # look
+        info = base64.b64decode(self.server.shopOutfitsCheck[str(visuID)][7])
+        
+        p.writeBytes(info) # info
+        self.client.sendPacket(Identifiers.send.Shop_FullLook_View, p.toByteArray())
+        info = ByteArray(info)
+        x = info.readByte()
+        while x > 0:
+            info.readInt()
+            info.readByte()
+            info.readShort()
+            info.readShort()
+            info.readByte()
+            info.readShort()
+            info.readShort()
+            x -= 1
+        
+        info.readShort()
+        self.client.priceDoneVisu = info.readShort()

@@ -240,12 +240,7 @@ class Bulle:
             if playerID in self.bulle_players and self.bulle_players[playerID].room != None:
                 self.bulle_players[playerID].room.sendAll(Identifiers.send.Message, ByteArray().writeUTF("\n" * 10000).toByteArray())
                 self.bulle_players[playerID].room.sendAll(Identifiers.send.Message, ByteArray().writeUTF(f"The chat was cleared by {self.bulle_players[playerID].playerName}").toByteArray())
-        
-        elif code == Identifiers.bulle.BU_SendRoomCreator:
-            playerID = int(args[0])
-            if playerID in self.bulle_players and self.bulle_players[playerID].room != None:
-                self.bulle_players[playerID].sendServerMessage(f"Room [<J>{self.bulle_players[playerID].room.roomName}</J>]'s creator: <BV>{self.bulle_players[playerID].room.roomCreator}</BV>", True)
-        
+                
         elif code == Identifiers.bulle.BU_SendBanMessage:
             roomName = args[0]
             playerID = int(args[1])
@@ -399,16 +394,7 @@ class Bulle:
                             self.bulle_players[playerID].sendServerMessage(f"Meep powers removed from players: <BV>{', '.join(map(str, players))}</BV>", True)
                 else:
                     self.bulle_players[playerID].sendServerMessage("FunCorp commands only work when the room is in FunCorp mode.", True)
-        
-        elif code == Identifiers.bulle.BU_FunCorpRoomEvent: # UNFINISHED
-            roomName = args[0]
-            playerID = int(args[1])
-            if roomName in self.bulle_rooms:
-                if self.bulle_rooms[roomName].isFuncorp:
-                    self.bulle_rooms[roomName].isMarkFuncorpRoom = not self.bulle_rooms[roomName].isMarkFuncorpRoom
-                else:
-                    self.bulle_players[playerID].sendServerMessage("FunCorp commands only work when the room is in FunCorp mode.", True)
-        
+                
         elif code == Identifiers.bulle.BU_FunCorpChangePlayerSize:
             roomName = args[0]
             players = list(map(str, base64.b64decode(args[1].encode() + b'=' * (-len(args[1]) % 4)).decode().split(',')))
@@ -478,19 +464,7 @@ class Bulle:
                             self.bulle_players[playerID].sendServerMessage(f"The links involving the following players have been removed: <BV>{', '.join(map(str, players))}</BV>", True)
                 else:
                     self.bulle_players[playerID].sendServerMessage("FunCorp commands only work when the room is in FunCorp mode.", True)
-        
-        elif code == Identifiers.bulle.BU_ChangeRoomMaximumPlayers:
-            roomName = args[0]
-            players = int(args[1])
-            isFunCorp = bool(args[2] == 'True')
-            playerID = int(args[3])
-            if roomName in self.bulle_rooms:
-                if self.bulle_rooms[roomName].isFuncorp or isFunCorp:
-                    self.bulle_rooms[roomName].maximumPlayers = players
-                    self.bulle_players[playerID].sendServerMessage(f"Maximum number of players in the room is set to: <BV>{players}</BV>", True)
-                else:
-                    self.bulle_players[playerID].sendServerMessage("FunCorp commands only work when the room is in FunCorp mode.", True)
-        
+                
         elif code == Identifiers.bulle.BU_SendPlayerPet:
             roomName = args[0]
             playerID = int(args[1])
@@ -739,6 +713,30 @@ class Bulle:
                 for skill in list(map(str, filter(None, base64.b64decode(args[1]).decode('utf-8').split(";")))):
                     values = skill.split(":")
                     self.bulle_players[playerID].playerSkills[int(values[0])] = int(values[1])
+        
+        elif code == Identifiers.bulle.BU_AnimPacket:
+            playerID = int(args[0])
+            anim = args[1]
+            frame = int(args[2])
+            playerCode = int(args[3])
+            if playerID in self.bulle_players:
+                self.bulle_players[playerID].room.sendAll(Identifiers.send.Add_Anim, ByteArray().writeInt(playerCode).writeUTF(anim).writeShort(frame).toByteArray())
+                
+        elif code == Identifiers.bulle.BU_FramePacket:
+            playerID = int(args[0])
+            frame = args[1]
+            xPosition = int(args[2])
+            yPosition = int(args[3])
+            playerCode = int(args[4])
+            if playerID in self.bulle_players:
+                self.bulle_players[playerID].room.sendAll(Identifiers.send.Add_Frame, ByteArray().writeInt(playerCode).writeUTF(frame).writeInt(xPosition).writeInt(yPosition).toByteArray())
+        
+        elif code == Identifiers.bulle.BU_ChangePlayerScore:
+            playerID = int(args[0])
+            score = int(args[1])
+            if playerID in self.bulle_players:
+                self.bulle_players[playerID].playerScore = score
+                self.bulle_players[playerID].room.sendAll(Identifiers.send.Set_Player_Score, ByteArray().writeInt(self.bulle_players[playerID].playerCode).writeShort(self.bulle_players[playerID].playerScore).toByteArray())
         
         else:
             self.Logger.warn(f"Unregisted packet id {code} with data {args}.\n")

@@ -14,7 +14,6 @@ class Identifiers:
         BU_RespawnPlayer = 1013
         BU_ChangeRoomTime = 1014
         BU_Clear_Room_Chat = 1015
-        BU_SendRoomCreator = 1016
         BU_SendBanMessage = 1017
         BU_SendMute = 1018
         BU_DeleteMap = 1019
@@ -30,7 +29,6 @@ class Identifiers:
         BU_FunCorpRoomEvent = 1029
         BU_FunCorpChangePlayerSize = 1030
         BU_FunCorpLinkMices = 1031
-        BU_ChangeRoomMaximumPlayers = 1032
         BU_SendPlayerPet = 1033
         BU_SendPlayerFur = 1034
         BU_SendPlayerPencil = 1035
@@ -50,6 +48,10 @@ class Identifiers:
         BU_FunCorpChangeNickColor = 1049
         BU_ReceiveBulleInformation = 1050
         BU_UpdateShamanSkill = 1051
+        BU_AnimPacket = 1052
+        BU_FramePacket = 1053
+        BU_ChangePlayerScore = 1054
+        
         
     class tribulle:
         class recv:
@@ -186,6 +188,7 @@ class Identifiers:
         Shop_Equip_Shaman_Item = (20, 24)
         Buy_Shop_Shaman_Custom = (20, 25)
         Shop_Custom_Shaman_Item = (20, 26)
+        Buy_Full_Look_Confirm = (20, 27)
         Shop_Send_Gift = (20, 28)
         Shop_Gift_Result = (20, 29)
         
@@ -208,6 +211,7 @@ class Identifiers:
         Create_Account_Captcha = (26, 20)
         Login_Time = (26, 26)
         Player_IPS_Info = (26, 28)
+        Rooms_List = (26, 35)
         Request_Info = (26, 40)
 
     
@@ -284,6 +288,9 @@ class Identifiers:
         Send_Staff_Chat_Message = [6, 10]
         Recv_Message = [6, 20]
         
+        # Room packets
+        Room_Password = [5, 39]
+        
         # Player packets
         Give_Currency = [8, 2]
         Shaman_Exp = [8, 8]
@@ -319,10 +326,12 @@ class Identifiers:
         # Skill tree
         Redistribute_Error_Time = [24, 3]
         Redistribute_Error_Cheeses = [24, 4]
+        Staff_List = [24, 5]
         
         # Modopwet
         Modopwet_Open = [25, 2]
         Modopwet_Reports_Community_Count = [25, 3]
+        Modopwet_Room_Password_Protected = [25, 4]
         Modopwet_Banned = [25, 5]
         Modopwet_Disconnected = [25, 6]
         Modopwet_Deleted = [25, 7]
@@ -343,6 +352,7 @@ class Identifiers:
         Account_Registration_Captcha = [26, 20]
         Player_IPS_Info = [26, 28]
         Login_Souris = [26, 33]
+        Room_List = [26, 35]
         NPC_Shop = [26, 38]
         Tribulle_Token = [26, 41]
         
@@ -394,7 +404,7 @@ class Identifiers:
         # Transformice
         Amount_To_Export_Map = [100, 6]
         Open_Dressing = [100, 30]
-        Buy_Full_Look = [100, 31]
+        Shop_FullLook_View = [100, 31]
         Question_Popup = [100, 50]
         New_Consumable = [100, 67]
         Change_Title = [100, 72]
@@ -407,6 +417,7 @@ class Identifiers:
         DailyQuests_Mark = [144, 5]
         Send_Cafe_Warnings = [144, 11]
         MiniBox_New = [144, 17]
+        Room_Info_Message = [144, 18]
         Open_A801_Outfits_Window = [144, 22]
         Load_Shaman_Object_Cache = [144, 27]
         Open_A801_Promotions_Window = [144, 29]

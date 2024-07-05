@@ -8,6 +8,8 @@
 	"db_name": "transformice1",
 	"db_url": "mongodb://localhost:27017",
 	"swf_url": "file:///C|/Users/believix/Desktop/TFM/Transformice.swf",
+	"emailAddress": "",
+	"emailPassword": "",
 	"bulles": [{
 		"id": 1,
 		"ip_address": "127.0.0.1",

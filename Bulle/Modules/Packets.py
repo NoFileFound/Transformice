@@ -441,7 +441,7 @@ class Packets:
                 self.client.posX, self.client.posY = posX * 800 // 2700, posY * 800 // 2700
                 if not lasty == 0 and not lastx == 0:
                     if not lasty == self.client.posY or not lastx == self.client.posX:
-                        self.client.ResetAfkKillTimer()
+                        self.client.resetAfkKillTimer()
                             
                 self.client.velocityX = velX
                 self.client.velocityY = velY

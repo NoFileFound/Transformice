@@ -1,7 +1,6 @@
 #coding: utf-8
+import os
 import zlib
-
-# Modules
 from ctypes import c_int32
 from struct import *
 
@@ -71,8 +70,9 @@ class ByteArray:
             value = unpack("!B", self.__readBytes(1))[0]
         return value
         
-    def readBytes(self, _from, to):
-        return self.__readBytes(to+_from)[_from:]
+    def readBytes(self, write, _from, to):
+        write.writeBytes(self.__readBytes(to+_from)[_from:])
+        return write
         
     def readFloat(self) -> float:
         value = 0.0
@@ -335,3 +335,35 @@ class ByteArray:
         keys = self.compute_keys(keys, "msg")    
         self._bytes = bytes(bytearray([(byte^keys[(packetID+i)%20])&0xff for i, byte in enumerate(self._bytes)]))
         return self
+
+packet = ByteArray(b'\x05X\x14\x01\x03191;251_61291a+ff8b39+ff8b39+9fd9ae+fff6b3+ffa463+7fb49c+e5e688+ff8b39,9_ffc038+ff8b39+0+1d130e,0,0,0,91_7a3c2b+9fd9ae+e5e688+ff9238+9fd9ae,68_d28e52+fbefd9+662a19+d28e52+cf9046,12,71_9fd9ae+61291a+e5e688+e5e688+d8a654+241306+c75d40+f39f44+dfeb9a+7a3c2b,0,0,0\x08\xff\xff\xff\xff\x02\x00\x05\x00\x00\x03\x00\x00\x00\x00\x00\x00\x03g\x01\x00x\x00`\x01\x00\x14\x00\x10\x00\x00\x02\xc8\x01\x00\x1e\x00\x18\x03\x00\x00\x00\x00\x00\x00(\x0b\x01\x007\x00,\x02\x00\x14\x00\x00\x00\x00\x02\x9c\x01\x00x\x00`\x01\x00\x14\x00\x10\x00\x03\x83/\x01\x01\x90\x01@\x03\x00\x00\x00\x00\x00\x00\x00m\x01\x00\x05\x00\x04\x01\x00\x14\x00\x10\x00\x00\x02O\x01\x00A\x004\x01\x00\x14\x00\x10\x03\x84\x02\xbc')
+packet_copy = packet
+
+while True:
+    x = input()
+    if x == "byte":
+        print(packet.readByte())
+    elif x == "ubyte":
+        print(packet.readUnsignedByte())
+    elif x == "short":
+        print(packet.readShort())
+    elif x == "ushort":
+        print(packet.readUnsignedShort())
+    elif x == "int":
+        print(packet.readInt())
+    elif x == "uint":
+        print(packet.readUnsignedInt())
+    elif x == "utf":
+        print(packet.readUTF())
+    elif x == "result":
+        print(str(packet._bytes))
+    elif x == "clear":
+        os.system("cls")
+    elif x == "restart":
+        packet = packet_copy
+        os.system("cls")
+
+
+
+
+# b'\x05W\x14\x00\xea5;277_573610+636d3f+965a4b+d9a162+c38687+e8ceaf+6d371a+98664b+c38687+d1891c,0,0,0,83_c38687+c38687+838344+e1b066+a97b4f,76_392005+4d2e09,36_838344+8e5547+603f17+5f5e31+d99125+a66400+cbab67+e8ceaf+ffff95,0,31_965a4b+e8ceaf+e1b066,0,0,0\x07\xff\xff\xff\xff\x02\x00\x05\x00\x00\x03\x00\x00\x00\x00\x00\x00\x02@\x01\x00<\x000\x02\x00\x14\x00\x00\x00\x00\x01\xe3\x01\x00K\x00<\x01\x00\x14\x00\x10\x00\x00(%\x01\x00P\x00@\x01\x00\x14\x00\x10\x00\x00\x02|\x01\x00x\x00`\x01\x00\x14\x00\x10\x00\x00\x08\x9d\x01\x01,\x00\xf0\x03\x00\x00\x00\x00\x00\x00\x03?\x01\x00\xc8\x00\xa0\x02\x00\x14\x00\x00\x03\xac\x02\xcc'

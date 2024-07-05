@@ -8,8 +8,11 @@ import time
 import string
 import pymongo
 import re
+import smtplib
 import sys
 import Client, Bulle
+
+from email.mime.text import MIMEText
 from Utils import Config, Logger
 from Utils.Time import Time
 
@@ -73,6 +76,8 @@ class Server(asyncio.Transport):
         self.modoReports = {}
         self.playerMovement = {}
         self.players = {}
+        self.rooms = {}
+        self.roomPlayers = {}
         self.shopGifts = {}
         self.shopListCheck = {}
         self.shamanShopListCheck = {}
@@ -171,6 +176,60 @@ class Server(asyncio.Transport):
         rs = self.cursor['users'].find_one({'PlayerID' : int(playerID)})
         return rs['Username'] if rs else ""
 
+    def getRoomGameMode(self, roomName):
+        if roomName.startswith("#"):
+            return 18
+    
+        if "racing" in roomName:
+            return 9
+            
+        elif "survivor" in roomName:
+            return 8
+            
+        elif "vanilla" in roomName:
+            return 3
+            
+        elif "music" in roomName:
+            return 11
+            
+        elif "bootcamp" in roomName:
+            return 2
+            
+        elif "defilante" in roomName:
+            return 10
+            
+        elif "village" in roomName:
+            return 16
+            
+        return 1
+
+    def getRoomNameMode(self, mode):
+        if mode == 18:
+            return "Modules"
+            
+        elif mode == 9:
+            return "Racing"
+            
+        elif mode == 8:
+            return "Survivor"
+            
+        elif mode == 3:
+            return "Vanilla"
+            
+        elif mode == 11:
+            return "Music"
+            
+        elif mode == 2:
+            return "Bootcamp"
+            
+        elif mode == 10:
+            return "Defilante"
+            
+        elif mode == 16:
+            return "Village"
+            
+        return ""
+
     def getTempIPBanInfo(self, ipAddress) -> list:
         info = self.cursor["iptempban"].find_one({"IP":ipAddress, "State":"Active"})
         return [info["Duration"], info["Reason"]] if info else []
@@ -234,7 +293,7 @@ class Server(asyncio.Transport):
             self.shamanShopListCheck[str(item["id"])] = [item["cheese"], item["fraise"]]
         
         for item in self.shopOutfits:
-            self.shopOutfitsCheck[str(item["id"])] = [item["look"], item["bg"], item["discount"], item["start"], item["perm"], item["name"], item["addedBy"]]
+            self.shopOutfitsCheck[str(item["id"])] = [item["look"], item["bg"], item["discount"], item["start"], item["perm"], item["name"], item["addedBy"], item["info"]]
             
         if sendMessage:
             self.Logger.info(f"Loaded {len(self.shopList)} total shop items.\n")
@@ -260,6 +319,23 @@ class Server(asyncio.Transport):
     def sendBullePacket(self, packet_id, *args):
         for bulle in self.bulles:
             self.bulles[bulle].send_packet(packet_id, *args)
+    
+    def sendEmailMessage(self, emailCode, emailAdress, playerName):
+        setHostName = "Transformice"
+        setSslSmtpPort = 587
+        setFrom = self.serverInfo["emailAddress"]
+        addTo = emailAdress
+        server = smtplib.SMTP(setHostName, setSslSmtpPort)
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+        server.login(self.serverInfo["emailAddress"], self.serverInfo["emailPassword"])
+        mail = MIMEText(f"Hello there {playerName} your verification code is {code}")
+        mail["To"] = emailAdress
+        mail["Subject"] = "Verification code"
+        mail["Content-type"] = "text/html"
+        server.sendmail(setFrom, addTo, mail.as_string())
+        server.close()
     
     def sendDatabaseUpdate(self):
         if self.disableDatabase:
@@ -500,11 +576,6 @@ class Server(asyncio.Transport):
       
     def savePromotions(self):
         self.jsonConfig.save_file("./Include/Server/promotions.json", self.shopPromotions)
-
-
-    def sendEmailMessage(self, emailCode, emailAdress, playerName):
-        pass
-
 
     def getShopBadge(self, fullItem) -> int:
         return 0

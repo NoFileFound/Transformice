@@ -15,7 +15,6 @@ class Identifiers:
         BU_RespawnPlayer = 1013
         BU_ChangeRoomTime = 1014
         BU_Clear_Room_Chat = 1015
-        BU_SendRoomCreator = 1016
         BU_SendBanMessage = 1017
         BU_SendMute = 1018
         BU_DeleteMap = 1019
@@ -31,7 +30,6 @@ class Identifiers:
         BU_FunCorpRoomEvent = 1029
         BU_FunCorpChangePlayerSize = 1030
         BU_FunCorpLinkMices = 1031
-        BU_ChangeRoomMaximumPlayers = 1032
         BU_SendPlayerPet = 1033
         BU_SendPlayerFur = 1034
         BU_SendPlayerPencil = 1035
@@ -51,6 +49,9 @@ class Identifiers:
         BU_FunCorpChangeNickColor = 1049
         BU_ReceiveBulleInformation = 1050
         BU_UpdateShamanSkill = 1051
+        BU_AnimPacket = 1052
+        BU_FramePacket = 1053
+        BU_ChangePlayerScore = 1054
             
     
     class recv:
@@ -121,6 +122,7 @@ class Identifiers:
     class send:
         # Room packets
         Sync = [4, 3]
+        Remove_Object = [4, 8]
         Crouch = [4, 9]
         Shaman_Position = [4, 10]
     
@@ -147,7 +149,6 @@ class Identifiers:
         Spider_Mouse_Skill = [5, 36]
         Grapnel_Mouse_Skill = [5, 37]
         Evolution_Skill = [5, 38]
-        #Room_Password = [5, 39]
         Skill = [5, 40]
         Reset_Shaman_Skills = [5, 42]
         Gatman_Skill = [5, 43]
@@ -169,12 +170,15 @@ class Identifiers:
         
         # Player packets
         Player_Action = [8, 1]
+        Move_Player = [8, 3]
         Emotion = [8, 5]
         Player_Win = [8, 6]
+        Set_Player_Score = [8, 7]
         Enable_Skill = [8, 10]
         Shaman_Info = [8, 11]
         Shaman_Fly = [8, 15]
         #Meep_IMG = [8, 18]
+        Remove_Cheese = [8, 19]
         NPC = [8, 30]
         Meep = [8, 38]
         Can_Meep = [8, 39]
@@ -183,7 +187,6 @@ class Identifiers:
         Vampire_Mode = [8, 66]
 
         # Modopwet
-        Modopwet_Room_Password_Protected = [25, 4]
         Modopwet_Chat_Log = [25, 10]
         
         # Login packets
@@ -219,6 +222,8 @@ class Identifiers:
         Jankenpon = [100, 5]
         Dead_Bubble = [100, 7]
         Crazzy_Packet = [100, 40]
+        Add_Anim = [100, 68]
+        Add_Frame = [100, 69]
         Pet = [100, 70]
         Baloon_Badge = [100, 71]
         Collectible_Action = [100, 101]

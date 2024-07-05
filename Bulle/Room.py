@@ -42,7 +42,6 @@ class Room:
         #self.musicSkipVotes = 0
         self.isPlayingMusic = False
         self.musicSkipVotes = 0
-        self.isMarkFuncorpRoom = False
         self.maximumPlayers = 20
         
         # Integer
@@ -134,7 +133,6 @@ class Room:
         self.roomCommunity = ""
         self.roomFullName = _roomName
         self.roomName = ""
-        self.roomPassword = ""
         
         # List
         self.anchors = []
@@ -167,17 +165,8 @@ class Room:
         self.mapList = self.server.mapsInfo["normalMaps"]
         self.transformationMaps = self.server.mapsInfo["transformationMaps"]
         
-        if _roomName.startswith("*"):
-            self.roomCommunity = "int"
-            self.roomName = _roomName
-            
-        elif _roomName.startswith("@"):
-            self.roomCommunity = self.client.playerLangue
-            self.roomName = _roomName
-            
-        else:
-            self.roomCommunity = _roomName.split("-")[0].lower()
-            self.roomName = _roomName.split("-")[1]
+        self.roomCommunity = _roomName.split("-")[0].lower()
+        self.roomName = _roomName.split("-")[1]
         
         self.checkRoomName()
 
@@ -204,6 +193,9 @@ class Room:
             self.mapPerma = -1
             self.currentMap = -1
             self.mapInverted = False
+            
+        #elif self.isEvent:
+            #self.mapXML = str(self.server.vanillaMaps[int(self.currentMap)])
 
     def checkRoomName(self):
         roomNameCheck = self.roomName[1:] if self.roomName.startswith("*") or self.roomName.startswith("@") else self.roomName
@@ -496,7 +488,6 @@ class Room:
 
     def sendRoomFunCorp(self):
         self.isFuncorp = not self.isFuncorp
-        self.isMarkFuncorpRoom = self.isFuncorp
         for player in self.players.copy().values():
             if self.isFuncorp:
                 player.sendLangueMessage("", "<FC>$FunCorpActive</FC>")
@@ -914,7 +905,7 @@ class Room:
             while mp == self.currentMap:
                 mp = random.choice(self.mapList)
             return mp
-
+            
         self.CursorMaps.execute("select * FROM maps WHERE Perma = ? ORDER BY RANDOM() LIMIT 1", [selectPerma])
         rs = self.CursorMaps.fetchone()
         if rs:
@@ -932,6 +923,10 @@ class Room:
             return mp
         return -1
 
+    def movePlayer(self, playerName, xPosition, yPosition, pOffSet=False, xSpeed=0, ySpeed=0, sOffSet=False, angle=0, angleOffset=False):
+        player = self.players.get(playerName)
+        if player != None:
+            player.sendPacket(Identifiers.send.Move_Player, ByteArray().writeShort(xPosition).writeShort(yPosition).writeBoolean(pOffSet).writeShort(xSpeed).writeShort(ySpeed).writeBoolean(sOffSet).writeShort(angle).writeBoolean(angleOffset).toByteArray())
 
 
     def giveShamanSave(self, shamanName, type):
@@ -951,5 +946,5 @@ class Room:
     def giveStats(self, typ):
         pass
         
-    def removeObject(self):
-        pass
+    def removeObject(self, objectId):
+        self.sendAll(Identifiers.send.Remove_Object, ByteArray().writeInt(objectId).writeBoolean(True).toByteArray())

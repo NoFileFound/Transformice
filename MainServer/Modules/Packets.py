@@ -90,6 +90,10 @@ class Packets:
                 self.client.sendServerMessage("Invalid arguments", True)
             return await self.parsePacket(1, 149, 16, ByteArray())
 
+        @self.packet(args=['readShort', 'readUTF'])
+        async def Buy_Full_Look_Confirm(self, _id, status):
+            self.client.Shop.buyFullLookConfirm(_id, status)
+
         @self.packet(args=['readByte', 'readBoolean'])
         async def Buy_Shop_Clothe(self, _id, withFraises):
             self.client.Shop.buyClothe(_id, withFraises)
@@ -298,9 +302,85 @@ class Packets:
         async def Delete_Cafe_Post(self, postID):
             self.client.Cafe.deleteCafePost(postID)
 
-        @self.packet(args=['readUTF', 'readUTF'])
-        async def Enter_Room(self, community, roomName): # UNFINISHED
-            self.client.sendEnterRoom(f"{roomName}", community)
+        @self.packet(args=['readUTF', 'readUTF', 'readUTF', 'readByte'])
+        async def Enter_Room(self, community, roomName, passwordEntered, auto):
+            if auto:
+                self.client.sendEnterRoom("")
+                return
+            
+            canSkip = False
+                
+            if community == "":
+                community = self.client.playerLangue
+                
+            if roomName == "":
+                community = self.client.playerLangue
+                roomName = "1"
+                                
+            if passwordEntered != "":
+                canSkip = (passwordEntered == self.server.rooms[roomName][15])
+                if not canSkip:
+                    self.client.sendPacket(Identifiers.send.Room_Password, ByteArray().writeUTF(roomName).toByteArray())
+                    canSkip = False
+                    return
+                else:                
+                    canSkip = True
+                    
+            if self.client.playerName in self.server.modoReports:
+               self.client.sendPacket(Identifiers.send.Modopwet_Room_Password_Protected, ByteArray().writeUTF(self.client.playerName).writeUTF(roomName).writeBoolean(passwordEntered == "").toByteArray())
+            
+            originalRoomName = roomName
+            roomName = f"{community}-{roomName}"
+                        
+            isCustom = self.packet.bytesAvailable()
+            if isCustom:
+                roomPassword = self.packet.readUTF()
+                withoutShamanSkills = self.packet.readBoolean()
+                withoutPhysicalConsumables = self.packet.readBoolean()
+                withoutAdventureMaps = self.packet.readBoolean()
+                withMiceCollisions = self.packet.readBoolean()
+                withFallDamage = self.packet.readBoolean()
+                roundDurationPercentage = self.packet.readUnsignedByte()
+                miceWeightPercentage = self.packet.readInt()
+                maximum_players = self.packet.readShort()
+                map_rotation = []
+                while self.packet.bytesAvailable():
+                    map_rotation.append(self.packet.readUnsignedByte())
+                                
+                if roomName != self.client.lastRoomName:
+                    if not roomName in self.server.rooms:
+                        self.server.roomPlayers[roomName] = [self.client.playerName]
+                        self.server.rooms[roomName] = [
+                            self.client.bulleID,
+                            1,
+                            maximum_players,
+                            self.server.getRoomGameMode(roomName),
+                            roomName,
+                            False,
+                            True,
+                            withoutShamanSkills,
+                            withoutPhysicalConsumables,
+                            withoutAdventureMaps,
+                            withMiceCollisions,
+                            withFallDamage,
+                            roundDurationPercentage,
+                            miceWeightPercentage,
+                            map_rotation,
+                            roomPassword
+                        ]
+                    else:                            
+                        self.server.roomPlayers[roomName] = [self.client.playerName]
+                        self.server.rooms[roomName][1] += 1
+                                                
+                    if self.client.lastRoomName != "":
+                        self.server.roomPlayers[self.client.lastRoomName].remove(self.client.playerName)
+                        self.server.rooms[self.client.lastRoomName][1] -= 1
+                        roomPlayers = self.server.rooms[self.client.lastRoomName][1]
+                        if roomPlayers <= 0:
+                            del self.server.rooms[self.client.lastRoomName]
+                            del self.server.roomPlayers[self.client.lastRoomName]
+            print(canSkip)
+            self.client.sendEnterRoom(f"{originalRoomName}", community, False, not isCustom, canSkip)
 
         @self.packet(args=[])
         async def Enter_Tribe_House(self):
@@ -778,6 +858,12 @@ class Packets:
         async def Request_Info(self):
             # user agent
             self.client.sendPacket(Identifiers.send.Request_Info, ByteArray().writeUTF("http://localhost/tfm/info.php").toByteArray())
+
+        @self.packet(args=['readByte'])
+        async def Rooms_List(self, mode):
+            if mode == 0 or mode == None:
+                mode = 1
+            self.client.sendRoomList(mode)
 
         @self.packet(args=['readByte', 'readUTF'])
         async def Send_Staff_Chat_Message(self, _id, message):

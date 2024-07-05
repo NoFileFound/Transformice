@@ -59,6 +59,7 @@ class Client:
         self.playerKarma = 0
         self.playerRegDate = 0
         self.playerTime = 0
+        self.priceDoneVisu = 0
         self.privLevel = 0
         self.silenceType = 0
         self.shamanExp = 0
@@ -93,6 +94,7 @@ class Client:
         self.isGuest = False
         self.isFashionSquad = False
         self.isFunCorp = False
+        self.isInvisible = False
         self.isLoggedIn = False
         self.isLuaAdmin = False
         self.isLuaCrew = False
@@ -119,6 +121,7 @@ class Client:
         self.isMutedReason = ""
         self.lastConnectedIP = ""
         self.lastEmailCode = ""
+        self.lastRoomName = ""
         self.lastNpcName = ""
         self.modoPwetLangue = "ALL"
         self.mouseColor = "78583A"
@@ -160,6 +163,7 @@ class Client:
         self.totemInfo = [0, ""]
         self.titleList = []
         self.tribeInvite = []
+        self.tribePermissions = []
         
         # Dictionary
         self.adventureInfo = {}
@@ -281,10 +285,20 @@ class Client:
             self.Logger.debug(f"[CLIENT] {self.ipAddress} -> EOF Received\n")
         return
             
-    def connection_lost(self, *args) -> None: # UNFINISHED
+    def connection_lost(self, *args) -> None:
         self.isClosed = True
         
         if self.playerName in self.server.players:
+            # Rooms
+            if self.roomName in self.server.rooms:
+                self.server.roomPlayers[self.roomName].remove(self.playerName)
+                self.server.rooms[self.roomName][1] -= 1
+                roomPlayers = self.server.rooms[self.roomName][1]
+                if roomPlayers <= 0:
+                    del self.server.rooms[self.roomName]
+                    del self.server.roomPlayers[self.roomName]
+            
+        
             # Friend disconnect
             for player in self.server.players.copy().values():
                 if self.playerName in player.friendList and player.playerName in self.friendList:
@@ -366,6 +380,7 @@ class Client:
             "IgnoredList" :                     "",
             "Soulmate" :                        "",
             "TribeCode":                        0,
+            "TribePermissions":                 "",
             "TribeRank":                        0,
             "TribeJoined":                      0,
             "LastDivorceTime":                  0,
@@ -520,6 +535,7 @@ class Client:
                 self.ignoredList = list(map(str, filter(None, rs['IgnoredList'].split(","))))
                 self.playerSoulmate = rs["Soulmate"]
                 self.tribeCode = rs["TribeCode"]
+                self.tribePermissions = list(map(str, filter(None, rs['TribePermissions'].split(","))))
                 self.tribeJoined = rs["TribeJoined"]
                 self.tribeRank = rs["TribeRank"]
                 self.lastDivorceTime = rs["LastDivorceTime"]
@@ -587,7 +603,7 @@ class Client:
             self.Shop.sendPromotionPopup()
             self.sendMessage("<VP>[SYSTEM]</VP> Be sure to wish happy birthday to Raiden Shogun today ❤️ or you will be banned forever.")
 
-    async def connectToBulle(self, roomName, community="", isHidden=False, sendPacket=True): # UNFINISHED
+    async def connectToBulle(self, roomName, community="", isHidden=False, sendPacket=True, createRoomInfo=True, skipPassword=False): # UNFINISHED
         if self.isPrisoned:
             return
     
@@ -607,23 +623,54 @@ class Client:
                     player.ModoPwet.sendModoNotification(self.playerName, self.playerLangue, "changeroom", ["TEST", self.roomName, f"{self.playerLangue}-{roomName}"])
 
         community = (community if len(community) > 0 else self.playerLangue)
-        if len(roomName) > 0 and (roomName[0] == '*' or roomName[0] == '@'):
-            self.roomName = f"{roomName}"
-        else:
-            self.roomName = f"{community}-{roomName}"
+        if not (len(roomName) > 3 and roomName[2] == "-"):
+            roomName = f"{community}-{roomName}"
+        self.roomName = roomName
             
         self.bulleID = random.choice(list(self.server.bullesInfo))
         bullePorts = '-'.join(map(str, self.bulleID["port"]))
         isReported = self.playerName in self.server.modoReports
+        
+        if createRoomInfo:
+            if self.roomName != self.lastRoomName:
+                if not self.roomName in self.server.rooms:
+                    self.server.roomPlayers[self.roomName] = [self.playerName]
+                    self.server.rooms[self.roomName] = [
+                        self.bulleID, # Bulle info
+                        1, # Room players
+                        200, # Max players
+                        self.server.getRoomGameMode(self.roomName),
+                        self.roomName,
+                        False, # is Funcorp
+                        False, # room properties
+                    ]
+                else:
+                    if (self.server.rooms[self.roomName][6] == True and self.server.rooms[self.roomName][15] != "") and not skipPassword:
+                        self.sendPacket(Identifiers.send.Room_Password, ByteArray().writeUTF(roomName).toByteArray())
+                        return
+                
+                    self.server.roomPlayers[self.roomName].append(self.playerName)
+                    self.server.rooms[self.roomName][1] += 1
+                    
+                if self.lastRoomName != "":
+                    self.server.roomPlayers[self.lastRoomName].remove(self.playerName)
+                    self.server.rooms[self.lastRoomName][1] -= 1
+                    roomPlayers = self.server.rooms[self.lastRoomName][1]
+                    if roomPlayers <= 0:
+                        del self.server.rooms[self.lastRoomName]
+                        del self.server.roomPlayers[self.lastRoomName]
 
-        temp_code = Other.randomGen()
         try:
+            temp_code = Other.randomGen()
             self.server.bulles[self.bulleID["id"]].send_packet(Identifiers.bulle.BU_ConnectToGivenRoom, self.playerID, self.playerName, self.playerCode, community, base64.b64encode(self.playerLook.encode()).decode('utf-8'), self.getStaffPermissions(), self.isMuted, self.genderType, roomName, isHidden, isReported, self.titleNumber, self.titleStars, self.isMutedHours, self.isMutedReason, self.shamanType, self.shamanLevel, base64.b64encode(self.shopShamanItems.encode()).decode('utf-8'), self.equipedShamanBadge, self.shamanColor, self.petType, self.petEnd, self.furType, self.furEnd, self.mapEditorCheese, self.shopCheeses, self.cheeseCount, base64.b64encode(";".join(map(lambda skill: "%s:%s" %(skill[0], skill[1]), self.playerSkills.items())).encode()).decode('utf-8'), temp_code)
             self.Logger.debug(f"[{self.ipAddress}] Established connection to bulle{self.bulleID['id']} : {self.bulleID['ip_address']}:{bullePorts}.\n")
+            if self.server.rooms[self.roomName][6] == True:
+                self.server.loop.call_later(1.1, asyncio.create_task, self.sendRoomInfoMessage())
+            self.lastRoomName = self.roomName
         except KeyError as e:
             self.Logger.error("Unable to connect to bulle. Refreshing in 10 seconds.\n")
             await asyncio.sleep(10)
-            return await self.connectToBulle(roomName, community, isHidden, False)
+            return await self.connectToBulle(roomName, community, isHidden, False, False)
             
         if sendPacket:
             self.sendPacket(Identifiers.send.Init_Bulle_Connection, ByteArray().writeInt(self.bulleID["id"]).writeInt(temp_code).writeInt(self.playerID).writeUTF(self.bulleID["ip_address"]).writeUTF(bullePorts).toByteArray())
@@ -853,6 +900,14 @@ class Client:
         self.playerConsumables[_id] = sum
         self.sendUpdateInventoryConsumable(_id, sum, limit)
 
+    def giveShopItem(self, fullitem, isShopShamanItem=False):
+        if not isShopShamanItem:
+            self.shopItems += str(fullitem) if self.shopItems == "" else "," + str(fullitem)
+        else:
+            self.shopShamanItems += str(fullItem) if self.shopShamanItems == "" else "," + str(fullItem)
+            
+        self.buyItemResult(fullItem, isShopShamanItem)
+
     def logConnection(self):
         if self.isGuest:
             return
@@ -882,6 +937,7 @@ class Client:
         if "PrivMod" in self.privRoles:
             self.isPrivMod = True
 
+    # Send
     def sendAnimZelda(self, type, item=0, case="", id=0):
         self.sendBullePacket(Identifiers.bulle.BU_SendAnimZelda, self.playerID, self.playerCode, type, item, id, case)
 
@@ -942,10 +998,10 @@ class Client:
 
         self.sendPacket(Identifiers.send.Email_Address_Verified, ByteArray().writeByte(isVerified).toByteArray())
 
-    def sendEnterRoom(self, roomName, community="", isHidden=False):
+    def sendEnterRoom(self, roomName, community="", isHidden=False, createRoomInfo=True, skipPassword=True):
         if not self.isEnterRoom:
             self.isEnterRoom = True
-            self.server.loop.call_later(0.8, asyncio.create_task, self.connectToBulle(roomName, community, isHidden))
+            self.server.loop.call_later(0.8, asyncio.create_task, self.connectToBulle(roomName, community, isHidden, True, createRoomInfo, skipPassword))
             self.server.loop.call_later(1.9, setattr, self, "isEnterRoom", False)
 
     def sendGiveCurrency(self, type, count):
@@ -1200,6 +1256,70 @@ class Client:
             self.giveConsumable(0, 10)
             self.isNewAccount = False
 
+    async def sendRoomInfoMessage(self):
+        checkRoom = self.server.rooms[self.roomName]
+        if checkRoom[6] == True:
+            p = ByteArray()
+            p.writeBoolean(checkRoom[7]) # without shaman skills
+            p.writeBoolean(checkRoom[8]) # without physical objects
+            p.writeBoolean(checkRoom[9]) # without adventure maps
+            p.writeBoolean(checkRoom[10]) # with mice collisions
+            p.writeBoolean(checkRoom[11]) # with fall damage
+            p.writeUnsignedByte(checkRoom[12]) # round duration percentage
+            p.writeInt(checkRoom[13]) # mice weight percentage
+            p.writeShort(checkRoom[2]) # mice weight percentage
+            for info in checkRoom[14]: # map rotation
+                p.writeUnsignedByte(info)
+            self.sendPacket(Identifiers.send.Room_Info_Message, p.toByteArray())
+
+    def sendRoomList(self, mode):
+        types = [1, 3, 8, 9, 2, 10, 16]
+        p = ByteArray()
+        p.writeByte(len(types))
+        for roomType in types:
+            p.writeByte(roomType)
+        p.writeByte(mode)
+        p.writeByte(1).writeUTF(self.playerLangue).writeUTF("").writeUTF(f"{self.server.serverInfo['name']} {self.server.getRoomNameMode(mode)}").writeUTF("").writeUTF("").writeUTF("")        
+        for checkRoom in self.server.rooms.values():
+        
+            # Bulle info
+            # Room players
+            # Max players
+            # room game mode
+            # room name
+            # is Funcorp
+            # room properties
+        
+            roomName = checkRoom[4]
+            roomCommunity = roomName[:2].lower()
+            isPrivate = (roomName[3] == '@')
+            isInternational = (roomName[3] == '*' and not roomName[4] == '\x03')
+            isCustomMade = checkRoom[6]
+            if ((roomCommunity == self.playerLangue and mode == checkRoom[3]) and not isPrivate) or isInternational:
+                p.writeByte(0)
+                p.writeUTF(roomCommunity)
+                p.writeUTF(roomCommunity if not isInternational else "int")
+                p.writeUTF(roomName[3:] if not isInternational else roomName)
+                p.writeUnsignedShort(checkRoom[1])
+                p.writeUnsignedByte(checkRoom[2])
+                p.writeBoolean(checkRoom[5])
+                if isCustomMade:
+                    p.writeBoolean(not checkRoom[15])
+                else:
+                    p.writeBoolean(False)
+                if isCustomMade and not checkRoom[15]:
+                    p.writeBoolean(checkRoom[7]) # without shaman skills
+                    p.writeBoolean(checkRoom[8]) # without physical objects
+                    p.writeBoolean(checkRoom[9]) # without adventure maps
+                    p.writeBoolean(checkRoom[10]) # with mice collisions
+                    p.writeBoolean(checkRoom[11]) # with fall damage
+                    p.writeUnsignedByte(checkRoom[12]) # round duration percentage
+                    p.writeInt(checkRoom[13]) # mice weight percentage
+                    p.writeShort(checkRoom[2]) # mice weight percentage
+                    for info in checkRoom[14]: # map rotation
+                        p.writeUnsignedByte(info)
+        self.sendPacket(Identifiers.send.Room_List, p.toByteArray())
+
     def sendServerMessage(self, message, tab=False, *args):
         packet = ByteArray().writeBoolean(tab).writeUTF(message).writeByte(len(args))
         for arg in args:
@@ -1358,13 +1478,6 @@ class Client:
                     self.sendBullePacket(Identifiers.bulle.BU_UseInventoryConsumable, self.playerID, self.playerCode, _id)
                     self.sendUpdateInventoryConsumable(_id, count)
 
-        
-
-       
-                
-    def giveShopItem(self, fullitem, isShopShamanItem=False):
-        pass
-                
     def sendUnlockTitle(self, typ): # Shop
         pass
                 
@@ -1423,6 +1536,7 @@ class Client:
             "TribeCode": self.tribeCode,
             "TribeJoined": self.tribeJoined,
             "TribeRank": self.tribeRank,
+            "TribePermissions": (",".join(map(str, filter(None, [player for player in self.tribePermissions])))),
             "LastDivorceTime": self.lastDivorceTime,
             
             # Other

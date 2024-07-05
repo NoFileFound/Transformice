@@ -372,6 +372,9 @@ class BulleProtocol(asyncio.Protocol):
         info = self.room.getPlayerList()
         self.sendPacket(Identifiers.send.Player_List, ByteArray().writeShort(info[0]).writeBytes(info[1]).toByteArray())
 
+    def sendRemoveCheese(self):
+        self.room.sendAll(Identifiers.send.Remove_Cheese, ByteArray().writeInt(self.playerCode).toByteArray())
+
     def sendRoundTime(self, time):
         self.sendPacket(Identifiers.send.Round_Time, ByteArray().writeShort(0 if time < 0 or time > 32767 else time).toByteArray())
 
@@ -415,7 +418,10 @@ class BulleProtocol(asyncio.Protocol):
                 roomName = roomName[1:]
             roomName = self.server.getRecommendedRoom(self.playerLangue, roomName)
 
-        elif not roomName.startswith(("*", "@")) and not (len(roomName) > 3 and roomName[2] == "-"):
+        elif roomName.startswith("*"):
+            roomName = f"int-{roomName}"
+
+        elif not (len(roomName) > 3 and roomName[2] == "-"):
             roomName = f"{self.playerLangue}-{roomName}"
         
         elif (len(roomName) > 3 and roomName[2] == "-"):
@@ -438,9 +444,6 @@ class BulleProtocol(asyncio.Protocol):
         
         self.sendPacket(Identifiers.old.send.Anchors, self.room.anchors)
         self.sendPacket(Identifiers.send.Initialize_Lua_Scripting, "")
-        
-        if self.isReported:
-            self.sendPacket(Identifiers.send.Modopwet_Room_Password_Protected, ByteArray().writeUTF(self.playerName).writeUTF(self.roomName).writeBoolean(self.room.roomPassword != "").toByteArray())
 
         if self.room.isMusic:
             if self.room.isPlayingMusic:
@@ -582,6 +585,12 @@ class BulleProtocol(asyncio.Protocol):
             self.isDead = True
             self.sendPlayerDied()
 
+    def resetAfkKillTimer(self):
+        self.isAfk = False
+        if self.killafktimer != None:
+            self.killafktimer.cancel()
+        self.killafktimer = self.server.loop.call_later(3600, self.transport.close)
+
     def resetPlay(self):
         self.iceCount = 2
         self.bubblesCount = 0
@@ -662,19 +671,6 @@ class BulleProtocol(asyncio.Protocol):
         if self.room.currentMap in range(200, 211) and not self.isShaman:
             self.sendPacket(Identifiers.send.Can_Transformation, 1)
 
-    def sendRemoveCheese(self):
-        pass
-
-    def movePlayer(self):
-        pass
-
-
-    def ResetAfkKillTimer(self):
-        self.isAfk = False
-        if self.killafktimer != None:
-            self.killafktimer.cancel()
-        #self.killafktimer = call_later(3600, self.transport.loseConnection)
-  
                     
     def sendUnlockTitle(self, typ): # Cheeses, Bootcamp, Firsts, ShamanCheeses
         pass

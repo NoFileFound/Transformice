@@ -8,5 +8,15 @@
 	"port": [4444, 5555, 6666, 7777, 8888],
 	"bulle_auth_code": "123456789abcdefghi1234",
 	"minimum_players": 5,
-	"packet_keys": [13, 16, 42, 55, 40, 23, 19, 43, 11, 55, 87, 74, 116, 105, 114, 77, 117, 77, 97, 93]
+	"packet_keys": [13, 16, 42, 55, 40, 23, 19, 43, 11, 55, 87, 74, 116, 105, 114, 77, 117, 77, 97, 93],
+	"event_info": {
+		"name": "Halloween 2024",
+		"delay": -1,
+		"maps": [
+			{"id": 1, "type": "__mapid_monsterboss"},
+			{"id": 2, "type": "__mapid_casino"},
+			{"id": 3, "type": "__mapid_monsters"}
+		]
+		
+	}
 }
