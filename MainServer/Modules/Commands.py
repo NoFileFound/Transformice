@@ -206,7 +206,6 @@ class Commands:
                 self.server.rooms[self.client.roomName].append(100)
                 self.server.rooms[self.client.roomName].append([])
                 self.server.rooms[self.client.roomName].append(password)
-                print(self.server.rooms[self.client.roomName])
                 
                 if password != '':
                     Message = f"$Mot_De_Passe : {password}"
@@ -341,15 +340,33 @@ class Commands:
         @self.command(level=['LU', 'Admin', 'Owner'])
         async def luahelp(self):
             message = "Lua Team Documentation<br><br>"
-            message += "<FC><B>Lua Tree</B></FC><br><br>"
+            message += "<FC><B><font size='16'>Lua Tree</font></B></FC><br><br>"
             for tree in self.server.gameLuaInfo["Tree"]:
                 info = " " * int(tree["indent"])
                 message += f"{info}{tree['Name']}"
                 if "ID" in tree:
                     message += f"<G> : {tree['ID']}</G>"
                 message += "<br>"
+                
+            message += "<br><FC><B><font size='16'>Events</font></B></FC><br><br>"
+            for event in self.server.gameLuaInfo["Events"]:
+                args = []
             
-            message += "<br><FC><B>Functions</B></FC><br><br>"
+                message += f"<font color='#EDCC8D'>{event['Name']}</font>("
+                for argument in event['Arguments']:
+                    args.append({"Name":argument["Name"], "Type":argument["Type"], "Description":argument["Description"]})
+                
+                message += ', '.join([f"<V>{argument['Name']}</V>" for argument in event['Arguments']])
+                message += f")<br>{event['Description']}<br>"
+                for arg in args:
+                    message += f"   <V>{arg['Name']}</V> <G>({arg['Type']})</G> <BL>{arg['Description']}</BL>"
+                    message += "<br>"
+                        
+                if "isStaff" in event and event["isStaff"] == True:
+                    message += "<R>Privileged Event</R><br>"
+                message += "<br>"
+            
+            message += "<br><FC><B><font size='16'>Functions</font></B></FC><br><br>"
             for function in self.server.gameLuaInfo["Functions"]:
                 args = []
             
@@ -359,20 +376,22 @@ class Commands:
                         args.append({"Name":argument["Name"], "Type":argument["Type"], "Description":argument["Description"], "Default":argument["Default"]})
                     else:
                         args.append({"Name":argument["Name"], "Type":argument["Type"], "Description":argument["Description"]})
+                
                 message += ', '.join([f"<V>{argument['Name']}</V>" for argument in function['Arguments']])
                 message += f")<br>{function['Description']}<br>"
                 for arg in args:
                     message += f"   <V>{arg['Name']}</V> <G>({arg['Type']})</G> <BL>{arg['Description']}</BL>"
                     if "Default" in arg:
-                        message += f"<G> ({arg['Default']})</G><br>"
+                        message += f"<G> (default {arg['Default']})</G><br>"
                     else:
                         message += "<br>"
                         
                 if "ReturnType" in function:
                     message += f"<R>Returns</R> <G>({function['ReturnType']})</G> <BL>{function['ReturnInfo']}</BL><br>"
-                if "isStaff" in function:
+                if "isStaff" in function and function["isStaff"] == True:
                     message += "<R>Privileged Function</R><br>"
-                    
+                message += "<br>"
+                
             self.client.sendLogMessage(message, 1)
 
 # FunCorp Commands
@@ -716,6 +735,12 @@ class Commands:
                     self.client.sendEnterRoom(player.roomName, community)
             else:
                 self.client.sendServerMessage(f"The player {playerName} isn't online.", True)
+
+        @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'])
+        async def hide(self):
+            self.client.isInvisible = not self.client.isInvisible
+            self.client.sendServerMessage("You are invisible" if self.client.isInvisible else "You are no longer invisible", True)
+            self.client.sendEnterRoom(self.client.roomName)
 
         @self.command(level=['PrivMod', 'Mod', 'Admin', 'Owner'], args=1, alias=['infosouris'])
         async def infoplayer(self, playerName):
@@ -1504,10 +1529,14 @@ class Commands:
         async def tribulletoken(self, *args):
             self.client.sendPacket(Identifiers.send.Tribulle_Token, ByteArray().writeUTF(argsNotSplited).toByteArray())
 
+
+
         @self.command(level=['Admin', 'Owner'])
         async def doublexpevent(self):
             pass
-                
+
+
+
                 
     def FunCorpMemberCommands(self):
         message = "FunCorp Commands: \n\n"

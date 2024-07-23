@@ -63,7 +63,7 @@ class Identifiers:
         Mort = (4, 5)
         Shaman_Position = (4, 8)
         Crouch = (4, 9)
-        
+
         Shaman_Message = (5, 9)
         Convert_Skill = (5, 14)
         Demolition_Skill = (5, 15)
@@ -91,6 +91,10 @@ class Identifiers:
         Player_Shaman_Fly = (8, 15)
         Player_Meep = (8, 39)
     
+        Player_Hit_Monster = (26, 5)
+        Player_Attack = (26, 9)
+        Monster_Synchronization = (26, 10)
+        Player_Damaged = (26, 11)
         Player_MS_Info = (26, 25)
         Player_IPS_Info = (26, 28)
         
@@ -125,8 +129,9 @@ class Identifiers:
         Remove_Object = [4, 8]
         Crouch = [4, 9]
         Shaman_Position = [4, 10]
-    
+        
         Rounds_Count = [5, 1]
+        New_Map = [5, 2]
         Shaman_Message = [5, 9]
         Convert_Skill = [5, 13]
         Skill_Object = [5, 14]
@@ -152,9 +157,11 @@ class Identifiers:
         Skill = [5, 40]
         Reset_Shaman_Skills = [5, 42]
         Gatman_Skill = [5, 43]
+        Event_Map_Action = [5, 44]
         Bonfire_Skill = [5, 45]
         Soulmate = [5, 48]
         Teleport = [5, 50]
+        Add_Collectible_Packet = [5, 51]
         Music_Video = [5, 72]
         Music_Playlist = [5, 73]
         Tutorial = [5, 90]
@@ -189,9 +196,17 @@ class Identifiers:
         # Modopwet
         Modopwet_Chat_Log = [25, 10]
         
-        # Login packets
+        # Player packets
+        Player_Health = [26, 4]
+        Player_Hit_Monster = [26, 5]
+        Spawn_Halloween_Monster = [26, 6]
+        Remove_Monster = [26, 7]
+        Halloween_Monster_Speed = [26, 8]
+        Player_Attack = [26, 9]
+        Player_Damaged = [26, 11]
         Player_MS_Info = [26, 25]
         Player_IPS_Info = [26, 28]
+        Add_Image = [26, 31]
         
         # Transformation
         Can_Transformation = [27, 10]
@@ -204,6 +219,7 @@ class Identifiers:
         # Lua
         Initialize_Lua_Scripting = [29, 1]
         Set_Name_Color = [29, 4]
+        Add_Physical_Object = [29, 28]
         
         # Mulodrome
         Mulodrome_Result = [30, 4]
@@ -239,7 +255,10 @@ class Identifiers:
         
     class old:
         class recv:
-            Player_Bomb_Explode = (4, 6) 
+            Player_Bomb_Explode = (4, 6)
+            Player_Conjure_Start = (4, 12)
+            Player_Conjure_End = (4, 13)
+            Player_Conjuration = (4, 14)
 
             Room_Anchors = (5, 7)
             Totem_Anchors = (5, 13)
@@ -254,6 +273,11 @@ class Identifiers:
     
         class send:
             Player_Bomb_Explode = [4, 6]
+            Player_Conjure_Start = [4, 12]
+            Player_Conjure_End = [4, 13]
+            Player_Add_Conjuration = [4, 14]
+            Player_Conjuration_Destroy = [4, 15]
+            
             Anchors = [5, 7]
             Bombs = [5, 17]
         

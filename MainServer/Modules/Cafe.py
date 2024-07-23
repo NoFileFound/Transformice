@@ -138,7 +138,6 @@ class Cafe:
         self.sendCafeWarnings()
         
     def openCafeTopic(self, topicID):
-        ### Note: Second false is topic moderation.
         if any(post['topicID'] == topicID for post in self.server.reportedCafePosts):
             needTakeAction = True
         else:

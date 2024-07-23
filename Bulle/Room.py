@@ -49,6 +49,7 @@ class Room:
         self.changeMapAttemps = 0
         self.companionBox = -1
         self.currentMap = 0
+        self.currentMonsterId = 0
         self.currentShamanCode = -1
         self.currentShamanType = -1
         self.currentSecondShamanCode = -1
@@ -61,6 +62,7 @@ class Room:
         self.gameStartTimeMillis = 0
         self.lastImageID = 0
         self.lastRoundCode = 0
+        self.lastPhysicalObjectId = 0
         self.mapCode = -1
         self.mapStatus = -1
         self.mapPerma = -1
@@ -96,6 +98,7 @@ class Room:
         self.isDisabledAfkKill = False
         self.isDoubleMap = False
         self.isEditeur = False
+        self.isEventTime = False
         self.isFixedMap = False
         self.isFuncorp = False
         self.isNoShaman = False
@@ -103,6 +106,7 @@ class Room:
         self.isNormal = False
         self.isMulodrome = False
         self.isMusic = False
+        self.isNoAdventureMaps = False
         self.isRacing = False
         self.isSpecificMap = False
         self.isSurvivor = False
@@ -115,7 +119,6 @@ class Room:
         self.mapInverted = False
         self.never20secTimer = False
         self.notUpdatedScore = False
-        
         self.isVotingBox = False
         self.isVotingMode = False
         
@@ -127,6 +130,7 @@ class Room:
         self.currentSecondShamanName = ""
         self.currentSyncName = ""
         self.editeurMapXML = ""
+        self.eventType = ""
         self.forceNextMap = "-1"
         self.mapName = ""
         self.mapXML = ""
@@ -142,13 +146,14 @@ class Room:
         self.roomFuncorps = []
         self.roomTimers = []
         self.holesList = []
+        self.musicVideos = []
         self.cheesesList = []
         
         # Dictionary
         self.currentShamanSkills = {}
         self.currentSecondShamanSkills = {}
         self.players = {}
-        self.musicVideos = []
+        self.monsterLifes = {}
         
         # Timers
         self.autoRespawnTimer = None
@@ -157,6 +162,7 @@ class Room:
         self.killAfkTimer = None
         self.voteCloseTimer = None
         self.startTimerLeft = None
+        self.eventHallowenInvasionTimer = None
         
         # Maps
         self.doubleShamanMaps = self.server.mapsInfo["doubleShamanMaps"]
@@ -194,8 +200,18 @@ class Room:
             self.currentMap = -1
             self.mapInverted = False
             
-        #elif self.isEvent:
-            #self.mapXML = str(self.server.vanillaMaps[int(self.currentMap)])
+        elif self.isEventTime:
+            x = random.randint(0, 3)
+        
+            self.mapCode = 100002
+            self.mapName = self.server.bulleInfo["event_info"]["mapname"]
+            self.mapXML = str(self.server.eventMaps[self.server.bulleInfo["event_info"]["name"] + "_" + str(self.server.bulleInfo["event_info"]["maps"][x]["id"])])
+            self.mapYesVotes = 0
+            self.mapNoVotes = 0
+            self.mapPerma = -1
+            self.currentMap = -1
+            self.mapInverted = False
+            self.eventType = str(self.server.bulleInfo["event_info"]["maps"][x]["type"])
 
     def checkRoomName(self):
         roomNameCheck = self.roomName[1:] if self.roomName.startswith("*") or self.roomName.startswith("@") else self.roomName
@@ -317,14 +333,14 @@ class Room:
                 if player.playerCode == self.currentShamanCode:
                     self.currentShamanName = player.playerName
                     self.currentShamanType = player.shamanType
-                    if not player.isNoSkill:
+                    if not player.isNoSkill and not self.isUsingShamanSkills:
                         self.currentShamanSkills = player.playerSkills
                     break
 
                 if player.playerCode == self.currentSecondShamanCode:
                     self.currentSecondShamanName = player.playerName
                     self.currentSecondShamanType = player.shamanType
-                    if not player.isNoSkill:
+                    if not player.isNoSkill and not self.isUsingShamanSkills:
                         self.currentSecondShamanSkills = player.playerSkills
                     break
 
@@ -405,7 +421,7 @@ class Room:
                     if player.playerCode == self.currentShamanCode:
                         self.currentShamanName = player.playerName
                         self.currentShamanType = player.shamanType
-                        if not player.isNoSkill:
+                        if not player.isNoSkill and not self.isUsingShamanSkills:
                             self.currentShamanSkills = player.playerSkills
                         break
         return self.currentShamanCode
@@ -452,6 +468,9 @@ class Room:
             if player != senderClient:
                 player.sendPacket(identifiers, packet)
 
+    def sendEventMapAction(self, action):
+        self.sendAll(Identifiers.send.Event_Map_Action, ByteArray().writeShort(action).toByteArray())
+
     def sendMulodromeRound(self):
         self.sendAll(Identifiers.send.Mulodrome_Result, ByteArray().writeByte(self.mulodromeRoundCount).writeShort(self.mulodromeBlueCount).writeShort(self.mulodromeRedCount).toByteArray())
         if self.mulodromeRoundCount > 10:
@@ -470,6 +489,14 @@ class Room:
 
     def sendMusicVideo(self):
         self.sendAll(Identifiers.send.Music_Video, ByteArray().writeUTF(self.musicVideos[0]["VideoID"]).writeUTF(self.musicVideos[0]["Title"]).writeShort(self.musicVideos[0]["Duration"]).writeUTF(self.musicVideos[0]["By"]).toByteArray())
+
+    def sendNewMonster(self, x, y, monstyp):
+        self.monsterLifes[self.currentMonsterId] = (10 * self.getPlayerCountAlive() if monstyp == "chat" else 5)
+        self.sendAll(Identifiers.send.Spawn_Halloween_Monster, ByteArray().writeInt(self.currentMonsterId).writeInt(x).writeInt(y).writeUTF(monstyp).toByteArray())
+        if monstyp != "chat":
+            self.client.sendPacket(Identifiers.send.Halloween_Monster_Speed, ByteArray().writeInt(self.currentMonsterId).writeInt(-2).toByteArray())
+            
+        self.currentMonsterId += 1
 
     def sendNPC(self, npcName, data={}, interface=11):
         p = ByteArray().writeInt(data["id"])
@@ -517,7 +544,8 @@ class Room:
         
         if not newRoom:
             player.isDead = True
-            self.sendAllOthers(player, Identifiers.send.Player_Respawn, ByteArray().writeBytes(player.getPlayerData()).writeBoolean(local_3).writeBoolean(local_4).toByteArray())
+            if not player.isHidden:
+                self.sendAllOthers(player, Identifiers.send.Player_Respawn, ByteArray().writeBytes(player.getPlayerData()).writeBoolean(local_3).writeBoolean(local_4).toByteArray())
             player.startPlay()
         else:
             player.room.roomCreator = player.playerName
@@ -561,7 +589,7 @@ class Room:
             timer.cancel()
         self.roomTimers = []
         
-        for timer in [self.autoRespawnTimer, self.killAfkTimer, self.startTimerLeft, self.voteCloseTimer]:
+        for timer in [self.autoRespawnTimer, self.killAfkTimer, self.startTimerLeft, self.voteCloseTimer, self.eventHallowenInvasionTimer]:
             if timer != None:
                 timer.cancel()
     
@@ -665,9 +693,11 @@ class Room:
             self.lastHandymouse = [-1, -1]
             
             if self.getPlayerCount() > 1:
-                self.mapStatus = (self.mapStatus + 1) % 10
+                self.mapStatus = (self.mapStatus + 1) % 15
+                if self.mapStatus == 0:
+                    self.isEventTime = True
             else:
-                self.mapStatus = 0
+                self.mapStatus = -1
 
             self.currentMap = await self.selectMap()
             self.checkMapXML()
@@ -675,7 +705,7 @@ class Room:
             if (self.currentMap in self.doubleShamanMaps) or (self.mapPerma == 8 and self.getPlayerCount() >= 3):
                 self.isDoubleMap = True
 
-            if self.mapPerma in [7, 17, 42] or (self.isSurvivor and self.mapStatus == 0) or (self.currentMap in self.noShamanMaps):
+            if self.mapPerma in [7, 17, 42] or (self.isSurvivor and self.mapStatus == 0) or (self.currentMap in self.noShamanMaps) or (self.isEventTime and self.mapStatus == 0):
                 self.isNoShamanMap = True
 
             if self.currentMap in self.catchCheeseMaps:
@@ -723,9 +753,14 @@ class Room:
                 self.notUpdatedScore = False
                 self.sendAll(Identifiers.send.Rounds_Count, ByteArray().writeByte(self.roundsCount).writeInt(self.getHighestScore()).toByteArray())
             
-            if self.isSurvivor and self.mapStatus == 0 and self.getPlayerCountAlive() > 1:
-                self.server.loop.call_later(5, self.sendVampireMode)
+            if self.mapStatus == 0 and not self.isNoAdventureMaps:
+                self.isEventTime = True
+            else:
+                self.isEventTime = False
             
+            if self.isSurvivor and self.mapStatus == 0 and self.getPlayerCountAlive() > 1 and not self.isEventTime:
+                self.server.loop.call_later(5, self.sendVampireMode)
+                            
             self.startTimerLeft = call_later(3, self.sendRoomStartTimer)
             if not self.isFixedMap and not self.isTribeHouse and not self.isTribeHouseMap:
                 self.changeMapTimer = call_later(self.roundTime + self.addTime, self.mapChange)
@@ -733,6 +768,112 @@ class Room:
             self.killAfkTimer = call_later(30, self.killAfkPlayers)
             if self.isAutoRespawn or self.isTribeHouseMap:
                 self.autoRespawnTimer = call_later(2, self.respawnMice)
+                
+            self.sendAll(Identifiers.send.Add_Collectible_Packet, ByteArray().writeUnsignedByte(26).writeUnsignedShort(0).writeUnsignedByte(random.randint(33, 37)).writeShort(random.randint(0, 800 - 1)).writeShort(random.randint(0, 600 - 1)).toByteArray())
+                
+            if self.isEventTime:
+                if self.eventType == "halloween__mapid_monsterboss":          
+                    self.sendNewMonster(700, 280, "chat")
+                
+                    for player in self.players.copy().values():
+                        player.sendPlayerLifes(4)
+                        
+                    self.sendEventMapAction(4)
+                    self.eventHallowenInvasionTimer = call_later(4, self.spawnInvasion, 400, 280, "f")
+                    
+                elif self.eventType == "halloween__mapid_room":
+                    for player in self.players.copy().values():
+                        player.sendPlayerLifes(4)
+                        await player.sendGiveCheese(0, 0, 0, 0)
+                        
+                    self.eventHallowenInvasionTimer = call_later(4, self.spawnInvasion, 1916, 332, "f", 799, 328, "sq")
+                    
+                elif self.eventType == "halloween__mapid_broombloommap":
+                    ground_info = [
+                        [False, 12, 300, 57, 26, 113, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 300, 339, 26, 119, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 443, 33, 26, 65, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 443, 312, 26, 173, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 622, 52, 26, 103, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 622, 342, 26, 113, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 760, 86, 26, 170, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 760, 367, 26, 64, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 900, 87, 26, 173, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 900, 367, 26, 63, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 1066, 86, 26, 170, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 1066, 364, 26, 70, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 1196, 73, 26, 144, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 1196, 358, 26, 82, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 1365, 96, 26, 191, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 1365, 369, 26, 59, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 1543, 88, 26, 175, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 1543, 369, 26, 59, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 1690, 76, 26, 150, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 1690, 353, 26, 92, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 1867, 44, 26, 87, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 1867, 322, 26, 153, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 2018, 74, 26, 146, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 2018, 339, 26, 120, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 2197, 95, 26, 188, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 2197, 361, 26, 76, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 2338, 52, 26, 103, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 2338, 316, 26, 165, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 2503, 100, 26, 198, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 2503, 361, 26, 76, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 2646, 37, 26, 72, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 2646, 296, 26, 206, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 2777, 61, 26, 120, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 2777, 312, 26, 174, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 2933, 101, 26, 201, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 2933, 350, 26, 97, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 3063, 52, 26, 103, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 3063, 303, 26, 191, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 3227, 110, 26, 218, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 3227, 359, 26, 80, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 3393, 93, 26, 185, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 3393, 339, 26, 119, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 3552, 75, 26, 149, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 3552, 327, 26, 143, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        
+                        [False, 12, 3690, 87, 26, 172, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False],
+                        [False, 12, 3690, 333, 26, 132, False, 0.3, 0.2, 0, False, 0, True, True, True, 0, 0.0, 0.0, True, '', False]
+                    ]
+                    random.shuffle(ground_info)
+
+                    for info in ground_info:
+                        self.sendPhysicalObject(self.lastPhysicalObjectId, info[0], info[1], info[2], info[3], info[4], info[5], info[6], info[7], info[8], info[9], info[10], info[11], info[12], info[13], info[14], info[15], info[16], info[17], info[18], info[19], info[20])
+                        self.sendImage('x_transformice/x_maps/x_halloween2015/ronces1.png', False, info[2], info[3], info[4], info[5], 0, False, False, False, '')
+                        self.sendEventMapAction(2)
+                    
+                elif self.eventType == "halloween__mapid_casino":
+                    pass
+                    
+            else:
+                if self.currentMonsterId > 0:
+                    for x in range(0, self.currentMonsterId):
+                        self.client.sendPacket(Identifiers.send.Remove_Monster, ByteArray().writeInt(self.currentMonsterId).toByteArray())
+                    self.currentMonsterId = 0
 
     async def removeClient(self, player):
         if player.playerName in self.players:
@@ -755,7 +896,7 @@ class Room:
             if len(self.players) == 0:
                 # There are no players in current room
                 
-                for timer in [self.autoRespawnTimer, self.changeMapTimer, self.endSnowTimer, self.killAfkTimer, self.voteCloseTimer]:
+                for timer in [self.autoRespawnTimer, self.changeMapTimer, self.endSnowTimer, self.killAfkTimer, self.voteCloseTimer, self.eventHallowenInvasionTimer]:
                     if timer != None:
                         timer.cancel()
                         
@@ -948,3 +1089,68 @@ class Room:
         
     def removeObject(self, objectId):
         self.sendAll(Identifiers.send.Remove_Object, ByteArray().writeInt(objectId).writeBoolean(True).toByteArray())
+            
+    async def spawnInvasion(self, x, y, typ, x1=0, y1=0, typ1=0):
+        while True:
+            if self.eventHallowenInvasionTimer.cancelled():
+                return
+                
+            if self.eventType == "halloween__mapid_monsterboss":
+                self.sendEventMapAction(10)
+                self.sendEventMapAction(7)
+        
+                self.sendNewMonster(x, y, typ)
+            else:
+                self.sendNewMonster(x, y, typ)
+                self.sendNewMonster(x1, y1, typ1)
+            
+            await asyncio.sleep(5)
+            
+    def sendPhysicalObject(self, physic_id, dynamic, ground_id, x, y, width, height, foreground, friction, restitution, angle, has_color, color, mice_collidable, ground_collidable, fixed_rotation, mass, linear_damping, angular_damping, invisible, image_description, has_contact_listener):
+        p = ByteArray()
+        p.writeInt128(physic_id)
+        p.writeBoolean(dynamic)
+        p.writeByte(ground_id)
+        p.writeInt128(x)
+        p.writeInt128(y)
+        p.writeInt128(width)
+        p.writeInt128(height)
+        p.writeBoolean(foreground)
+        p.writeInt128(friction)
+        p.writeInt128(restitution)
+        p.writeInt128(angle)
+        p.writeBoolean(has_color)
+        p.writeInt(color)
+        p.writeBoolean(mice_collidable)
+        p.writeBoolean(ground_collidable)
+        p.writeBoolean(fixed_rotation)
+        p.writeInt128(mass)
+        p.writeInt128(linear_damping)
+        p.writeInt128(angular_damping)
+        p.writeBoolean(invisible)
+        p.writeUTF(image_description)
+        p.writeBoolean(has_contact_listener)
+        self.sendAll(Identifiers.send.Add_Physical_Object, p.toByteArray())
+        self.lastPhysicalObjectId += 1
+        
+    def sendImage(self, image_path, _local2, x, y, width, height, target, tile_info, disappear_on_click, hidden, name, _local1=0, x_step=0, y_step=0):
+        p = ByteArray()
+        p.writeUnsignedByte(self.lastImageID)
+        p.writeUTF(image_path)
+        p.writeBoolean(_local2)
+        p.writeShort(x)
+        p.writeShort(y)
+        p.writeShort(width)
+        p.writeShort(height)
+        p.writeByte(target)
+        p.writeBoolean(tile_info)
+        if tile_info:
+            p.writeShort(_local1)
+            p.writeInt(x_step)
+            p.writeInt(y_step)
+        
+        p.writeBoolean(disappear_on_click)
+        p.writeBoolean(hidden)
+        p.writeUTF(name)
+        self.sendAll(Identifiers.send.Add_Image, p.toByteArray())
+        self.lastImageID += 1

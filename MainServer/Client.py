@@ -176,6 +176,7 @@ class Client:
         
         # Nonetype
         self.awakeTimer = None
+        self.followed = None
         self.resSkillsTimer = None
         self.transport = None
         self.ipAddress = None
@@ -289,6 +290,13 @@ class Client:
         self.isClosed = True
         
         if self.playerName in self.server.players:
+            # Followed
+            if self.server.players[self.playerName].followed != None:
+                self.isInvisible = False
+                self.sendWatchPlayerPacket("", False)
+                self.sendEnterRoom("")
+                self.server.players[self.playerName].followed = None
+        
             # Rooms
             if self.roomName in self.server.rooms:
                 self.server.roomPlayers[self.roomName].remove(self.playerName)
@@ -320,7 +328,7 @@ class Client:
             del self.server.players[self.playerName]
         self.transport.close()
         
-    async def createAccount(self, playerName, email, password): # UNFINISHED
+    async def createAccount(self, playerName, email, password):
         playerName = self.server.genPlayerTag(playerName)
         self.server.lastPlayerID = self.cursor['users'].count_documents({}) + 1
     
@@ -417,7 +425,6 @@ class Client:
                 self.server.removeTempIPBan(self.ipAddress)
     
         if password == "":
-            # player is guest
             if not self.server.serverInfo["disabled_souris"]:
                 self.playerName = self.server.checkAlreadyExistingGuest(playerName)
                 startRoom = (f"\x03[Tutorial] {self.playerName}" if not self.server.isDebug else startRoom)
@@ -428,7 +435,6 @@ class Client:
                 self.isLoggedIn = False
             
         elif "@" in playerName:
-            # email address linked with more than 1 player.
             rss = self.cursor['users'].find({'Email':playerName,'Password':password})
             players = []
             for rs in rss:
@@ -631,13 +637,17 @@ class Client:
         bullePorts = '-'.join(map(str, self.bulleID["port"]))
         isReported = self.playerName in self.server.modoReports
         
+        if self.followed != None:
+            self.followed.lastRoomName = ""
+            self.followed.sendEnterRoom(self.roomName)
+        
         if createRoomInfo:
             if self.roomName != self.lastRoomName:
                 if not self.roomName in self.server.rooms:
                     self.server.roomPlayers[self.roomName] = [self.playerName]
                     self.server.rooms[self.roomName] = [
                         self.bulleID, # Bulle info
-                        1, # Room players
+                        0 if self.isInvisible else 1, # Room players
                         200, # Max players
                         self.server.getRoomGameMode(self.roomName),
                         self.roomName,
@@ -650,7 +660,8 @@ class Client:
                         return
                 
                     self.server.roomPlayers[self.roomName].append(self.playerName)
-                    self.server.rooms[self.roomName][1] += 1
+                    if not self.isInvisible:
+                        self.server.rooms[self.roomName][1] += 1
                     
                 if self.lastRoomName != "":
                     self.server.roomPlayers[self.lastRoomName].remove(self.playerName)
@@ -666,6 +677,7 @@ class Client:
             self.Logger.debug(f"[{self.ipAddress}] Established connection to bulle{self.bulleID['id']} : {self.bulleID['ip_address']}:{bullePorts}.\n")
             if self.server.rooms[self.roomName][6] == True:
                 self.server.loop.call_later(1.1, asyncio.create_task, self.sendRoomInfoMessage())
+                                
             self.lastRoomName = self.roomName
         except KeyError as e:
             self.Logger.error("Unable to connect to bulle. Refreshing in 10 seconds.\n")
@@ -1001,7 +1013,7 @@ class Client:
     def sendEnterRoom(self, roomName, community="", isHidden=False, createRoomInfo=True, skipPassword=True):
         if not self.isEnterRoom:
             self.isEnterRoom = True
-            self.server.loop.call_later(0.8, asyncio.create_task, self.connectToBulle(roomName, community, isHidden, True, createRoomInfo, skipPassword))
+            self.server.loop.call_later(0.8, asyncio.create_task, self.connectToBulle(roomName, community, True if self.isInvisible else isHidden, True, createRoomInfo, skipPassword))
             self.server.loop.call_later(1.9, setattr, self, "isEnterRoom", False)
 
     def sendGiveCurrency(self, type, count):
@@ -1295,7 +1307,7 @@ class Client:
             isPrivate = (roomName[3] == '@')
             isInternational = (roomName[3] == '*' and not roomName[4] == '\x03')
             isCustomMade = checkRoom[6]
-            if ((roomCommunity == self.playerLangue and mode == checkRoom[3]) and not isPrivate) or isInternational:
+            if (((roomCommunity == self.playerLangue and mode == checkRoom[3]) and not isPrivate) or isInternational) and checkRoom[1] > 0:
                 p.writeByte(0)
                 p.writeUTF(roomCommunity)
                 p.writeUTF(roomCommunity if not isInternational else "int")

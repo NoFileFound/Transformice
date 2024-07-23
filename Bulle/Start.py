@@ -32,7 +32,7 @@ class Bulle:
     
         # Boolean
         self.isDebug = False
-    
+        
         # Dictionary
         self.bulle_players = {}
         self.bulle_verification = {}
@@ -40,6 +40,7 @@ class Bulle:
         self.chatMessages = {}
         self.cachedmaps = {}
         self.vanillaMaps = {}
+        self.eventMaps = {}
     
         # Loops
         self.loop = asyncio.get_event_loop()
@@ -495,7 +496,7 @@ class Bulle:
                 self.bulle_players[playerID].drawingColor = pencilColor
                 self.bulle_players[playerID].sendPacket(Identifiers.send.Crazzy_Packet, ByteArray().writeByte(1).writeShort(650).writeInt(pencilColor).toByteArray())
         
-        elif code == Identifiers.bulle.BU_SendTrowableObject: # UNFINISHED
+        elif code == Identifiers.bulle.BU_SendTrowableObject:
             playerID = int(args[0])
             objectCode = int(args[1])
             consumableID = int(args[2])
@@ -625,7 +626,7 @@ class Bulle:
                         for player in self.bulle_rooms[roomName].players.copy().values():
                             if player.tempMouseColor != "":
                                 info += 1
-                        self.bulle_players[playerID].sendServerMessage(f"Colored furs: <BV>{info}</BV>", True) # colored nicknames
+                        self.bulle_players[playerID].sendServerMessage(f"Colored furs: <BV>{info}</BV>", True)
                         
                     elif players == ['*']:
                         for player in self.bulle_rooms[roomName].players.copy().values():
@@ -670,7 +671,7 @@ class Bulle:
                         for player in self.bulle_rooms[roomName].players.copy().values():
                             if player.tempNickColor != "":
                                 info += 1
-                        self.bulle_players[playerID].sendServerMessage(f"Colored nicknames: <BV>{info}</BV>", True) # colored nicknames
+                        self.bulle_players[playerID].sendServerMessage(f"Colored nicknames: <BV>{info}</BV>", True)
                         
                     elif players == ['*']:
                         for player in self.bulle_rooms[roomName].players.copy().values():
@@ -751,6 +752,14 @@ class Bulle:
         self.Logger.info(f"Loaded total {len(cursor.fetchall())} maps.\n")
         return cursor
     
+    def LoadEventMaps(self):
+        cnt = 0
+        for fileName in os.listdir("./Include/maps/event/"):
+            with open("./Include/maps/event/"+fileName) as f:
+                self.eventMaps[fileName[:-4]] = f.read()
+            cnt += 1
+        self.Logger.info(f"Loaded {cnt} total event maps.\n")
+    
     def LoadVanillaMaps(self):
         cnt = 0
         for fileName in os.listdir("./Include/maps/vanilla/"):
@@ -819,6 +828,7 @@ class Bulle:
         
     def Main(self):
         self.CursorMaps = self.ConnectMAPDatabase()
+        self.LoadEventMaps()
         self.LoadVanillaMaps()
         self.isDebug = self.bulleInfo["debug"]
         self.connect_to_main_server()

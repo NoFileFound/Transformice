@@ -165,6 +165,7 @@ class Identifiers:
         Player_Redistribute_Skills = (8, 22)
         Player_Report = (8, 25)
         Init_Ping_System = (8, 30)
+        Player_Adventures = (8, 70)
         
         # Purchase
         Purchase_Fraises_Begin = (12, 1) # paypal
@@ -254,6 +255,7 @@ class Identifiers:
         # New game packets
         Open_Dressing = (100, 30)
         Shop_View_Full_Look = (100, 31)
+        Question = (100, 50)
         NPC_Functions = (100, 75)
         Change_Shaman_Badge = (100, 79)
         
@@ -299,6 +301,7 @@ class Identifiers:
         Player_Shop_List = [8, 20]
         Shaman_Skills = [8, 22]
         Anim_Donation = [8, 50]
+        Player_Adventures = [8, 70]
         
         # Purchase
         Purchase_Fraises_Paypal = [12, 2]

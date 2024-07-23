@@ -242,6 +242,9 @@ class BulleProtocol(asyncio.Protocol):
         
         
     # Client Packets
+    def sendConjurationDestroy(self, x, y):
+        self.room.sendAll(Identifiers.old.send.Player_Conjuration_Destroy, [x, y])
+    
     def sendEnterRoom(self):
         found = False
         rooms = self.roomName[3:]
@@ -289,6 +292,16 @@ class BulleProtocol(asyncio.Protocol):
             packet.writeUTF(args)
         self.sendPacket(Identifiers.send.Recv_Message, packet.toByteArray())
 
+    def sendMap(self, newMap=False, newMapCustom=False, fakeMap=""):
+        self.room.notUpdatedScore = True
+        
+        if self.room.editeurMapXML != "":
+            xml = self.room.editeurMapXML.encode()
+        else:
+            xml = b"" if newMap else self.room.mapXML.encode() if isinstance(self.room.mapXML, str) else self.room.mapXML if newMapCustom else self.room.editeurMapXML.encode() if isinstance(self.room.editeurMapXML, str) else self.room.editeurMapXMl
+        xml = zlib.compress(xml)
+        self.sendPacket(Identifiers.send.New_Map, ByteArray().writeInt(self.room.currentMap if newMap else self.room.mapCode if newMapCustom else -1).writeShort(self.room.getPlayerCount()).writeByte(self.room.lastRoundCode).writeInt(len(xml)).writeBytes(xml).writeUTF("" if newMap else self.room.mapName if newMapCustom else "-").writeByte(0 if newMap else self.room.mapPerma if newMapCustom else 100).writeBoolean(self.room.mapInverted if newMapCustom else False).writeBoolean(False).writeBoolean(self.room.isDisabledMiceCollision).writeBoolean(self.room.isDisabledFallDamage).writeInt(self.room.miceWeight).toByteArray())
+        
     def sendMapStartTimer(self, startMap):
         self.sendPacket(Identifiers.send.Map_Start_Timer, ByteArray().writeBoolean(startMap).toByteArray())
 
@@ -328,6 +341,9 @@ class BulleProtocol(asyncio.Protocol):
         if showPacket:
             self.room.sendAll(Identifiers.old.send.Player_Died, [self.playerCode, self.playerScore])
         self.cheeseCount = 0
+        
+        if self.isHidden:
+            return
 
         for player in self.room.players.copy().values():
             if player.isShaman and (15 in player.playerSkills and (self.room.isNormal or self.room.isVanilla or self.room.isMusic)):
@@ -364,13 +380,17 @@ class BulleProtocol(asyncio.Protocol):
         else:
             self.room.sendAll(Identifiers.send.Player_Action, p.toByteArray())
 
-    def sendPlayerWin(self, place, timeTaken):
-        self.room.sendAll(Identifiers.send.Player_Win, ByteArray().writeByte(1 if self.room.isDefilante else (2 if self.playerName in self.room.mulodromeRedTeam else 3 if self.playerName in self.room.mulodromeBlueTeam else 0)).writeInt(self.playerCode).writeShort(self.playerScore).writeByte(255 if place >= 255 else place).writeShort(65535 if timeTaken >= 65535 else timeTaken).toByteArray())
-        self.cheeseCount = 0
+    def sendPlayerLifes(self, amount):
+        self.sendPacket(Identifiers.send.Player_Health, amount)
+        self.playerLifes = amount
 
     def sendPlayerList(self):
         info = self.room.getPlayerList()
         self.sendPacket(Identifiers.send.Player_List, ByteArray().writeShort(info[0]).writeBytes(info[1]).toByteArray())
+
+    def sendPlayerWin(self, place, timeTaken):
+        self.room.sendAll(Identifiers.send.Player_Win, ByteArray().writeByte(1 if self.room.isDefilante else (2 if self.playerName in self.room.mulodromeRedTeam else 3 if self.playerName in self.room.mulodromeBlueTeam else 0)).writeInt(self.playerCode).writeShort(self.playerScore).writeByte(255 if place >= 255 else place).writeShort(65535 if timeTaken >= 65535 else timeTaken).toByteArray())
+        self.cheeseCount = 0
 
     def sendRemoveCheese(self):
         self.room.sendAll(Identifiers.send.Remove_Cheese, ByteArray().writeInt(self.playerCode).toByteArray())
@@ -630,13 +650,13 @@ class BulleProtocol(asyncio.Protocol):
         if self.playerCode == shamanCode or self.playerCode == shamanCode2:
             self.isShaman = True
 
-        if self.isShaman and self.room.isUsingShamanSkills:
+        if self.isShaman and self.room.isUsingShamanSkills and not self.isNoSkill:
             self.Skills.getSkills()
 
-        if self.room.currentShamanName != "" and self.room.isUsingShamanSkills:
+        if self.room.currentShamanName != "" and self.room.isUsingShamanSkills and not self.isNoSkill:
             self.Skills.getPlayerSkills(self.room.currentShamanSkills)
 
-        if self.room.currentSecondShamanName != "" and self.isUsingShamanSkills:
+        if self.room.currentSecondShamanName != "" and self.isUsingShamanSkills and not self.isNoSkill:
             self.Skills.getPlayerSkills(self.room.currentSecondShamanSkills)
         
         self.sendPlayerList()
@@ -671,20 +691,10 @@ class BulleProtocol(asyncio.Protocol):
         if self.room.currentMap in range(200, 211) and not self.isShaman:
             self.sendPacket(Identifiers.send.Can_Transformation, 1)
 
+
                     
     def sendUnlockTitle(self, typ): # Cheeses, Bootcamp, Firsts, ShamanCheeses
         pass
         
-    def sendMap(self, newMap=False, newMapCustom=False, fakeMap=""): # UNFINISHED
-        self.room.notUpdatedScore = True
-        
-        if self.room.editeurMapXML != "":
-            xml = self.room.editeurMapXML.encode()
-        else:
-            xml = b"" if newMap else self.room.mapXML.encode() if isinstance(self.room.mapXML, str) else self.room.mapXML if newMapCustom else self.room.editeurMapXML.encode() if isinstance(self.room.editeurMapXML, str) else self.room.editeurMapXMl
-        xml = zlib.compress(xml)
-        self.sendPacket([5, 2], ByteArray().writeInt(self.room.currentMap if newMap else self.room.mapCode if newMapCustom else -1).writeShort(self.room.getPlayerCount()).writeByte(self.room.lastRoundCode).writeInt(len(xml)).writeBytes(xml).writeUTF("" if newMap else self.room.mapName if newMapCustom else "-").writeByte(0 if newMap else self.room.mapPerma if newMapCustom else 100).writeBoolean(self.room.mapInverted if newMapCustom else False).writeBoolean(False).writeBoolean(self.room.isDisabledMiceCollision).writeBoolean(self.room.isDisabledFallDamage).writeInt(self.room.miceWeight).toByteArray())
-        
-
     def sendUpdateDatabase(self):
         pass

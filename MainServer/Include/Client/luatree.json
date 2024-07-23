@@ -1,10 +1,952 @@
 {
 	"Tree": [
-		{"Name": "bit32", "indent":1},
-		{"Name": "arshift", "indent":3}
+		{"Name": "G_", "indent":0},
+		{"Name": "assert", "indent":0},
+		{"Name": "bit32", "indent":0},
+			{"Name": "band", "indent":3},
+			{"Name": "bnot", "indent":3},
+			{"Name": "bor", "indent":3},
+			{"Name": "btest", "indent":3},
+			{"Name": "bxor", "indent":3},
+			{"Name": "extract", "indent":3},
+			{"Name": "lrotate", "indent":3},
+			{"Name": "lshift", "indent":3},
+			{"Name": "replace", "indent":3},
+			{"Name": "rrotate", "indent":3},
+			{"Name": "rshift", "indent":3},
+		{"Name": "coroutine", "indent":0},
+			{"Name": "create", "indent":3},
+			{"Name": "resume", "indent":3},
+			{"Name": "running", "indent":3},
+			{"Name": "status", "indent":3},
+			{"Name": "wrap", "indent":3},
+			{"Name": "yield", "indent":3},
+		{"Name": "debug", "indent":0},
+			{"Name": "disableEventLog", "indent":3},
+			{"Name": "disableTimerLog", "indent":3},
+			{"Name": "getCurrentThreadName", "indent":3},
+			{"Name": "traceback", "indent":3},
+		{"Name": "error", "indent":0},
+		{"Name": "getmetatable", "indent":0},
+		{"Name": "ipairs", "indent":0},
+		{"Name": "math", "indent":0},
+			{"Name": "abs", "indent": 3},
+			{"Name": "acos", "indent": 3},
+			{"Name": "asin", "indent": 3},
+			{"Name": "atan", "indent": 3},
+			{"Name": "atan2", "indent": 3},
+			{"Name": "ceil", "indent": 3},
+			{"Name": "cos", "indent": 3},
+			{"Name": "cosh", "indent": 3},
+			{"Name": "deg", "indent": 3},
+			{"Name": "exp", "indent": 3},
+			{"Name": "floor", "indent": 3},
+			{"Name": "fmod", "indent": 3},
+			{"Name": "frexp", "indent": 3},
+			{"Name": "huge", "indent": 3},
+			{"Name": "ldexp", "indent": 3},
+			{"Name": "log", "indent": 3},
+			{"Name": "max", "indent": 3},
+			{"Name": "min", "indent": 3},
+			{"Name": "modf", "indent": 3},
+			{"Name": "pi", "indent": 3},
+			{"Name": "pow", "indent": 3},
+			{"Name": "rad", "indent": 3},
+			{"Name": "random", "indent": 3},
+			{"Name": "randomseed", "indent": 3},
+			{"Name": "sin", "indent": 3},
+			{"Name": "sinh", "indent": 3},
+			{"Name": "sqrt", "indent": 3},
+			{"Name": "tan", "indent": 3},
+			{"Name": "tanh", "indent": 3},
+		{"Name": "next", "indent":0},
+		{"Name": "os", "indent":0},
+			{"Name": "date", "indent": 3},
+			{"Name": "difftime", "indent": 3},
+			{"Name": "time", "indent": 3},
+		{"Name": "pairs", "indent":0},
+		{"Name": "pcall", "indent":0},
+		{"Name": "print", "indent":0},
+		{"Name": "rawequal", "indent":0},
+		{"Name": "rawget", "indent":0},
+		{"Name": "rawlen", "indent":0},
+		{"Name": "rawset", "indent":0},
+		{"Name": "select", "indent":0},
+		{"Name": "setmetatable", "indent":0},
+		{"Name": "string", "indent":0},
+			{"Name": "byte", "indent": 3},
+			{"Name": "char", "indent": 3},
+			{"Name": "dump", "indent": 3},
+			{"Name": "find", "indent": 3},
+			{"Name": "format", "indent": 3},
+			{"Name": "gmatch", "indent": 3},
+			{"Name": "gsub", "indent": 3},
+			{"Name": "len", "indent": 3},
+			{"Name": "lower", "indent": 3},
+			{"Name": "match", "indent": 3},
+			{"Name": "rep", "indent": 3},
+			{"Name": "reverse", "indent": 3},
+			{"Name": "sub", "indent": 3},
+			{"Name": "upper", "indent": 3},
+		{"Name": "system", "indent":0},
+			{"Name": "bindKeyboard", "indent": 3},
+			{"Name": "bindMouse", "indent": 3},
+			{"Name": "disableChatCommandDisplay", "indent": 3},
+			{"Name": "exit", "indent": 3},
+			{"Name": "giveAdventurePoint", "indent": 3},
+			{"Name": "giveEventGift", "indent": 3},
+			{"Name": "loadFile", "indent": 3},
+			{"Name": "loadPlayerData", "indent": 3},
+			{"Name": "luaEventLaunchInterval", "indent": 3},
+			{"Name": "newTimer", "indent": 3},
+			{"Name": "openEventShop", "indent": 3},
+			{"Name": "removeTimer", "indent": 3},
+			{"Name": "saveFile", "indent": 3},
+			{"Name": "savePlayerData", "indent": 3},
+			{"Name": "setLuaEventBanner", "indent": 3},
+		{"Name": "table", "indent":0},
+			{"Name": "concat", "indent": 3},
+			{"Name": "foreach", "indent": 3},
+			{"Name": "foreachi", "indent": 3},
+			{"Name": "insert", "indent": 3},
+			{"Name": "pack", "indent": 3},
+			{"Name": "remove", "indent": 3},
+			{"Name": "sort", "indent": 3},
+			{"Name": "unpack", "indent": 3},
+		{"Name": "tfm", "indent":0},
+			{"Name": "enum", "indent":3},
+				{"Name": "bonus", "indent":6},
+					{"Name": "point", "indent": 9, "ID": 0},
+					{"Name": "speed", "indent": 9, "ID": 1},
+					{"Name": "death", "indent": 9, "ID": 2},
+					{"Name": "spring", "indent": 9, "ID": 3},
+					{"Name": "booster", "indent": 9, "ID": 5},
+					{"Name": "electricArc", "indent": 9, "ID": 6},
+				{"Name": "emote", "indent":6},
+					{"Name": "dance", "indent": 9, "ID": 0},
+					{"Name": "laugh", "indent": 9, "ID": 1},
+					{"Name": "cry", "indent": 9, "ID": 2},
+					{"Name": "kiss", "indent": 9, "ID": 3},
+					{"Name": "angry", "indent": 9, "ID": 4},
+					{"Name": "clap", "indent": 9, "ID": 5},
+					{"Name": "sleep", "indent": 9, "ID": 6},
+					{"Name": "facepaw", "indent": 9, "ID": 7},
+					{"Name": "sit", "indent": 9, "ID": 8},
+					{"Name": "confetti", "indent": 9, "ID": 9},
+					{"Name": "flag", "indent": 9, "ID": 10},
+					{"Name": "marshmallow", "indent": 9, "ID": 11},
+					{"Name": "selfie", "indent": 9, "ID": 12},
+					{"Name": "highfive", "indent": 9, "ID": 13},
+					{"Name": "highfive_1", "indent": 9, "ID": 14},
+					{"Name": "highfive_2", "indent": 9, "ID": 15},
+					{"Name": "partyhorn", "indent": 9, "ID": 16},
+					{"Name": "hug", "indent": 9, "ID": 17},
+					{"Name": "hug_1", "indent": 9, "ID": 18},
+					{"Name": "hug_2", "indent": 9, "ID": 19},
+					{"Name": "jigglypuff", "indent": 9, "ID": 20},
+					{"Name": "kissing", "indent": 9, "ID": 21},
+					{"Name": "kissing_1", "indent": 9, "ID": 22},
+					{"Name": "kissing_2", "indent": 9, "ID": 23},
+					{"Name": "carnaval", "indent": 9, "ID": 24},
+					{"Name": "rockpaperscissors", "indent": 9, "ID": 25},
+					{"Name": "rockpaperscissors_1", "indent": 9, "ID": 26},
+					{"Name": "rockpaperscissor_2", "indent": 9, "ID": 27},
+				{"Name": "ground", "indent":6},
+					{"Name": "wood", "indent": 9, "ID": 0},
+					{"Name": "ice", "indent": 9, "ID": 1},
+					{"Name": "trampoline", "indent": 9, "ID": 2},
+					{"Name": "lava", "indent": 9, "ID": 3},
+					{"Name": "chocolate", "indent": 9, "ID": 4},
+					{"Name": "earth", "indent": 9, "ID": 5},
+					{"Name": "grass", "indent": 9, "ID": 6},
+					{"Name": "sand", "indent": 9, "ID": 7},
+					{"Name": "cloud", "indent": 9, "ID": 8},
+					{"Name": "water", "indent": 9, "ID": 9},
+					{"Name": "stone", "indent": 9, "ID": 10},
+					{"Name": "snow", "indent": 9, "ID": 11},
+					{"Name": "rectangle", "indent": 9, "ID": 12},
+					{"Name": "circle", "indent": 9, "ID": 13},
+					{"Name": "invisible", "indent": 9, "ID": 14},
+					{"Name": "web", "indent": 9, "ID": 15},
+					{"Name": "yellowGrass", "indent": 9, "ID": 17},
+					{"Name": "pinkGrass", "indent": 9, "ID": 18},
+					{"Name": "acid", "indent": 9, "ID": 19},
+				{"Name": "particle", "indent":6},
+					{"Name": "whiteGlitter", "indent": 9, "ID": 0},
+					{"Name": "blueGlitter", "indent": 9, "ID": 1},
+					{"Name": "orangeGlitter", "indent": 9, "ID": 2},
+					{"Name": "cloud", "indent": 9, "ID": 3},
+					{"Name": "dullWhiteGlitter", "indent": 9, "ID": 4},
+					{"Name": "heart", "indent": 9, "ID": 5},
+					{"Name": "bubble", "indent": 9, "ID": 6},
+					{"Name": "tealGlitter", "indent": 9, "ID": 9},
+					{"Name": "spirit", "indent": 9, "ID": 10},
+					{"Name": "yellowGlitter", "indent": 9, "ID": 11},
+					{"Name": "ghostSpirit", "indent": 9, "ID": 12},
+					{"Name": "redGlitter", "indent": 9, "ID": 13},
+					{"Name": "waterBubble", "indent": 9, "ID": 14},
+					{"Name": "plus1", "indent": 9, "ID": 15},
+					{"Name": "plus10", "indent": 9, "ID": 16},
+					{"Name": "plus12", "indent": 9, "ID": 17},
+					{"Name": "plus14", "indent": 9, "ID": 18},
+					{"Name": "plus16", "indent": 9, "ID": 19},
+					{"Name": "meep", "indent": 9, "ID": 20},
+					{"Name": "redConfetti", "indent": 9, "ID": 21},
+					{"Name": "greenConfetti", "indent": 9, "ID": 22},
+					{"Name": "blueConfetti", "indent": 9, "ID": 23},
+					{"Name": "yellowConfetti", "indent": 9, "ID": 24},
+					{"Name": "diagonalRain", "indent": 9, "ID": 25},
+					{"Name": "curlyWind", "indent": 9, "ID": 26},
+					{"Name": "wind", "indent": 9, "ID": 27},
+					{"Name": "rain", "indent": 9, "ID": 28},
+					{"Name": "star", "indent": 9, "ID": 29},
+					{"Name": "littleRedHeart", "indent": 9, "ID": 30},
+					{"Name": "littlePinkHeart", "indent": 9, "ID": 31},
+					{"Name": "daisy", "indent": 9, "ID": 32},
+					{"Name": "bell", "indent": 9, "ID": 33},
+					{"Name": "egg", "indent": 9, "ID": 34},
+					{"Name": "projection", "indent": 9, "ID": 35},
+					{"Name": "mouseTeleportation", "indent": 9, "ID": 36},
+					{"Name": "shamanTeleportation", "indent": 9, "ID": 37},
+					{"Name": "lollipopConfetti", "indent": 9, "ID": 38},
+					{"Name": "yellowCandyConfetti", "indent": 9, "ID": 39},
+					{"Name": "pinkCandyConfetti", "indent": 9, "ID": 40},
+				{"Name": "shamanObject", "indent":6},
+					{"Name": "arrow", "indent": 9, "ID": 0},
+					{"Name": "littleBox", "indent": 9, "ID": 1},
+					{"Name": "box", "indent": 9, "ID": 2},
+					{"Name": "littleBoard", "indent": 9, "ID": 3},
+					{"Name": "board", "indent": 9, "ID": 4},
+					{"Name": "ball", "indent": 9, "ID": 6},
+					{"Name": "trampoline", "indent": 9, "ID": 7},
+					{"Name": "anvil", "indent": 9, "ID": 10},
+					{"Name": "cannon", "indent": 9, "ID": 17},
+					{"Name": "bomb", "indent": 9, "ID": 23},
+					{"Name": "orangePortal", "indent": 9, "ID": 26},
+					{"Name": "blueBalloon", "indent": 9, "ID": 28},
+					{"Name": "redBalloon", "indent": 9, "ID": 29},
+					{"Name": "greenBalloon", "indent": 9, "ID": 30},
+					{"Name": "yellowBalloon", "indent": 9, "ID": 31},
+					{"Name": "rune", "indent": 9, "ID": 32},
+					{"Name": "chicken", "indent": 9, "ID": 33},
+					{"Name": "snowBall", "indent": 9, "ID": 34},
+					{"Name": "cupidonArrow", "indent": 9, "ID": 35},
+					{"Name": "apple", "indent": 9, "ID": 39},
+					{"Name": "sheep", "indent": 9, "ID": 40},
+					{"Name": "littleBoardIce", "indent": 9, "ID": 45},
+					{"Name": "littleBoardChocolate", "indent": 9, "ID": 46},
+					{"Name": "iceCube", "indent": 9, "ID": 54},
+					{"Name": "cloud", "indent": 9, "ID": 57},
+					{"Name": "bubble", "indent": 9, "ID": 59},
+					{"Name": "tinyBoard", "indent": 9, "ID": 60},
+					{"Name": "companionCube", "indent": 9, "ID": 61},
+					{"Name": "stableRune", "indent": 9, "ID": 62},
+					{"Name": "balloonFish", "indent": 9, "ID": 65},
+					{"Name": "longBoard", "indent": 9, "ID": 67},
+					{"Name": "triangle", "indent": 9, "ID": 68},
+					{"Name": "sBoard", "indent": 9, "ID": 69},
+					{"Name": "paperPlane", "indent": 9, "ID": 80},
+					{"Name": "rock", "indent": 9, "ID": 85},
+					{"Name": "pumpkinBall", "indent": 9, "ID": 89},
+					{"Name": "tombstone", "indent": 9, "ID": 90},
+					{"Name": "paperBall", "indent": 9, "ID": 95},
+			{"Name": "exec", "indent":3},
+				{"Name": "addBonus", "indent": 6},
+				{"Name": "addConjuration", "indent": 6},
+				{"Name": "addImage", "indent": 6},
+				{"Name": "addJoint", "indent": 6},
+				{"Name": "addNPC", "indent": 6},
+				{"Name": "addPhysicObject", "indent": 6},
+				{"Name": "addShamanObject", "indent": 6},
+				{"Name": "attachBalloon", "indent": 6},
+				{"Name": "bindKeyboard", "indent": 6},
+				{"Name": "changePlayerSize", "indent": 6},
+				{"Name": "chatMessage", "indent": 6},
+				{"Name": "disableAfkDeath", "indent": 6},
+				{"Name": "disableAllShamanSkills", "indent": 6},
+				{"Name": "disableAutoNewGame", "indent": 6},
+				{"Name": "disableAutoScore", "indent": 6},
+				{"Name": "disableAutoShaman", "indent": 6},
+				{"Name": "disableAutoTimeLeft", "indent": 6},
+				{"Name": "disableDebugCommand", "indent": 6},
+				{"Name": "disableMinimalistMode", "indent": 6},
+				{"Name": "disableMortCommand", "indent": 6},
+				{"Name": "disablePhysicalConsumables", "indent": 6},
+				{"Name": "disablePrespawnPreview", "indent": 6},
+				{"Name": "disableWatchCommand", "indent": 6},
+				{"Name": "displayParticle", "indent": 6},
+				{"Name": "explosion", "indent": 6},
+				{"Name": "freezePlayer", "indent": 6},
+				{"Name": "getPlayerSync", "indent": 6},
+				{"Name": "giveCheese", "indent": 6},
+				{"Name": "giveConsumables", "indent": 6},
+				{"Name": "giveMeep", "indent": 6},
+				{"Name": "giveTransformations", "indent": 6},
+				{"Name": "killPlayer", "indent": 6},
+				{"Name": "linkMice", "indent": 6},
+				{"Name": "lowerSyncDelay", "indent": 6},
+				{"Name": "moveObject", "indent": 6},
+				{"Name": "movePhysicObject", "indent": 6},
+				{"Name": "movePlayer", "indent": 6},
+				{"Name": "newGame", "indent": 6},
+				{"Name": "playEmote", "indent": 6},
+				{"Name": "playMusic", "indent": 6},
+				{"Name": "playSound", "indent": 6},
+				{"Name": "playerVictory", "indent": 6},
+				{"Name": "removeBonus", "indent": 6},
+				{"Name": "removeCheese", "indent": 6},
+				{"Name": "removeImage", "indent": 6},
+				{"Name": "removeJoint", "indent": 6},
+				{"Name": "removeObject", "indent": 6},
+				{"Name": "removePhysicObject", "indent": 6},
+				{"Name": "respawnPlayer", "indent": 6},
+				{"Name": "setAieMode", "indent": 6},
+				{"Name": "setAutoMapFlipMode", "indent": 6},
+				{"Name": "setGameTime", "indent": 6},
+				{"Name": "setNameColor", "indent": 6},
+				{"Name": "setPlayerCollision", "indent": 6},
+				{"Name": "setPlayerGravityScale", "indent": 6},
+				{"Name": "setPlayerNightMode", "indent": 6},
+				{"Name": "setPlayerScore", "indent": 6},
+				{"Name": "setPlayerSync", "indent": 6},
+				{"Name": "setRoomMaxPlayers", "indent": 6},
+				{"Name": "setRoomPassword", "indent": 6},
+				{"Name": "setShaman", "indent": 6},
+				{"Name": "setShamanMode", "indent": 6},
+				{"Name": "setUIMapName", "indent": 6},
+				{"Name": "setUIShamanName", "indent": 6},
+				{"Name": "setVampirePlayer", "indent": 6},
+				{"Name": "setWorldGravity", "indent": 6},
+				{"Name": "snow", "indent": 6},
+				{"Name": "stopMusic", "indent": 6},
+			{"Name": "get", "indent":0},
+				{"Name": "misc", "indent":3},
+					{"Name": "apiVersion", "indent":6, "ID":"0.28"},
+					{"Name": "transformiceVersion", "indent":6, "ID":"9.2"},
+				{"Name": "room", "indent":3},
+					{"Name": "community", "indent":6, "ID":"-"},
+					{"Name": "currentMap", "indent":6, "ID":0},
+					{"Name": "isTribeHouse", "indent":6, "ID":false},
+					{"Name": "maxPlayers", "indent":6, "ID":50},
+					{"Name": "mirroredMap", "indent":6, "ID":false},
+					{"Name": "name", "indent":6, "ID":"-"},
+					{"Name": "objectList", "indent":6, "ID":{"angle":0, "baseType":0, "colors":[], "ghost":false, "id":1, "type":203, "vx":0, "vy":0, "x":400, "y":200}},
+					{"Name": "passwordProtected", "indent":6, "ID":false},
+				{"Name": "playerList", "indent":3},
+					{"Name": "Tigrounette", "indent":6},
+						{"Name": "cheeses", "indent":9, "ID":0},
+						{"Name": "community", "indent":9, "ID":"en"},
+						{"Name": "gender", "indent":9, "ID":1},
+						{"Name": "hasCheese", "indent":9, "ID":false},
+						{"Name": "id", "indent":9, "ID":0},
+						{"Name": "inHardMode", "indent":9, "ID":0},
+						{"Name": "isDead", "indent":9, "ID":true},
+						{"Name": "isFacingRight", "indent":9, "ID":true},
+						{"Name": "isInvoking", "indent":9, "ID":false},
+						{"Name": "isJumping", "indent":9, "ID":false},
+						{"Name": "isShaman", "indent":9, "ID":false},
+						{"Name": "isVampire", "indent":9, "ID":false},
+						{"Name": "language", "indent":9, "ID":"int"},
+						{"Name": "look", "indent":9, "ID":"1;0,0,0,0,0,0,0,0,0,0,0,0"},
+						{"Name": "movingLeft", "indent":9, "ID":false},
+						{"Name": "movingRight", "indent":9, "ID":false},
+						{"Name": "playerName", "indent":9, "ID":"Tigrounette"},
+						{"Name": "registrationDate", "indent":9, "ID":1718535740172},
+						{"Name": "score", "indent":9, "ID":0},
+						{"Name": "shamanMode", "indent":9, "ID":0},
+						{"Name": "spouseId", "indent":9, "ID":1},
+						{"Name": "spouseName", "indent":9, "ID":"Pikashu"},
+						{"Name": "title", "indent":9, "ID":0},
+						{"Name": "tribeId", "indent":9, "ID":1234},
+						{"Name": "tribeName", "indent":9, "ID":"Kikoo"},
+						{"Name": "vx", "indent":9, "ID":0},
+						{"Name": "vy", "indent":9, "ID":0},
+						{"Name": "x", "indent":9, "ID":0},
+						{"Name": "y", "indent":9, "ID":0},
+		{"Name": "tonumber", "indent":0},
+		{"Name": "tostring", "indent":0},
+		{"Name": "type", "indent":0},
+		{"Name": "ui", "indent":0},
+			{"Name": "addPopup", "indent": 3},
+			{"Name": "addTextArea", "indent": 3},
+			{"Name": "removeTextArea", "indent": 3},
+			{"Name": "setBackgroundColor", "indent": 3},
+			{"Name": "setMapName", "indent": 3},
+			{"Name": "setShamanName", "indent": 3},
+			{"Name": "showColorPicker", "indent": 3},
+			{"Name": "updateTextArea", "indent": 3},
+		{"Name": "xpcall", "indent":0}
 	],
 	
+	"Events": [
+		{
+			"Name": "eventChatCommand",
+			"Description": "This event is triggered when a player uses a chat command (a message beginning with « ! »).",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "the player who sent the command"
+				},
+				{
+					"Name": "command",
+					"Type": "String",
+					"Description": "the message (without the initial « ! »)"
+				}
+			]
+		},
+		{
+			"Name": "eventChatMessage",
+			"Description": "This event is triggered when a player talks in the room chat.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who sent the message."
+				},
+				{
+					"Name": "message",
+					"Type": "String",
+					"Description": "The message that was sent."
+				}
+			]
+		},
+		{
+			"Name": "eventEmotePlayed",
+			"Description": "This event is triggered when a player performs an emote.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who performed the emote."
+				},
+				{
+					"Name": "emoteType",
+					"Type": "Int",
+					"Description": "The type of emote that was played."
+				},
+				{
+					"Name": "emoteParam",
+					"Type": "String",
+					"Description": "The parameter used with the emote (only applies to the flag emote)."
+				}
+			]
+		},
+		{
+			"Name": "eventFileLoaded",
+			"Description": "This event is triggered when a file gets fully loaded.",
+			"Arguments": [
+				{
+					"Name": "fileNumber",
+					"Type": "String",
+					"Description": "The file identifier."
+				},
+				{
+					"Name": "fileData",
+					"Type": "String",
+					"Description": "The file data."
+				}
+			],
+			"isStaff": true
+		},
+		{
+			"Name": "eventFileSaved",
+			"Description": "This event is triggered when a file gets saved.",
+			"Arguments": [
+				{
+					"Name": "fileNumber",
+					"Type": "String",
+					"Description": "The name of the file."
+				}
+			],
+			"isStaff": true
+		},
+		{
+			"Name": "eventKeyboard",
+			"Description": "This event is triggered when a player presses a key.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who typed the key."
+				},
+				{
+					"Name": "keyCode",
+					"Type": "Int",
+					"Description": "The code of the typed key."
+				},
+				{
+					"Name": "down",
+					"Type": "Boolean",
+					"Description": "Whether it was the press event, or the release one."
+				},
+				{
+					"Name": "xPlayerPosition",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the player when they typed the key."
+				},
+				{
+					"Name": "yPlayerPosition",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the player when they typed the key."
+				},
+				{
+					"Name": "xPlayerVelocity",
+					"Type": "Number",
+					"Description": "The horizontal velocity of the player when they typed the key."
+				},
+				{
+					"Name": "yPlayerVelocity",
+					"Type": "Number",
+					"Description": "The vertical velocity of the player when they typed the key."
+				}
+			]
+		},
+		{
+			"Name": "eventMouse",
+			"Description": "This event is triggered when a player performs a mouse click.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who made the click."
+				},
+				{
+					"Name": "xMousePosition",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the mouse click."
+				},
+				{
+					"Name": "yMousePosition",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the mouse click."
+				}
+			]
+		},
+		{
+			"Name": "eventLoop",
+			"Description": "This event occurs every 500 milliseconds.",
+			"Arguments": [
+				{
+					"Name": "elapsedTime",
+					"Type": "Int",
+					"Description": "The time in milliseconds elapsed since the beginning of the round."
+				},
+				{
+					"Name": "remainingTime",
+					"Type": "Int",
+					"Description": "The time in milliseconds remaining before the next round."
+				}
+			]
+		},
+		{
+			"Name": "eventNewGame",
+			"Description": "This event is triggered when a new round begins.",
+			"Arguments": []
+		},
+		{
+			"Name": "eventNewPlayer",
+			"Description": "This event is triggered when a new player joins the room.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who joined the room."
+				}
+			]
+		},
+		{
+			"Name": "eventPlayerDataLoaded",
+			"Description": "This event is triggered when player data gets loaded.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player whose data got loaded."
+				},
+				{
+					"Name": "playerData",
+					"Type": "String",
+					"Description": "The data about the player."
+				}
+			]
+		},
+		{
+			"Name": "eventPlayerDied",
+			"Description": "This event is triggered when a player dies.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who died."
+				}
+			]
+		},
+		{
+			"Name": "eventPlayerGetCheese",
+			"Description": "This event is triggered when a player gets the cheese.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who got the cheese."
+				}
+			]
+		},
+		{
+			"Name": "eventPlayerBonusGrabbed",
+			"Description": "This event is triggered when a player grabs a defilante bonus.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who grabbed the bonus."
+				},
+				{
+					"Name": "bonusId",
+					"Type": "Int",
+					"Description": "Bonus identifier."
+				}
+			]
+		},
+		{
+			"Name": "eventPlayerLeft",
+			"Description": "This event is triggered when a player leaves the room.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who left the room."
+				}
+			]
+		},
+		{
+			"Name": "eventPlayerVampire",
+			"Description": "This event is triggered when a player turns into a vampire.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who turned into a vampire."
+				}
+			]
+		},
+		{
+			"Name": "eventPlayerWon",
+			"Description": "This event triggers when a player enters the hole.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who entered the hole."
+				},
+				{
+					"Name": "timeElapsed",
+					"Type": "Int",
+					"Description": "The time in milliseconds elapsed since the beginning of the round."
+				},
+				{
+					"Name": "timeElapsedSinceRespawn",
+					"Type": "Int",
+					"Description": "The time in milliseconds elapsed since the last respawn."
+				}
+			]
+		},
+		{
+			"Name": "eventPlayerRespawn",
+			"Description": "This event is triggered when a player respawns.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who respawned."
+				}
+			]
+		},
+		{
+			"Name": "eventPlayerMeep",
+			"Description": "This event is triggered when a player meeps.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who meeped."
+				},
+				{
+					"Name": "xPosition",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the player when they meeped."
+				},
+				{
+					"Name": "yPosition",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the player when they meeped."
+				}
+			]
+		},
+		{
+			"Name": "eventPopupAnswer",
+			"Description": "This event is triggered when a player answers a popup (only type 1 and 2 popups).",
+			"Arguments": [
+				{
+					"Name": "popupId",
+					"Type": "Int",
+					"Description": "The popup identifier."
+				},
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who answered the popup."
+				},
+				{
+					"Name": "answer",
+					"Type": "String",
+					"Description": "The player's answer. 'yes' or 'no' for a type 1 popup, any string for a type 2 popup."
+				}
+			]
+		},
+		{
+			"Name": "eventSummoningStart",
+			"Description": "This event is triggered when a player starts summoning a shaman object.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who started summoning."
+				},
+				{
+					"Name": "objectType",
+					"Type": "Int",
+					"Description": "The kind of shaman object being summoned."
+				},
+				{
+					"Name": "xPosition",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the summoning point."
+				},
+				{
+					"Name": "yPosition",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the summoning point."
+				},
+				{
+					"Name": "angle",
+					"Type": "Int",
+					"Description": "The rotation angle of the object being summoned."
+				}
+			]
+		},
+		{
+			"Name": "eventSummoningCancel",
+			"Description": "This event is triggered when a player cancels an object invocation.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who stopped summoning."
+				}
+			],
+			"isStaff": false
+		},
+		{
+			"Name": "eventSummoningEnd",
+			"Description": "This event triggers when a player has finished an invocation.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who summoned the object."
+				},
+				{
+					"Name": "objectType",
+					"Type": "Int",
+					"Description": "The kind of the object."
+				},
+				{
+					"Name": "xPosition",
+					"Type": "Int",
+					"Description": "The horizontal position of the summoned object."
+				},
+				{
+					"Name": "yPosition",
+					"Type": "Int",
+					"Description": "The vertical position of the summoned object."
+				},
+				{
+					"Name": "angle",
+					"Type": "Int",
+					"Description": "The rotation angle of the summoned object."
+				},
+				{
+					"Name": "objectDescription",
+					"Type": "Table",
+					"Description": "The object table description as it would appear in the room's objectList."
+				}
+			],
+			"isStaff": false
+		},
+		{
+			"Name": "eventTextAreaCallback",
+			"Description": "This event is triggered when a player clicks a text event. Text event links are anchor tags beginning with the 'event:' string (e.g., Click here). If the link eventName begins with '#clear,' the text area will be cleared, and the received eventName will be the text following the comma.",
+			"Arguments": [
+				{
+					"Name": "textAreaId",
+					"Type": "Int",
+					"Description": "The text area identifier."
+				},
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who clicked."
+				},
+				{
+					"Name": "eventName",
+					"Type": "String",
+					"Description": "The name of the clicked text event."
+				}
+			],
+			"isStaff": false
+		},
+		{
+			"Name": "eventColorPicked",
+			"Description": "This event is triggered when a player chooses a color with a color picker.",
+			"Arguments": [
+				{
+					"Name": "colorPickerId",
+					"Type": "Int",
+					"Description": "The color picker identifier."
+				},
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who picked a color."
+				},
+				{
+					"Name": "color",
+					"Type": "Int",
+					"Description": "The color picked (-1 if the player didn't pick one)."
+				}
+			],
+			"isStaff": false
+		},
+		{
+			"Name": "eventContactListener",
+			"Description": "This event is triggered when a player hits a ground with a contact listener.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who hit the ground."
+				},
+				{
+					"Name": "groundId",
+					"Type": "Int",
+					"Description": "Ground identifier."
+				},
+				{
+					"Name": "contactInfos",
+					"Type": "Table",
+					"Description": "Collision information."
+				}
+			],
+			"isStaff": false
+		},
+		{
+			"Name": "eventTalkToNPC",
+			"Description": "This event is triggered when a player clicks on an NPC.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who talked to the NPC."
+				},
+				{
+					"Name": "npcName",
+					"Type": "String",
+					"Description": "The NPC name."
+				}
+			],
+			"isStaff": false
+		}
+	],
+
 	"Functions": [
+		{
+			"Name": "debug.disableEventLog",
+			"Description": "Deactivates the events log.",
+			"Arguments": [
+				{
+					"Name": "activate",
+					"Type": "Boolean",
+					"Description": "whether it should be active",
+					"Default": "true"
+				}
+			]
+		},
+		{
+			"Name": "debug.getCurrentThreadName",
+			"Description": "Get current lua thread name.",
+			"Arguments": []
+		},
+		{
+			"Name": "system.bindKeyboard",
+			"Description": "Listens to the player's keyboard events.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "the player you want to listen keyboard events from"
+				},
+				{
+					"Name": "keyCode",
+					"Type": "Int",
+					"Description": "the code of the key you want to listen"
+				},
+				{
+					"Name": "down",
+					"Type": "Boolean",
+					"Description": "whether it should listen for the press event, or the release one"
+				},
+				{
+					"Name": "activate",
+					"Type": "Boolean",
+					"Description": "whether it should be active (default true)"
+				}
+			]
+		},
+		{
+			"Name": "system.bindMouse",
+			"Description": "Listens to a player's mouse events.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "the player you want to listen mouse events from"
+				},
+				{
+					"Name": "activate",
+					"Type": "Boolean",
+					"Description": "whether it should be active (default true)"
+				}
+			]
+		},
+		{
+			"Name": "system.disableChatCommandDisplay",
+			"Description": "Prevents a module command (commands starting with « ! ») to be displayed in the room. If the supplied command is nil, the parameter will apply to all the commands.",
+			"Arguments": [
+				{
+					"Name": "command",
+					"Type": "String",
+					"Description": "the command (without the initial « ! ») to hide (default nil)"
+				},
+				{
+					"Name": "hide",
+					"Type": "Boolean",
+					"Description": "whether the command should be hided (default true)"
+				}
+			]
+		},
+		
 		{
 			"Name": "system.loadPlayerData",
 			"Description": "Requests the loading of the player's data for this module. The event eventPlayerDataLoaded is triggered when the player data gets loaded.",
@@ -18,6 +960,2057 @@
 			"isStaff": true,
 			"ReturnType": "Boolean",
 			"ReturnInfo": "whether the loading got started"
+		},
+		{
+			"Name": "system.luaEventLaunchInterval",
+			"Description": "Set or get the timer interval between two events.",
+			"Arguments": [
+				{
+					"Name": "internal",
+					"Type": "Integer",
+					"Description": "Timer interval in min (default 40 min), can't be less than 40 min."
+				},
+				{
+					"Name": "random",
+					"Type": "Integer",
+					"Description": "Random added  interval in min.",
+					"Default": "20 min"
+				}
+			],
+			"isStaff": true
+		},
+		{
+			"Name": "system.exit",
+			"Description": "Deactivates the lua script running.",
+			"Arguments": []
+		},
+		{
+			"Name": "system.giveAdventurePoint",
+			"Description": "Gives adventure points to a player.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "Target player."
+				},
+				{
+					"Name": "Achievement code",
+					"Type": "String",
+					"Description": "The achievement code to increase."
+				},
+				{
+					"Name": "Amount",
+					"Type": "Int",
+					"Description": "The amount value.",
+					"Default": 1
+				}
+			]
+		},
+		{
+			"Name": "system.giveEventGift",
+			"Description": "Gives an event reward to the targeted player.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player to give the gift to."
+				},
+				{
+					"Name": "giftCode",
+					"Type": "String",
+					"Description": "The gift identifier (given by an admin)."
+				}
+			]
+		},
+		{
+			"Name": "system.loadFile",
+			"Description": "Requests the loading of a data file. The event eventFileLoaded is triggered when the file gets loaded.",
+			"Arguments": [
+				{
+					"Name": "fileNumber",
+					"Type": "Int",
+					"Description": "The identifier of the file to load.",
+					"Default": "0"
+				}
+			],
+			"isStaff": true,
+			"ReturnType": "Boolean",
+			"ReturnInfo": "Whether the loading got started."
+		},
+		{
+			"Name": "system.newTimer",
+			"Description": "Creates a new timer to call a function after a delay, once or continuously.",
+			"Arguments": [
+				{
+					"Name": "callback",
+					"Type": "Function",
+					"Description": "The function to call."
+				},
+				{
+					"Name": "time",
+					"Type": "Int",
+					"Description": "The number of milliseconds that the function call should be delayed by."
+				},
+				{
+					"Name": "loop",
+					"Type": "Boolean",
+					"Description": "Whether the function call should loop or happen only once.",
+					"Default": "false"
+				},
+				{
+					"Name": "arg1",
+					"Type": "Object",
+					"Description": "1st argument of the callback function.",
+					"Default": "nil"
+				},
+				{
+					"Name": "arg2",
+					"Type": "Object",
+					"Description": "2nd argument of the callback function.",
+					"Default": "nil"
+				},
+				{
+					"Name": "arg3",
+					"Type": "Object",
+					"Description": "3rd argument of the callback function.",
+					"Default": "nil"
+				},
+				{
+					"Name": "arg4",
+					"Type": "Object",
+					"Description": "4th argument of the callback function.",
+					"Default": "nil"
+				}
+			],
+			"isStaff": true,
+			"ReturnType": "Int",
+			"ReturnInfo": "The new timer id"
+		},
+		{
+			"Name": "system.openEventShop",
+			"Description": "Open the shop of the specified event.",
+			"Arguments": [
+				{
+					"Name": "eventName",
+					"Type": "String",
+					"Description": "Event name."
+				},
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "Target player name."
+				}
+			]
+		},
+		{
+			"Name": "system.removeTimer",
+			"Description": "Destroys a timer.",
+			"Arguments": [
+				{
+					"Name": "timerId",
+					"Type": "Int",
+					"Description": "The identifier of the timer to stop."
+				}
+			],
+			"isStaff": true
+		},
+		{
+			"Name": "system.saveFile",
+			"Description": "Requests the saving of a data file (throttled to one per minute). The event eventFileSaved is triggered when the file gets saved.",
+			"Arguments": [
+				{
+					"Name": "data",
+					"Type": "String",
+					"Description": "The data to store in the file."
+				},
+				{
+					"Name": "fileNumber",
+					"Type": "Int",
+					"Description": "The identifier (from 0 to 99) of the file to write the data in.",
+					"Default": "0"
+				}
+			],
+			"isStaff": true,
+			"ReturnType": "Boolean",
+			"ReturnInfo": "Whether the saving got started."
+		},
+		{
+			"Name": "system.savePlayerData",
+			"Description": "Saves module data about a player. Please note that this data is per player and per Lua dev, so take care not to overwrite data from another one of your modules.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player about whom you want to save data."
+				},
+				{
+					"Name": "data",
+					"Type": "String",
+					"Description": "The player data to save."
+				}
+			],
+			"isStaff": true
+		},
+		{
+			"Name": "system.setLuaEventBanner",
+			"Description": "Set the login event banner.",
+			"Arguments": [
+				{
+					"Name": "bannerId",
+					"Type": "Int",
+					"Description": "Banner id."
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.addBonus",
+			"Description": "Add defilante bonus.",
+			"Arguments": [
+				{
+					"Name": "type",
+					"Type": "Int",
+					"Description": "Bonus type (see tfm.enum.bonus).",
+					"Default": "1"
+				},
+				{
+					"Name": "x",
+					"Type": "Int",
+					"Description": "X position.",
+					"Default": "0"
+				},
+				{
+					"Name": "y",
+					"Type": "Int",
+					"Description": "Y position.",
+					"Default": "0"
+				},
+				{
+					"Name": "id",
+					"Type": "Int",
+					"Description": "Identifier.",
+					"Default": "0"
+				},
+				{
+					"Name": "angle",
+					"Type": "Int",
+					"Description": "Angle (deg).",
+					"Default": "0"
+				},
+				{
+					"Name": "visible",
+					"Type": "Boolean",
+					"Description": "Make the bonus visible or not.",
+					"Default": "true"
+				},
+				{
+					"Name": "targetPlayer",
+					"Type": "String",
+					"Description": "Send only to this specific player.",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.addConjuration",
+			"Description": "Adds conjuration to the map. Note: Grid coordinates are regular coordinates divided by 10 (as conjuration is a 10x10 pixel square).",
+			"Arguments": [
+				{
+					"Name": "xPosition",
+					"Type": "Int",
+					"Description": "The horizontal grid coordinate of the conjuration."
+				},
+				{
+					"Name": "yPosition",
+					"Type": "Int",
+					"Description": "The vertical grid coordinate of the conjuration."
+				},
+				{
+					"Name": "duration",
+					"Type": "Int",
+					"Description": "The duration of the conjuration in milliseconds.",
+					"Default": "10000"
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.addImage",
+			"Description": "Displays an image on the map.",
+			"Arguments": [
+				{
+					"Name": "imageId",
+					"Type": "String",
+					"Description": "The image identifier."
+				},
+				{
+					"Name": "target",
+					"Type": "String",
+					"Description": "The game element to attach the image to. Can be one of the following: #mobileId, =mobileId, $playerName, %playerName, ?backgroundLayerDepth, _groundLayerDepth, !foregroundLayerDepth, &fixedLayerDepthBeforeLuaInterfaces, :fixedLayerDepthBehindLuaInterfaces, ~fixedLayerDepthWithLuaInterfaces, +physicObjectId."
+				},
+				{
+					"Name": "xPosition",
+					"Type": "Int",
+					"Description": "The horizontal offset of the top-left corner of the image (0 being the middle of the game element).",
+					"Default": "0"
+				},
+				{
+					"Name": "yPosition",
+					"Type": "Int",
+					"Description": "The vertical offset of the top-left corner of the image (0 being the middle of the game element).",
+					"Default": "0"
+				},
+				{
+					"Name": "targetPlayer",
+					"Type": "String",
+					"Description": "The player who will see the image (if nil, applies to all players).",
+					"Default": "nil"
+				},
+				{
+					"Name": "scaleX",
+					"Type": "Number",
+					"Description": "Image scale X.",
+					"Default": "1"
+				},
+				{
+					"Name": "scaleY",
+					"Type": "Number",
+					"Description": "Image scale Y.",
+					"Default": "1"
+				},
+				{
+					"Name": "rotation",
+					"Type": "Number",
+					"Description": "Image rotation in radians.",
+					"Default": "0"
+				},
+				{
+					"Name": "alpha",
+					"Type": "Number",
+					"Description": "Image alpha.",
+					"Default": "1"
+				},
+				{
+					"Name": "anchorX",
+					"Type": "Number",
+					"Description": "Image anchor X (0..1).",
+					"Default": "0"
+				},
+				{
+					"Name": "anchorY",
+					"Type": "Number",
+					"Description": "Image anchor Y (0..1).",
+					"Default": "0"
+				},
+				{
+					"Name": "fadeIn",
+					"Type": "Boolean",
+					"Description": "Use a fade in to display the image.",
+					"Default": "false"
+				}
+			],
+			"isStaff": true,
+			"ReturnType": "Int",
+			"ReturnInfo": "The image identifier."
+		},
+		{
+			"Name": "tfm.exec.addJoint",
+			"Description": "Adds a joint between two physic objects. Note: In map XML codes, you can also add a « lua=\"id\" » property in a joint definition to be able to interact with it with LUA code.",
+			"Arguments": [
+				{
+					"Name": "id",
+					"Type": "Int",
+					"Description": "The identifier of the joint."
+				},
+				{
+					"Name": "ground1",
+					"Type": "Int",
+					"Description": "The first ground the joint will affect."
+				},
+				{
+					"Name": "ground2",
+					"Type": "Int",
+					"Description": "The second ground the joint will affect."
+				},
+				{
+					"Name": "jointDef",
+					"Type": "Table",
+					"Description": "The ground description.",
+					"SubArguments": [
+						{
+							"Name": "type",
+							"Type": "Int",
+							"Description": "Joint type: 0 -> distance joint, 1 -> prismatic joint, 2 -> pulley joint, 3 -> revolute joint."
+						},
+						{
+							"Name": "point1",
+							"Type": "String",
+							"Description": "Location of the ground1 anchor (default: the ground1's center).",
+							"Default": "the ground1's center"
+						},
+						{
+							"Name": "point2",
+							"Type": "String",
+							"Description": "Location of the ground2 anchor (default: the ground2's center), only used with distance and pulley joints.",
+							"Default": "the ground2's center"
+						},
+						{
+							"Name": "point3",
+							"Type": "String",
+							"Description": "Location of the pulley's anchor, only used with pulley joints."
+						},
+						{
+							"Name": "point4",
+							"Type": "String",
+							"Description": "Location of the pulley's anchor, only used with pulley joints."
+						},
+						{
+							"Name": "frequency",
+							"Type": "Float",
+							"Description": "Distance joints' frequency."
+						},
+						{
+							"Name": "damping",
+							"Type": "Float",
+							"Description": "Distance joints' damping ratio."
+						},
+						{
+							"Name": "axis",
+							"Type": "String",
+							"Description": "Prismatic joints' axis.",
+							"Default": "x,y"
+						},
+						{
+							"Name": "angle",
+							"Type": "Int",
+							"Description": "Prismatic joints' angle."
+						},
+						{
+							"Name": "limit1",
+							"Type": "Float",
+							"Description": "Prismatic and revolute joints' translation/rotation limits."
+						},
+						{
+							"Name": "limit2",
+							"Type": "Float",
+							"Description": "Prismatic and revolute joints' translation/rotation limits."
+						},
+						{
+							"Name": "forceMotor",
+							"Type": "Float",
+							"Description": "Prismatic and revolute joints' force motor."
+						},
+						{
+							"Name": "speedMotor",
+							"Type": "Float",
+							"Description": "Prismatic and revolute joints' speed motor."
+						},
+						{
+							"Name": "ratio",
+							"Type": "Float",
+							"Description": "Revolute joints' ratio."
+						},
+						{
+							"Name": "line",
+							"Type": "Int",
+							"Description": "If defined, the joint will be drawn."
+						},
+						{
+							"Name": "color",
+							"Type": "Int",
+							"Description": "Line color for drawing the joint."
+						},
+						{
+							"Name": "alpha",
+							"Type": "Float",
+							"Description": "Alpha for drawing the joint."
+						},
+						{
+							"Name": "foreground",
+							"Type": "Boolean",
+							"Description": "If true, the joint is drawn in the foreground."
+						}
+					]
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.addNPC",
+			"Description": "Add an NPC to the current map.",
+			"Arguments": [
+				{
+					"Name": "name",
+					"Type": "String",
+					"Description": "NPC name."
+				},
+				{
+					"Name": "npcDef",
+					"Type": "Table",
+					"Description": "The NPC definition.",
+					"SubArguments": [
+						{
+							"Name": "title",
+							"Type": "Int",
+							"Description": "NPC title."
+						},
+						{
+							"Name": "look",
+							"Type": "String",
+							"Description": "NPC look."
+						},
+						{
+							"Name": "x",
+							"Type": "Int",
+							"Description": "X position."
+						},
+						{
+							"Name": "y",
+							"Type": "Int",
+							"Description": "Y position."
+						},
+						{
+							"Name": "female",
+							"Type": "Boolean",
+							"Description": "Set True if the NPC is female."
+						},
+						{
+							"Name": "lookLeft",
+							"Type": "Boolean",
+							"Description": "Set True to make the NPC look to the left."
+						},
+						{
+							"Name": "lookAtPlayer",
+							"Type": "Boolean",
+							"Description": "Set True to make the NPC look to the player."
+						},
+						{
+							"Name": "interactive",
+							"Type": "Boolean",
+							"Description": "If true, player will be able to click on it."
+						}
+					]
+				},
+				{
+					"Name": "targetPlayer",
+					"Type": "String",
+					"Description": "The player who will see the NPC (if nil, applies to all players).",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.addPhysicObject",
+			"Description": "Spawns a ground.",
+			"Arguments": [
+				{
+					"Name": "id",
+					"Type": "Int",
+					"Description": "The identifier of the physic object."
+				},
+				{
+					"Name": "xPosition",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the center of the ground."
+				},
+				{
+					"Name": "yPosition",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the center of the ground."
+				},
+				{
+					"Name": "bodyDef",
+					"Type": "Table",
+					"Description": "The ground description.",
+					"SubArguments": [
+						{
+							"Name": "type",
+							"Type": "Int",
+							"Description": "The type of the ground."
+						},
+						{
+							"Name": "width",
+							"Type": "Int",
+							"Description": "The width of the ground."
+						},
+						{
+							"Name": "height",
+							"Type": "Int",
+							"Description": "The height of the ground."
+						},
+						{
+							"Name": "foreground",
+							"Type": "Boolean",
+							"Description": "Whether the ground is in the foreground."
+						},
+						{
+							"Name": "friction",
+							"Type": "Float",
+							"Description": "The friction of the ground."
+						},
+						{
+							"Name": "restitution",
+							"Type": "Float",
+							"Description": "The restitution of the ground."
+						},
+						{
+							"Name": "angle",
+							"Type": "Int",
+							"Description": "The angle of the ground."
+						},
+						{
+							"Name": "color",
+							"Type": "Int",
+							"Description": "The color of the ground."
+						},
+						{
+							"Name": "miceCollision",
+							"Type": "Boolean",
+							"Description": "Whether the ground has mouse collision."
+						},
+						{
+							"Name": "groundCollision",
+							"Type": "Boolean",
+							"Description": "Whether the ground has ground collision."
+						},
+						{
+							"Name": "dynamic",
+							"Type": "Boolean",
+							"Description": "Whether the ground is dynamic."
+						},
+						{
+							"Name": "fixedRotation",
+							"Type": "Boolean",
+							"Description": "Whether the ground has fixed rotation."
+						},
+						{
+							"Name": "mass",
+							"Type": "Int",
+							"Description": "The mass of the ground."
+						},
+						{
+							"Name": "linearDamping",
+							"Type": "Float",
+							"Description": "The linear damping of the ground."
+						},
+						{
+							"Name": "angularDamping",
+							"Type": "Float",
+							"Description": "The angular damping of the ground."
+						},
+						{
+							"Name": "contactListener",
+							"Type": "Boolean",
+							"Description": "Whether the ground has a contact listener."
+						}
+					]
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.addShamanObject",
+			"Description": "Spawns a shaman object.",
+			"Arguments": [
+				{
+					"Name": "objectType",
+					"Type": "Int",
+					"Description": "The type of the shaman object to spawn."
+				},
+				{
+					"Name": "xPosition",
+					"Type": "Int",
+					"Description": "The horizontal position of the spawn."
+				},
+				{
+					"Name": "yPosition",
+					"Type": "Int",
+					"Description": "The vertical position of the spawn."
+				},
+				{
+					"Name": "angle",
+					"Type": "Int",
+					"Description": "The rotation angle of the object, in degrees.",
+					"Default": 0
+				},
+				{
+					"Name": "xSpeed",
+					"Type": "Int",
+					"Description": "The horizontal speed of the object.",
+					"Default": 0
+				},
+				{
+					"Name": "ySpeed",
+					"Type": "Int",
+					"Description": "The vertical speed of the object.",
+					"Default": 0
+				},
+				{
+					"Name": "ghost",
+					"Type": "Boolean",
+					"Description": "Whether the spawned object should be transparent.",
+					"Default": false
+				},
+				{
+					"Name": "options",
+					"Type": "Table",
+					"Description": "Additional options for the shaman object.",
+					"SubArguments": [
+						{
+							"Name": "fixedXSpeed",
+							"Type": "Number",
+							"Description": "Fixed horizontal speed of the object."
+						},
+						{
+							"Name": "fixedYSpeed",
+							"Type": "Number",
+							"Description": "Fixed vertical speed of the object."
+						},
+						{
+							"Name": "contactListener",
+							"Type": "Boolean",
+							"Description": "Whether the object has a contact listener."
+						}
+					]
+				}
+			],
+			"Channel": "",
+			"ReturnType": "Int",
+			"ReturnInfo": "The shaman object identifier."
+		},
+		{
+			"Name": "tfm.exec.attachBalloon",
+			"Description": "Tie a player to a balloon.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player's nickname."
+				},
+				{
+					"Name": "yes",
+					"Type": "Boolean",
+					"Description": "Attach or detach the balloon.",
+					"Default": true
+				},
+				{
+					"Name": "color",
+					"Type": "Int",
+					"Description": "Balloon color [1-4].",
+					"Default": 1
+				},
+				{
+					"Name": "transparent",
+					"Type": "Boolean",
+					"Description": "Make the balloon transparent.",
+					"Default": false
+				},
+				{
+					"Name": "speed",
+					"Type": "Number",
+					"Description": "Balloon speed.",
+					"Default": 1
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.changePlayerSize",
+			"Description": "Changes the size of a player.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player's nickname."
+				},
+				{
+					"Name": "size",
+					"Type": "Number",
+					"Description": "The new size of the player (between 0.1 and 5).",
+					"Default": 1
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.chatMessage",
+			"Description": "Displays a chat message.",
+			"Arguments": [
+				{
+					"Name": "message",
+					"Type": "String",
+					"Description": "The chat message to display."
+				},
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who will get the message (if nil, applies to all players).",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.disableAfkDeath",
+			"Description": "Deactivates the automatic afk death.",
+			"Arguments": [
+				{
+					"Name": "activate",
+					"Type": "Boolean",
+					"Description": "Whether the deactivation should be active.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.disableAllShamanSkills",
+			"Description": "Deactivates all shaman skills.",
+			"Arguments": [
+				{
+					"Name": "active",
+					"Type": "Boolean",
+					"Description": "Whether the deactivation should be active.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.disableAutoNewGame",
+			"Description": "Deactivates the automatic renewal of rounds.",
+			"Arguments": [
+				{
+					"Name": "activate",
+					"Type": "Boolean",
+					"Description": "Whether the deactivation should be active.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.disableAutoScore",
+			"Description": "Deactivates the automatic scoring management.",
+			"Arguments": [
+				{
+					"Name": "activate",
+					"Type": "Boolean",
+					"Description": "Whether the deactivation should be active.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.disableAutoShaman",
+			"Description": "Deactivates the automatic selection of shaman.",
+			"Arguments": [
+				{
+					"Name": "activate",
+					"Type": "Boolean",
+					"Description": "Whether the deactivation should be active.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.disableAutoTimeLeft",
+			"Description": "Deactivates the automatic remaining time change to 20s (when the shaman dies for example).",
+			"Arguments": [
+				{
+					"Name": "activate",
+					"Type": "Boolean",
+					"Description": "Whether the deactivation should be active.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.disableDebugCommand",
+			"Description": "Disables the effects of the /debug command.",
+			"Arguments": [
+				{
+					"Name": "activate",
+					"Type": "Boolean",
+					"Description": "Whether the deactivation should be active.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.disableMinimalistMode",
+			"Description": "Disables the minimalist mode.",
+			"Arguments": [
+				{
+					"Name": "activate",
+					"Type": "Boolean",
+					"Description": "Whether the deactivation should be active.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.disableMortCommand",
+			"Description": "Disables the /mort command.",
+			"Arguments": [
+				{
+					"Name": "activate",
+					"Type": "Boolean",
+					"Description": "Whether the deactivation should be active.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.disablePhysicalConsumables",
+			"Description": "Deactivates physical consumables (like in racing and bootcamp rooms).",
+			"Arguments": [
+				{
+					"Name": "active",
+					"Type": "Boolean",
+					"Description": "Whether the deactivation should be active.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.disablePrespawnPreview",
+			"Description": "Enables or disables the shaman objects prespawn preview.",
+			"Arguments": [
+				{
+					"Name": "display",
+					"Type": "Boolean",
+					"Description": "Whether the prespawn preview should not be displayed.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.disableWatchCommand",
+			"Description": "Disables the effects of the /watch command.",
+			"Arguments": [
+				{
+					"Name": "activate",
+					"Type": "Boolean",
+					"Description": "Whether the deactivation should be active.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.displayParticle",
+			"Description": "Displays a particle.",
+			"Arguments": [
+				{
+					"Name": "particleType",
+					"Type": "Int",
+					"Description": "The kind of particle you want to display."
+				},
+				{
+					"Name": "xPosition",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the particle."
+				},
+				{
+					"Name": "yPosition",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the particle."
+				},
+				{
+					"Name": "xSpeed",
+					"Type": "Number",
+					"Description": "The horizontal speed of the particle.",
+					"Default": 0
+				},
+				{
+					"Name": "ySpeed",
+					"Type": "Number",
+					"Description": "The vertical speed of the particle.",
+					"Default": 0
+				},
+				{
+					"Name": "xAcceleration",
+					"Type": "Number",
+					"Description": "The horizontal acceleration of the particle.",
+					"Default": 0
+				},
+				{
+					"Name": "yAcceleration",
+					"Type": "Number",
+					"Description": "The vertical acceleration of the particle.",
+					"Default": 0
+				},
+				{
+					"Name": "targetPlayer",
+					"Type": "String",
+					"Description": "The player who should see the particle (if nil, applies to all players).",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.explosion",
+			"Description": "Throws an explosion.",
+			"Arguments": [
+				{
+					"Name": "xPosition",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the center of the explosion."
+				},
+				{
+					"Name": "yPosition",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the center of the explosion."
+				},
+				{
+					"Name": "power",
+					"Type": "Int",
+					"Description": "The maximum power of the explosion."
+				},
+				{
+					"Name": "radius",
+					"Type": "Int",
+					"Description": "The explosion radius (players further away won't be affected)."
+				},
+				{
+					"Name": "miceOnly",
+					"Type": "Boolean",
+					"Description": "Whether the explosion should affect only mice, or objects too.",
+					"Default": false
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.freezePlayer",
+			"Description": "Froze a player.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player's nickname."
+				},
+				{
+					"Name": "freeze",
+					"Type": "Boolean",
+					"Description": "Freeze or unfreeze.",
+					"Default": true
+				},
+				{
+					"Name": "displayIce",
+					"Type": "Boolean",
+					"Description": "Display or not ice on the mouse.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.getPlayerSync",
+			"Description": "Get current player sync.",
+			"Arguments": []
+		},
+		{
+			"Name": "tfm.exec.giveCheese",
+			"Description": "Gives the cheese to a player.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who should get the cheese."
+				}
+			],
+			"Channel": ""
+		},
+		{
+			"Name": "tfm.exec.giveConsumables",
+			"Description": "Gives consumables to the targeted player.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player to give the gift to."
+				},
+				{
+					"Name": "consumableId",
+					"Type": "String",
+					"Description": "The consumable identifier."
+				},
+				{
+					"Name": "amount",
+					"Type": "String",
+					"Description": "The amount of consumables to give.",
+					"Default": "1"
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.giveMeep",
+			"Description": "Gives the meep competence to a player, or removes it.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player's nickname."
+				},
+				{
+					"Name": "canMeep",
+					"Type": "Boolean",
+					"Description": "Whether the player should be able to meep.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.giveTransformations",
+			"Description": "Gives the transformations to a player, or removes them.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player's nickname."
+				},
+				{
+					"Name": "canTransform",
+					"Type": "Boolean",
+					"Description": "Whether the player should be able to use transformations.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.killPlayer",
+			"Description": "Kills the selected player.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player to kill."
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.linkMice",
+			"Description": "Allows to link players like in soulmate maps.",
+			"Arguments": [
+				{
+					"Name": "playerName1",
+					"Type": "String",
+					"Description": "The first player's nickname."
+				},
+				{
+					"Name": "playerName2",
+					"Type": "String",
+					"Description": "The second player's nickname."
+				},
+				{
+					"Name": "linked",
+					"Type": "Boolean",
+					"Description": "Whether the two players should be linked.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.lowerSyncDelay",
+			"Description": "Lowers the synchronization delay of a player to 400ms max.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who should have a lower sync delay."
+				}
+			],
+			"isStaff": true
+		},
+		{
+			"Name": "tfm.exec.moveObject",
+			"Description": "Defines the speed and position of a shaman object.",
+			"Arguments": [
+				{
+					"Name": "objectId",
+					"Type": "Int",
+					"Description": "The shaman object identifier."
+				},
+				{
+					"Name": "xPosition",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the point where the object will be moved."
+				},
+				{
+					"Name": "yPosition",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the point where the object will be moved."
+				},
+				{
+					"Name": "positionOffset",
+					"Type": "Boolean",
+					"Description": "Whether the specified position is an offset to apply to the current one, or the absolute one.",
+					"Default": false
+				},
+				{
+					"Name": "xSpeed",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the speed to give to the object.",
+					"Default": 0
+				},
+				{
+					"Name": "ySpeed",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the speed to give to the object.",
+					"Default": 0
+				},
+				{
+					"Name": "speedOffset",
+					"Type": "Boolean",
+					"Description": "Whether the specified speed is an offset to apply to the current one, or the absolute one.",
+					"Default": false
+				},
+				{
+					"Name": "angle",
+					"Type": "Int",
+					"Description": "The angle of the object.",
+					"Default": 0
+				},
+				{
+					"Name": "angleOffset",
+					"Type": "Boolean",
+					"Description": "Whether the specified angle is an offset to apply to the current one, or the absolute one.",
+					"Default": false
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.movePhysicObject",
+			"Description": "Defines the speed and position of a physic object.",
+			"Arguments": [
+				{
+					"Name": "objectId",
+					"Type": "Int",
+					"Description": "The physic object identifier."
+				},
+				{
+					"Name": "xPosition",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the point where the object will be moved."
+				},
+				{
+					"Name": "yPosition",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the point where the object will be moved."
+				},
+				{
+					"Name": "positionOffset",
+					"Type": "Boolean",
+					"Description": "Whether the specified position is an offset to apply to the current one, or the absolute one.",
+					"Default": false
+				},
+				{
+					"Name": "xSpeed",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the speed to give to the object.",
+					"Default": 0
+				},
+				{
+					"Name": "ySpeed",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the speed to give to the object.",
+					"Default": 0
+				},
+				{
+					"Name": "speedOffset",
+					"Type": "Boolean",
+					"Description": "Whether the specified speed is an offset to apply to the current one, or the absolute one.",
+					"Default": false
+				},
+				{
+					"Name": "angle",
+					"Type": "Int",
+					"Description": "The angle of the object.",
+					"Default": 0
+				},
+				{
+					"Name": "angleOffset",
+					"Type": "Boolean",
+					"Description": "Whether the specified angle is an offset to apply to the current one, or the absolute one.",
+					"Default": false
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.movePlayer",
+			"Description": "Defines the speed and position of a player.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player to move."
+				},
+				{
+					"Name": "xPosition",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the point where the player will be moved."
+				},
+				{
+					"Name": "yPosition",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the point where the player will be moved."
+				},
+				{
+					"Name": "positionOffset",
+					"Type": "Boolean",
+					"Description": "Whether the specified position is an offset to apply to the current one, or the absolute one.",
+					"Default": false
+				},
+				{
+					"Name": "xSpeed",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the speed to give to the player.",
+					"Default": 0
+				},
+				{
+					"Name": "ySpeed",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the speed to give to the player.",
+					"Default": 0
+				},
+				{
+					"Name": "speedOffset",
+					"Type": "Boolean",
+					"Description": "Whether the specified speed is an offset to apply to the current one, or the absolute one.",
+					"Default": false
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.newGame",
+			"Description": "Starts a new game.",
+			"Arguments": [
+				{
+					"Name": "mapCode",
+					"Type": "String",
+					"Description": "The map code.",
+					"Default": "nil",
+					"Options": {
+						"nil": "A random map",
+						"6": "Vanilla map",
+						"@42583": "Editor map",
+						"#4": "Perm category map",
+						"<": "XML map"
+					}
+				},
+				{
+					"Name": "flipped",
+					"Type": "Boolean",
+					"Description": "Whether the map should be flipped.",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.playEmote",
+			"Description": "Makes a player do an emote.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who should do the emote."
+				},
+				{
+					"Name": "emoteId",
+					"Type": "Int",
+					"Description": "The emote to do."
+				},
+				{
+					"Name": "emoteArg",
+					"Type": "String",
+					"Description": "The emote attribute (for the flag emote for example).",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.playMusic",
+			"Description": "Play a music. A music can be stopped.",
+			"Arguments": [
+				{
+					"Name": "music",
+					"Type": "String",
+					"Description": "URL of the music."
+				},
+				{
+					"Name": "Channel",
+					"Type": "String",
+					"Description": "Channel of the music. Only one music can be played per channel. If a music is playing, it will be stopped."
+				},
+				{
+					"Name": "volume",
+					"Type": "Int",
+					"Description": "Volume of the sound (0-100).",
+					"Default": 70
+				},
+				{
+					"Name": "loop",
+					"Type": "Boolean",
+					"Description": "If the music should be looping.",
+					"Default": false
+				},
+				{
+					"Name": "fade",
+					"Type": "Boolean",
+					"Description": "If the music should start with a fading.",
+					"Default": true
+				},
+				{
+					"Name": "targetPlayer",
+					"Type": "Int",
+					"Description": "Send only to this specific player (if nil, applies to all players).",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.playSound",
+			"Description": "Play a sound.",
+			"Arguments": [
+				{
+					"Name": "sound",
+					"Type": "String",
+					"Description": "URL of the sound."
+				},
+				{
+					"Name": "volume",
+					"Type": "Int",
+					"Description": "Volume of the sound (0-100).",
+					"Default": 70
+				},
+				{
+					"Name": "soundPosX",
+					"Type": "Int",
+					"Description": "X position of the sound. If not nil, the further away the player is, the more the sound is reduced.",
+					"Default": "nil"
+				},
+				{
+					"Name": "soundPosY",
+					"Type": "Int",
+					"Description": "Y position of the sound.",
+					"Default": "nil"
+				},
+				{
+					"Name": "targetPlayer",
+					"Type": "Int",
+					"Description": "Send only to this specific player (if nil, applies to all players).",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.playerVictory",
+			"Description": "Makes a player enter the hole. It only works if the player already has a cheese!",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who should win."
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.removeBonus",
+			"Description": "Remove a defilante bonus.",
+			"Arguments": [
+				{
+					"Name": "id",
+					"Type": "Int",
+					"Description": "Identifier.",
+					"Default": 0
+				},
+				{
+					"Name": "targetPlayer",
+					"Type": "String",
+					"Description": "Send only to this specific player.",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.removeCheese",
+			"Description": "Takes away the cheese from a player.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who should get their cheese removed."
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.removeImage",
+			"Description": "Removes an image.",
+			"Arguments": [
+				{
+					"Name": "imageId",
+					"Type": "Int",
+					"Description": "The image identifier."
+				},
+				{
+					"Name": "fadeOut",
+					"Type": "Boolean",
+					"Description": "Use a fade out to remove the image.",
+					"Default": false
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.removeJoint",
+			"Description": "Removes a joint from the game.",
+			"Arguments": [
+				{
+					"Name": "id",
+					"Type": "Int",
+					"Description": "The identifier of the joint to remove."
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.removeObject",
+			"Description": "Removes a shaman object.",
+			"Arguments": [
+				{
+					"Name": "objectId",
+					"Type": "Int",
+					"Description": "The shaman object identifier."
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.removePhysicObject",
+			"Description": "Removes a ground from the game.",
+			"Arguments": [
+				{
+					"Name": "id",
+					"Type": "Int",
+					"Description": "The identifier of the ground to remove."
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.respawnPlayer",
+			"Description": "Respawns a player.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player to respawn."
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setAieMode",
+			"Description": "Enable 'Aie' mode when mice can die when they hit something too hard. Last until the next map.",
+			"Arguments": [
+				{
+					"Name": "enable",
+					"Type": "Boolean",
+					"Description": "Enabled or disable 'Aie' mode.",
+					"Default": true
+				},
+				{
+					"Name": "sensibility",
+					"Type": "Number",
+					"Description": "Sensibility of the 'Aie' mode.",
+					"Default": 1
+				},
+				{
+					"Name": "targetPlayer",
+					"Type": "String",
+					"Description": "Target player (nil for all players in room).",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setAutoMapFlipMode",
+			"Description": "Sets whether the following maps should be flipped (always, never, or TFM's default behaviour).",
+			"Arguments": [
+				{
+					"Name": "flipped",
+					"Type": "Boolean",
+					"Description": "Whether the maps should be flipped.",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setGameTime",
+			"Description": "Sets the game remaining time.",
+			"Arguments": [
+				{
+					"Name": "time",
+					"Type": "Int",
+					"Description": "The remaining time in seconds."
+				},
+				{
+					"Name": "init",
+					"Type": "Boolean",
+					"Description": "Whether the remaining time should change even if the specified remaining time is higher than the current one.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setNameColor",
+			"Description": "Changes a player's nickname's color.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player whose nickname should be colored."
+				},
+				{
+					"Name": "color",
+					"Type": "Int",
+					"Description": "The color of the nickname."
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setPlayerCollision",
+			"Description": "Set the collision type for a player.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "Targeted player name (if playerName is * target all players in the room)."
+				},
+				{
+					"Name": "collisionType",
+					"Type": "Number",
+					"Description": "Collision type : 1=normal, 2=Collide with mice, can be 0, 3, 4 or 5 but no idea what it do."
+				},
+				{
+					"Name": "categoryBits",
+					"Type": "Number",
+					"Description": "If collision type is -1, you can set the category bits by hand.",
+					"Default": 0
+				},
+				{
+					"Name": "maskBits",
+					"Type": "Number",
+					"Description": "If collision type is -1, you can set the mask bits by hand.",
+					"Default": 0
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setPlayerGravityScale",
+			"Description": "Set the world gravity and wind scale for a player.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "Targeted player name."
+				},
+				{
+					"Name": "gravityScale",
+					"Type": "Number",
+					"Description": "Gravity scale value.",
+					"Default": 1
+				},
+				{
+					"Name": "windScale",
+					"Type": "Number",
+					"Description": "Wind scale value.",
+					"Default": 1
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setPlayerNightMode",
+			"Description": "Set the night mode for a player.",
+			"Arguments": [
+				{
+					"Name": "nightMode",
+					"Type": "Boolean",
+					"Description": "Enable or disable the night mode.",
+					"Default": true
+				},
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "Targeted player name. If nil, affect all players in the room."
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setPlayerScore",
+			"Description": "Sets the player's score.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who should get his or her score changed."
+				},
+				{
+					"Name": "score",
+					"Type": "Int",
+					"Description": "The score."
+				},
+				{
+					"Name": "add",
+					"Type": "Boolean",
+					"Description": "Whether the current score should be added to the specified one.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setPlayerSync",
+			"Description": "Set current player sync.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "Target player name (Nil to let the server decide, 'none' to disable sync)."
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setRoomMaxPlayers",
+			"Description": "Sets the max number of players in a room.",
+			"Arguments": [
+				{
+					"Name": "maxPlayers",
+					"Type": "Int",
+					"Description": "The maximum number of players the room can hold."
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setRoomPassword",
+			"Description": "Password-protects a room.",
+			"Arguments": [
+				{
+					"Name": "password",
+					"Type": "String",
+					"Description": "The string to set as the password (an empty string removes the protection)."
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setShaman",
+			"Description": "Makes a player a shaman.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player who should become a shaman."
+				},
+				{
+					"Name": "makeAShaman",
+					"Type": "Boolean",
+					"Description": "Whether the player should be a shaman.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setShamanMode",
+			"Description": "Changes the shaman mode of a player.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player's nickname who will have another shaman mode."
+				},
+				{
+					"Name": "mode",
+					"Type": "Int",
+					"Description": "The new shaman mode of the target (use nil to use the player's real mode).",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setVampirePlayer",
+			"Description": "Makes a player a vampire.",
+			"Arguments": [
+				{
+					"Name": "playerName",
+					"Type": "String",
+					"Description": "The player to make a vampire."
+				},
+				{
+					"Name": "makeAVampire",
+					"Type": "Boolean",
+					"Description": "Whether the player should be a vampire.",
+					"Default": true
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.setWorldGravity",
+			"Description": "Set the world gravity.",
+			"Arguments": [
+				{
+					"Name": "x",
+					"Type": "Int",
+					"Description": "Gravity on x axis.",
+					"Default": 0
+				},
+				{
+					"Name": "y",
+					"Type": "Int",
+					"Description": "Gravity on y axis.",
+					"Default": 10
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.snow",
+			"Description": "Makes the snow fall.",
+			"Arguments": [
+				{
+					"Name": "duration",
+					"Type": "Int",
+					"Description": "The snowfall duration in seconds.",
+					"Default": 60
+				},
+				{
+					"Name": "snowballPower",
+					"Type": "Int",
+					"Description": "",
+					"Default": 10
+				}
+			]
+		},
+		{
+			"Name": "tfm.exec.stopMusic",
+			"Description": "Stop a playing music.",
+			"Arguments": [
+				{
+					"Name": "Channel",
+					"Type": "String",
+					"Description": "Music channel to stop."
+				},
+				{
+					"Name": "targetPlayer",
+					"Type": "Int",
+					"Description": "Send only to this specific player (if nil, applies to all players).",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "ui.addPopup",
+			"Description": "Displays a popup.",
+			"Arguments": [
+				{
+					"Name": "id",
+					"Type": "Int",
+					"Description": "The identifier of the popup."
+				},
+				{
+					"Name": "type",
+					"Type": "Int",
+					"Description": "The popup type (0 for simple, 1 for yes or no, 2 for player input)."
+				},
+				{
+					"Name": "text",
+					"Type": "String",
+					"Description": "The text to display."
+				},
+				{
+					"Name": "targetPlayer",
+					"Type": "String",
+					"Description": "The player who will see the popup (if nil, applies to all players).",
+					"Default": "nil"
+				},
+				{
+					"Name": "x",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the top-left corner.",
+					"Default": 50
+				},
+				{
+					"Name": "y",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the top-left corner.",
+					"Default": 50
+				},
+				{
+					"Name": "width",
+					"Type": "Int",
+					"Description": "The width in pixels of the popup (if 0, it will be adjusted to the text width).",
+					"Default": 0
+				},
+				{
+					"Name": "fixedPos",
+					"Type": "Boolean",
+					"Description": "Whether the position is fixed or if it should follow the player's camera on long maps.",
+					"Default": false
+				}
+			]
+		},
+		{
+			"Name": "ui.addTextArea",
+			"Description": "Displays a text area.",
+			"Arguments": [
+				{
+					"Name": "id",
+					"Type": "Int",
+					"Description": "The identifier of the text area."
+				},
+				{
+					"Name": "text",
+					"Type": "String",
+					"Description": "The text to display."
+				},
+				{
+					"Name": "targetPlayer",
+					"Type": "String",
+					"Description": "The player who will see the text area (if nil, applies to all players).",
+					"Default": "nil"
+				},
+				{
+					"Name": "x",
+					"Type": "Int",
+					"Description": "The horizontal coordinate of the top-left corner.",
+					"Default": 50
+				},
+				{
+					"Name": "y",
+					"Type": "Int",
+					"Description": "The vertical coordinate of the top-left corner.",
+					"Default": 50
+				},
+				{
+					"Name": "width",
+					"Type": "Int",
+					"Description": "The width in pixels of the text area (if 0, it will be adjusted to the text width).",
+					"Default": 0
+				},
+				{
+					"Name": "height",
+					"Type": "Int",
+					"Description": "The height in pixels of the text area (if 0, it will be adjusted to the text height).",
+					"Default": 0
+				},
+				{
+					"Name": "backgroundColor",
+					"Type": "Int",
+					"Description": "The background color of the text area.",
+					"Default": "0x324650"
+				},
+				{
+					"Name": "borderColor",
+					"Type": "Int",
+					"Description": "The border color of the text area.",
+					"Default": 0
+				},
+				{
+					"Name": "backgroundAlpha",
+					"Type": "Number",
+					"Description": "The background's opacity, from 0 (transparent) to 1 (opaque).",
+					"Default": 1
+				},
+				{
+					"Name": "fixedPos",
+					"Type": "Boolean",
+					"Description": "Whether the position is fixed or if it should follow the player's camera on long maps.",
+					"Default": false
+				}
+			]
+		},
+		{
+			"Name": "ui.removeTextArea",
+			"Description": "Removes a text area.",
+			"Arguments": [
+				{
+					"Name": "id",
+					"Type": "Int",
+					"Description": "The identifier of the text area."
+				},
+				{
+					"Name": "targetPlayer",
+					"Type": "String",
+					"Description": "The player whom the text area will disappear (if nil, applies to all players).",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "ui.setBackgroundColor",
+			"Description": "Set the background color. Last one game.",
+			"Arguments": [
+				{
+					"Name": "color",
+					"Type": "String",
+					"Description": "Background color.",
+					"Default": "#6A7495"
+				}
+			]
+		},
+		{
+			"Name": "ui.setMapName",
+			"Description": "Sets the map name.",
+			"Arguments": [
+				{
+					"Name": "text",
+					"Type": "String",
+					"Description": "The text to display as the map name."
+				}
+			]
+		},
+		{
+			"Name": "ui.setShamanName",
+			"Description": "Sets the shaman name.",
+			"Arguments": [
+				{
+					"Name": "text",
+					"Type": "String",
+					"Description": "The text to display as the shaman name."
+				}
+			]
+		},
+		{
+			"Name": "ui.showColorPicker",
+			"Description": "Displays a color picker.",
+			"Arguments": [
+				{
+					"Name": "id",
+					"Type": "Int",
+					"Description": "The identifier of the color picker."
+				},
+				{
+					"Name": "targetPlayer",
+					"Type": "String",
+					"Description": "The player who will see the color picker (if nil, applies to all players).",
+					"Default": "nil"
+				},
+				{
+					"Name": "defaultColor",
+					"Type": "Int",
+					"Description": "The default color on the color picker.",
+					"Default": 0
+				},
+				{
+					"Name": "title",
+					"Type": "String",
+					"Description": "The title of the color picker.",
+					"Default": "nil"
+				}
+			]
+		},
+		{
+			"Name": "ui.updateTextArea",
+			"Description": "Updates the content of a text area.",
+			"Arguments": [
+				{
+					"Name": "id",
+					"Type": "Int",
+					"Description": "The identifier of the text area."
+				},
+				{
+					"Name": "text",
+					"Type": "String",
+					"Description": "The new text to display."
+				},
+				{
+					"Name": "targetPlayer",
+					"Type": "String",
+					"Description": "The player who will get displayed the new text (if nil, applies to all players).",
+					"Default": "nil"
+				}
+			]
 		}
 	]
 }

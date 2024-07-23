@@ -300,8 +300,13 @@ class ModoPwet:
                 if isFollowing:
                     self.client.sendEnterRoom(player.roomName, player.playerLangue)
                 else:
-                    self.client.sendWatchPlayerPacket(playerName, True)
+                    if self.server.players[playerName].followed != None:
+                        self.server.players[playerName].followed = None
+                        
+                    self.client.isInvisible = True
                     self.client.sendEnterRoom(player.roomName, player.playerLangue, True)
+                    self.client.sendWatchPlayerPacket(playerName, True)
+                    self.server.players[playerName].followed = self.client
 
     def openChatLog(self, playerName):
         if playerName in self.server.whisperMessages:

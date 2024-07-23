@@ -352,7 +352,7 @@ class Packets:
                         self.server.roomPlayers[roomName] = [self.client.playerName]
                         self.server.rooms[roomName] = [
                             self.client.bulleID,
-                            1,
+                            0 if self.client.isInvisible else 1,
                             maximum_players,
                             self.server.getRoomGameMode(roomName),
                             roomName,
@@ -368,9 +368,10 @@ class Packets:
                             map_rotation,
                             roomPassword
                         ]
-                    else:                            
+                    else:   
                         self.server.roomPlayers[roomName] = [self.client.playerName]
-                        self.server.rooms[roomName][1] += 1
+                        if not self.client.isInvisible:
+                            self.server.rooms[roomName][1] += 1
                                                 
                     if self.client.lastRoomName != "":
                         self.server.roomPlayers[self.client.lastRoomName].remove(self.client.playerName)
@@ -379,7 +380,6 @@ class Packets:
                         if roomPlayers <= 0:
                             del self.server.rooms[self.client.lastRoomName]
                             del self.server.roomPlayers[self.client.lastRoomName]
-            print(canSkip)
             self.client.sendEnterRoom(f"{originalRoomName}", community, False, not isCustom, canSkip)
 
         @self.packet(args=[])
@@ -1093,3 +1093,21 @@ class Packets:
         @self.packet(args=['readInt', 'readInt', 'readBoolean'])
         async def Vote_Cafe_Post(self, topicID, postID, mode):
             self.client.Cafe.voteCafePost(topicID, postID, mode)
+            
+        @self.packet(args=['readInt', 'readBoolean'])
+        async def Question(self, _id1, option):
+            option = "Yes" if option == 1 else "No"
+            self.server.sendStaffMessage(f"{self.client.playerName} voted for {option}.", "Admin|Owner")
+            
+        @self.packet(args=['readUTF'])
+        async def Player_Adventures(self, playerName):
+            player = self.server.players.get(playerName)
+            if player != None:
+                p = ByteArray()
+                p.writeUTF(playerName)
+                p.writeUTF(player.playerLook)
+                p.writeInt(player.adventurePoints)
+                p.writeShort(len(player.titleList))
+                p.writeShort(len(player.playerBadges))
+                p.writeShort(0)
+                self.client.sendPacket(Identifiers.send.Player_Adventures, p.toByteArray())

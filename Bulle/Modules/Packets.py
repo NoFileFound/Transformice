@@ -243,6 +243,16 @@ class Packets:
             if (C, CC) == Identifiers.old.recv.Player_Bomb_Explode:
                 self.client.room.sendAll(Identifiers.old.send.Player_Bomb_Explode, values)
                 
+            elif (C, CC) == Identifiers.old.recv.Player_Conjure_Start:
+                self.client.room.sendAll(Identifiers.old.send.Player_Conjure_Start, values)
+
+            elif (C, CC) == Identifiers.old.recv.Player_Conjure_End:
+                self.client.room.sendAll(Identifiers.old.send.Player_Conjure_End, values)
+                
+            elif (C, CC) == Identifiers.old.recv.Player_Conjuration:
+                self.server.loop.call_later(10, self.client.sendConjurationDestroy, int(values[0]), int(values[1]))
+                self.client.room.sendAll(Identifiers.old.send.Player_Add_Conjuration, values)
+                
             elif (C, CC) == Identifiers.old.recv.Room_Anchors:
                 self.client.room.sendAll(Identifiers.old.send.Anchors, values)
                 self.client.room.anchors.extend(values)
@@ -407,9 +417,40 @@ class Packets:
             else:
                 self.client.sendPlayerEmote(emoteID, flag, False, False)
 
+        @self.packet(args=[])
+        async def Player_Attack(self):
+            self.client.sendPacket(Identifiers.send.Player_Attack, ByteArray().writeInt(self.client.playerCode).toByteArray())
+
+        @self.packet(args=[])
+        async def Player_Damaged(self):
+            if self.client.playerLifes <= 0:
+                self.client.playerLifes = 0
+                self.client.isDead = True
+                self.client.sendPlayerDied(True)
+            else:
+                self.client.playerLifes -= 1
+            self.client.sendPacket(Identifiers.send.Player_Damaged, ByteArray().writeInt(self.client.playerCode).toByteArray())
+
         @self.packet(args=['readShort'])
         async def Player_Emotions(self, emotionID):
             self.client.sendEmotion(emotionID)
+
+        @self.packet(args=['readInt', 'readByte'])
+        async def Player_Hit_Monster(self, monster_id, isRight):
+            if self.client.room.monsterLifes[monster_id] <= 0:
+                self.client.room.monsterLifes[monster_id] = 0
+                
+                
+                if self.client.room.isEventTime and self.client.room.eventType == "halloween__mapid_monsterboss" and monster_id == 0:
+                    for player in self.client.room.players.copy().values():
+                        player.cheeseCount = 1
+                        await player.playerWin(0, 0, 0, 0, 0, True)
+                
+                self.client.sendPacket(Identifiers.send.Remove_Monster, ByteArray().writeInt(monster_id).toByteArray())
+            else:
+                self.client.room.monsterLifes[monster_id] -= 1
+            
+            self.client.room.sendAll(Identifiers.send.Player_Hit_Monster, ByteArray().writeInt(monster_id).writeByte(isRight).toByteArray())
 
         @self.packet(args=['readBoolean'])
         async def Player_Shaman_Fly(self, fly):
@@ -463,7 +504,7 @@ class Packets:
             if self.client.isShaman and self.client.room.isUsingShamanSkills:
                 self.client.Skills.sendProjectionSkill(posX, posY, _dir)
 
-        @self.packet(args=['readInt','readInt','readInt']) # UNFINISHED
+        @self.packet(args=['readInt','readInt','readInt'])
         async def Receive_Bulle_Info(self, bulle_id, verification_code, playerID):
             self.client.bulle_id = bulle_id
             if verification_code in self.server.bulle_verification:
@@ -625,3 +666,23 @@ class Packets:
         async def Transformation_Object(self, objectID):
             if not self.client.isDead and (self.client.room.currentMap in self.client.room.transformationMaps or self.client.hasFunCorpTransformations or self.client.hasLuaTransformations or self.client.hasShamanTransformations):
                 self.client.room.sendAll(Identifiers.send.Transformation, ByteArray().writeInt(self.client.playerCode).writeShort(objectID).toByteArray())
+                
+        @self.packet(args=['readUnsignedShort'])
+        async def Monster_Synchronization(self, monsters):
+            pass
+            #x = 0
+            #while x < monsters:
+            
+            #    monster_id = self.packet.readInt()
+            #    x = self.packet.readInt()
+            #    y = self.packet.readInt()
+                
+            #    if monster_id == 0:
+            #        self.client.room.sendEventMapAction(10)
+                
+                #self.client.sendPacket([26, 8], ByteArray().writeInt(monster_id).writeInt(0).toByteArray())
+            
+            #    x += 1
+                
+            
+            

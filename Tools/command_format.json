@@ -1,11 +1,17 @@
 [
 	{
-		"Privileges": [""],
 		"Name": "",
-		"Arguments": [
-		
-		],
 		"Description": "",
-		"Channel": ""
+		"Arguments": [
+			{
+				"Name": "",
+				"Type": "",
+				"Description": "",
+				"Default": ""
+			}
+		],
+		"isStaff": false,
+		"ReturnType": "",
+		"ReturnInfo": ""
 	}
 ]

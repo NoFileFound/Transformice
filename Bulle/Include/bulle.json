@@ -10,13 +10,14 @@
 	"minimum_players": 5,
 	"packet_keys": [13, 16, 42, 55, 40, 23, 19, 43, 11, 55, 87, 74, 116, 105, 114, 77, 117, 77, 97, 93],
 	"event_info": {
-		"name": "Halloween 2024",
+		"name": "halloween",
+		"mapname": "_Halloween ~ 2024",
 		"delay": -1,
 		"maps": [
-			{"id": 1, "type": "__mapid_monsterboss"},
-			{"id": 2, "type": "__mapid_casino"},
-			{"id": 3, "type": "__mapid_monsters"}
+			{"id": 1, "type": "halloween__mapid_monsterboss"},
+			{"id": 2, "type": "halloween__mapid_casino"},
+			{"id": 3, "type": "halloween__mapid_room"},
+			{"id": 4, "type": "halloween__mapid_broombloommap"}
 		]
-		
 	}
 }
