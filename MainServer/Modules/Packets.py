@@ -195,15 +195,21 @@ class Packets:
 
         @self.packet(args=['readUTF', 'readUTF', 'readUTF', 'readUTF', 'readShort', 'readUTF'], decrypt=True)
         async def Create_Account(self, playerName, password, email, captcha, unknown, flash_url):
+            if not re.match("^(?=^(?:(?!.*_$).)*$)(?=^(?:(?!_{2,}).)*$)[A-Za-z][A-Za-z0-9_]{2,11}$", playerName) or len(playerName) > 11:
+                # Player name is invalid
+                self.client.sendPacket(Identifiers.send.Login_Result, ByteArray().writeByte(4).writeUTF("").writeUTF("").toByteArray())
+       
+            if self.server.serverInfo["tag"] == "random":
+                playerName = self.server.genPlayerTag(playerName)
+            elif self.server.serverInfo["tag"] != "":
+                playerName = playerName + "#" + self.server.serverInfo["tag"]
+                
             if flash_url != self.server.serverInfo["swf_url"]:
                 self.client.Logger.error(f"[CLIENT][{self.client.ipAddress}] FLASH URL check failure. {flash_url}\n")
                 self.client.transport.close()
                 return
-
-            if not re.match("^(?=^(?:(?!.*_$).)*$)(?=^(?:(?!_{2,}).)*$)[A-Za-z][A-Za-z0-9_]{2,11}$", playerName) or len(playerName) > 11:
-                # Player name is invalid
-                self.client.sendPacket(Identifiers.send.Login_Result, ByteArray().writeByte(4).writeUTF("").writeUTF("").toByteArray())
-            elif self.client.currentCaptcha != captcha:
+            
+            if self.client.currentCaptcha != captcha:
                 # captcha is not the same
                 self.client.sendPacket(Identifiers.send.Login_Result, ByteArray().writeByte(7).writeUTF("").writeUTF("").toByteArray())
             elif self.server.checkAlreadyExistingAccount(playerName):

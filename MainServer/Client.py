@@ -329,7 +329,7 @@ class Client:
         self.transport.close()
         
     async def createAccount(self, playerName, email, password):
-        playerName = self.server.genPlayerTag(playerName)
+        #playerName = self.server.genPlayerTag(playerName)
         self.server.lastPlayerID = self.cursor['users'].count_documents({}) + 1
     
         self.cursor['users'].insert_one({

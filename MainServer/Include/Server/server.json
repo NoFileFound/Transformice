@@ -6,6 +6,7 @@
 	"disabled_souris": false,
 	"maxplayers": 2000,
 	"db_name": "transformice1",
+	"tag": "0000",
 	"db_url": "mongodb://localhost:27017",
 	"swf_url": "file:///C|/Users/believix/Desktop/TFM/Transformice.swf",
 	"emailAddress": "",
