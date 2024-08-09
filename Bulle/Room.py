@@ -163,6 +163,7 @@ class Room:
         self.voteCloseTimer = None
         self.startTimerLeft = None
         self.eventHallowenInvasionTimer = None
+        self.luaRuntime = None
         
         # Maps
         self.doubleShamanMaps = self.server.mapsInfo["doubleShamanMaps"]
@@ -549,6 +550,9 @@ class Room:
             player.startPlay()
         else:
             player.room.roomCreator = player.playerName
+            
+        if self.luaRuntime != None:
+            self.luaRuntime.emit("NewPlayer", (player.playerName))
 
     def changeMapTimers(self, seconds):
         if self.changeMapTimer != None: self.changeMapTimer.cancel()
@@ -692,12 +696,9 @@ class Room:
             self.anchors = []
             self.lastHandymouse = [-1, -1]
             
-            if self.getPlayerCount() > 1:
-                self.mapStatus = (self.mapStatus + 1) % 15
-                if self.mapStatus == 0:
-                    self.isEventTime = True
-            else:
-                self.mapStatus = -1
+            self.mapStatus = (self.mapStatus + 1) % 15
+            if self.getPlayerCount() > 1 and self.mapStatus == 0:
+                self.isEventTime = True
 
             self.currentMap = await self.selectMap()
             self.checkMapXML()
@@ -753,7 +754,7 @@ class Room:
                 self.notUpdatedScore = False
                 self.sendAll(Identifiers.send.Rounds_Count, ByteArray().writeByte(self.roundsCount).writeInt(self.getHighestScore()).toByteArray())
             
-            if self.mapStatus == 0 and not self.isNoAdventureMaps:
+            if self.mapStatus == 0 and not self.isNoAdventureMaps and self.getPlayerCount() > 1:
                 self.isEventTime = True
             else:
                 self.isEventTime = False
@@ -874,6 +875,9 @@ class Room:
                     for x in range(0, self.currentMonsterId):
                         self.client.sendPacket(Identifiers.send.Remove_Monster, ByteArray().writeInt(self.currentMonsterId).toByteArray())
                     self.currentMonsterId = 0
+                    
+            if self.luaRuntime != None:
+                self.luaRuntime.emit("NewGame", self.currentMap)
 
     async def removeClient(self, player):
         if player.playerName in self.players:
@@ -907,6 +911,9 @@ class Room:
                     self.currentSyncName = ""
                     self.getSyncCode()
                 await self.checkChangeMap()
+                
+            if self.luaRuntime != None:
+                self.luaRuntime.emit("PlayerLeft", (player.playerName))
 
     def respawnMice(self):
         for player in self.players.copy().values():
@@ -922,6 +929,8 @@ class Room:
             player.isAfk = False
             player.playerStartTimeMillis = time.time()
             self.sendAll(Identifiers.send.Player_Respawn, ByteArray().writeBytes(player.getPlayerData()).writeBoolean(False).writeBoolean(True).toByteArray())
+            if self.luaRuntime != None:
+                self.luaRuntime.emit("PlayerRespawn", (player.playerName))
 
     async def selectMap(self):
         if not self.forceNextMap == "-1":
@@ -1089,6 +1098,9 @@ class Room:
         
     def removeObject(self, objectId):
         self.sendAll(Identifiers.send.Remove_Object, ByteArray().writeInt(objectId).writeBoolean(True).toByteArray())
+        if self.luaRuntime != None:
+            del self.luaRuntime.RoomObjects[int(objectId)]
+            self.luaRuntime.RefreshTFMGet()
             
     async def spawnInvasion(self, x, y, typ, x1=0, y1=0, typ1=0):
         while True:

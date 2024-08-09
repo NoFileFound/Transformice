@@ -9,6 +9,7 @@ from collections import deque
 # Modules
 from Modules.ByteArray import ByteArray
 from Modules.Identifiers import Identifiers
+from Modules.Lua import Lua
 
 # Utils
 from Utils.Other import Other
@@ -90,6 +91,8 @@ class Packets:
         @self.packet(args=[])
         async def Defilante_Points(self):
             self.client.defilantePoints += 1
+            if self.client.room.luaRuntime != None:
+                self.client.room.luaRuntime.emit("PlayerBonusGrabbed", (self.client.playerName, something))
 
         @self.packet(args=['readInt'])
         async def Demolition_Skill(self, objectID):
@@ -148,6 +151,33 @@ class Packets:
         async def Invocation(self, objectCode, posX, posY, angle, offset, isSpawing):
             if self.client.isShaman:
                 self.client.room.sendAllOthers(self.client, Identifiers.send.Invocation, ByteArray().writeInt(self.client.playerCode).writeShort(objectCode).writeShort(posX).writeShort(posY).writeShort(angle).writeUTF(offset).writeBoolean(isSpawing).toByteArray())
+                if self.client.room.luaRuntime != None:
+                    self.client.room.luaRuntime.emit("SummoningStart", (self.client.playerName, objectCode, posX, posY, rotation))
+
+        @self.packet(args=['readInt', 'readInt'])
+        async def Lua_Color_Picked(self, colorPickerId, color):
+            if self.client.room.luaRuntime != None:
+                self.client.room.luaRuntime.emit("ColorPicked", (colorPickerId, self.client.playerName, color))
+                
+        @self.packet(args=['readShort', 'readBoolean', 'readShort', 'readShort', 'readShort', 'readShort'])
+        async def Lua_Key_Board(self, key, down, posX, posY, xPlayerVelocity, yPlayerVelocity):
+            if self.client.room.luaRuntime != None:
+                self.client.room.luaRuntime.emit("Keyboard", (self.client.playerName, key, down, posX, posY))
+                
+        @self.packet(args=['readShort', 'readShort'])
+        async def Lua_Mouse_Click(self, posX, posY):
+            if self.client.room.luaRuntime != None:
+                self.client.room.luaRuntime.emit("Mouse", (self.client.playerName, posX, posY))
+
+        @self.packet(args=['readInt', 'readUTF'])
+        async def Lua_Popup_Answer(self, popupID, answer):
+            if self.client.room.luaRuntime != None:
+                self.client.room.luaRuntime.emit("PopupAnswer", (popupID, self.client.playerName, answer))
+
+        @self.packet(args=['readInt', 'readUTF'])
+        async def Lua_Text_Area_Callback(self, textAreaID, event): 
+            if self.client.room.luaRuntime != None:
+                self.client.room.luaRuntime.emit("TextAreaCallback", (textAreaID, self.client.playerName, event))
 
         @self.packet(args=['readByte'])
         async def Map_Info(self, cheesesCount):
@@ -363,6 +393,16 @@ class Packets:
                         self.client.isUsedTotem = True
                 self.client.sendPlaceObject(objectID, shamanCode, px, py, angle, velx, vely, True, isCollidable, True)
                 self.client.Skills.placeSkill(objectID, shamanCode, px, py, angle)
+                
+            if self.client.room.luaRuntime != None:
+                data = self.client.room.luaRuntime.runtime.table()
+                data["id"] = objectID
+                data["type"] = code
+                data["x"] = px
+                data["y"] = py
+                data["angle"] = angle
+                data["ghost"] = not dur
+                self.client.room.luaRuntime.emit("SummoningEnd", (self.client.playerName, code, px, py, angle, data))
 
         @self.packet(args=['readByte', 'readInt', 'readUTF'])
         async def Player_Action(self, emoteID, playerCode, flag=''):
@@ -413,9 +453,9 @@ class Packets:
             
             if self.client.isShaman and self.client.room.isUsingShamanSkills:
                 self.client.Skills.parseEmoteSkill(emoteID)
-            
-            else:
-                self.client.sendPlayerEmote(emoteID, flag, False, False)
+  
+            if self.client.room.luaRuntime != None:
+                self.client.room.luaRuntime.emit("EmotePlayed", (self.client.playerName, emoteID, flag))
 
         @self.packet(args=[])
         async def Player_Attack(self):
@@ -465,7 +505,10 @@ class Packets:
         async def Player_Meep(self, posX, posY):
             if not self.client.canMeep and not self.client.hasShamanMeep:
                 return
+                
             self.client.room.sendAll(Identifiers.send.Meep, ByteArray().writeInt(self.client.playerCode).writeShort(posX).writeShort(posY).writeInt(20 if self.client.isShaman else 5).toByteArray())
+            if self.client.room.luaRuntime != None:
+                self.client.room.luaRuntime.emit("PlayerMeep", (self.client.playerName, posX, posY))
 
         @self.packet(args=['readInt128', 'readBoolean', 'readBoolean', 'readInt128', 'readInt128', 'readInt128', 'readInt128', 'readInt128', 'readInt128', 'readBoolean', 'readInt128', 'readInt128'], decrypt=True)
         async def Player_Movement(self, roundCode, move_right, move_left, posX, posY, velX, velY, sticky, slippery, jumping, jumping_frame_index, entered_portal):
@@ -557,6 +600,8 @@ class Packets:
         async def Remove_Invocation(self):
             if self.client.isShaman:
                 self.client.room.sendAllOthers(self.client, Identifiers.send.Remove_Invocation, ByteArray().writeInt(self.client.playerCode).toByteArray())
+                if self.client.room.luaRuntime != None:
+                    self.client.room.luaRuntime.emit("SummoningCancel", (self.client.playerName))
 
         @self.packet(args=['readInt', 'readInt'])
         async def Restorative_Skill(self, objectID, id):
@@ -573,6 +618,11 @@ class Packets:
             elif self.client.isHidden:
                 self.client.sendServerMessage("You can't speak while you are watching somebody.", True)
                 return
+                
+            elif message.startswith("!") and self.client.room.luaRuntime != None:
+                self.client.room.luaRuntime.emit("ChatCommand", (self.client.playerName, message[1:]))
+                if message[1:] in self.client.room.luaRuntime.HiddenCommands:
+                    return
             
             elif self.client.isMuted:
                 timeCalc = Time.getHoursDiff(self.client.isMutedHours)
@@ -613,6 +663,9 @@ class Packets:
                     self.server.chatMessages[self.client.playerName][self.client.roomName] = messages
                 else:
                     self.server.chatMessages[self.client.playerName][self.client.roomName].append([time.strftime("%Y/%m/%d %H:%M:%S"), message, self.client.roomName])
+
+                if self.client.room.luaRuntime != None:
+                    self.client.room.luaRuntime.emit("ChatMessage", (self.client.playerName, message))
 
         @self.packet(args=['readUTF'])
         async def Send_Music(self, video_url):
@@ -667,6 +720,16 @@ class Packets:
             if not self.client.isDead and (self.client.room.currentMap in self.client.room.transformationMaps or self.client.hasFunCorpTransformations or self.client.hasLuaTransformations or self.client.hasShamanTransformations):
                 self.client.room.sendAll(Identifiers.send.Transformation, ByteArray().writeInt(self.client.playerCode).writeShort(objectID).toByteArray())
                 
+        @self.packet
+        async def Execute_Lua_Script(self):
+            script = self.packet.readUTFBytes(int.from_bytes(self.packet.read(3), 'big')).decode()
+            #if False:
+            #if(self.client.privLevel in [9, 10] or self.client.isLuaCrew) or ((self.client.privLevel == 5 or self.client.isFunCorpPlayer) and self.client.room.isFuncorp) or self.client.room.isTribeHouse:
+            if self.client.room.luaRuntime == None:
+                self.client.room.luaRuntime = Lua(self.client.room, self.server)
+            self.client.room.luaRuntime.owner = self.client
+            self.client.room.luaRuntime.RunCode(script)
+                            
         @self.packet(args=['readUnsignedShort'])
         async def Monster_Synchronization(self, monsters):
             pass

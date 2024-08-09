@@ -276,6 +276,9 @@ class BulleProtocol(asyncio.Protocol):
             if self.room.isTutorial:
                 self.sendPacket(Identifiers.send.Tutorial, 1)
         self.room.canChangeMap = True
+        
+        if self.room.luaRuntime != None:
+            self.room.luaRuntime.emit("PlayerGetCheese", (self.playerName))
 
     def sendGiveCurrency(self, type, count):
         self.sendPacket(Identifiers.send.Give_Currency, ByteArray().writeByte(type).writeByte(count).toByteArray())
@@ -366,6 +369,12 @@ class BulleProtocol(asyncio.Protocol):
             self.room.sendAll(Identifiers.send.Player_Respawn, ByteArray().writeBytes(self.getPlayerData()).writeBoolean(False).writeBoolean(True).toByteArray())
             for player in self.room.players.copy().values():
                 player.sendShamanCode(self.playerCode, 0)
+                
+            if self.room.luaRuntime != None:
+                self.room.luaRuntime.emit("PlayerRespawn", (self.playerName))
+
+        if self.room.luaRuntime != None:
+            self.room.luaRuntime.emit("PlayerDied", (self.playerName))
 
     def sendPlayerDisconnect(self):
         self.room.sendAll(Identifiers.old.send.Player_Disconnect, [self.playerCode])
@@ -427,7 +436,9 @@ class BulleProtocol(asyncio.Protocol):
             self.room.sendAllOthers(self, Identifiers.send.Vampire_Mode, p.toByteArray())
         else:
             self.room.sendAll(Identifiers.send.Vampire_Mode, p.toByteArray())
-
+            
+        if self.room.luaRuntime != None:
+            self.room.luaRuntime.emit("PlayerVampire", (self.playerName, None))
 
 
     # Other Functions
@@ -599,6 +610,9 @@ class BulleProtocol(asyncio.Protocol):
                     await self.room.checkChangeMap()
                 else:
                     await self.room.checkChangeMap()
+                    
+                if self.room.luaRuntime != None:
+                    self.room.luaRuntime.emit("PlayerWon", (self.playerName, str((time.time() - self.room.gameStartTimeMillis)*1000)[5:], str((time.time() - self.playerStartTimeMillis)*1000)[5:]))
 
             self.room.canChangeMap = True
         else:
@@ -691,10 +705,12 @@ class BulleProtocol(asyncio.Protocol):
         if self.room.currentMap in range(200, 211) and not self.isShaman:
             self.sendPacket(Identifiers.send.Can_Transformation, 1)
 
-
+    def sendLuaMessage(self, message):
+        self.sendPacket(Identifiers.send.Lua_Message, ByteArray().writeUTF(message).toByteArray())
                     
     def sendUnlockTitle(self, typ): # Cheeses, Bootcamp, Firsts, ShamanCheeses
         pass
         
     def sendUpdateDatabase(self):
-        pass
+        self.sendPacket([28, 98], ByteArray().writeUTF("127.0.0.1:11801").toByteArray())
+        print("OK ")

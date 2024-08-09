@@ -100,6 +100,14 @@ class Identifiers:
         
         # Transformation
         Transformation_Object = (27, 11)
+        
+        # Lua
+        Execute_Lua_Script = (29, 1)
+        Lua_Key_Board = (29, 2)
+        Lua_Mouse_Click = (29, 3)
+        Lua_Popup_Answer = (29, 20)
+        Lua_Text_Area_Callback = (29, 21)
+        Lua_Color_Picked = (29, 32)
                 
         # Mulodrome
         Mulodrome_Close = (30, 13)
@@ -219,6 +227,7 @@ class Identifiers:
         # Lua
         Initialize_Lua_Scripting = [29, 1]
         Set_Name_Color = [29, 4]
+        Lua_Message = [29, 6]
         Add_Physical_Object = [29, 28]
         
         # Mulodrome

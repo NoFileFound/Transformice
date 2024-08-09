@@ -33,6 +33,13 @@ class ByteArray:
             found = self._bytes[:length]
             self._bytes = self._bytes[length:]
         return found
+        
+    def read(self, length = 1):
+        found = ""
+        if self.getLength() >= length:
+            found = self._bytes[:length]
+            self._bytes = self._bytes[length:]
+        return found
     
     def write(self, value):
         if isinstance(value, str):

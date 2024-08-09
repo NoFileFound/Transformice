@@ -822,9 +822,8 @@ class Bulle:
         return 0
         
         
-    def checkMessage(self, message) -> bool:
+    def checkMessage(self, message) -> bool: # UNFINISHED
         return False
-        
         
     def Main(self):
         self.CursorMaps = self.ConnectMAPDatabase()
@@ -842,7 +841,6 @@ class Bulle:
             return
         
         self.loop.run_forever()
-        
         
 if __name__ == "__main__":
     _Bulle = Bulle()
