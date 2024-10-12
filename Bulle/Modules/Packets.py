@@ -582,6 +582,7 @@ class Packets:
                 for skill in list(map(str, filter(None, base64.b64decode(player[26]).decode('utf-8').split(";")))):
                     values = skill.split(":")
                     self.client.playerSkills[int(values[0])] = int(values[1])
+                self.client.isGuest = True if player[27] == "True" else False
                 self.server.bulle_players[playerID] = self.client
                 del self.server.bulle_verification[verification_code]        
                 if self.server.isDebug:

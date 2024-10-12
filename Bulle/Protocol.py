@@ -28,8 +28,16 @@ class BulleProtocol(asyncio.Protocol):
         self.bootcampRounds = 0
         self.racingRounds = 0
         self.shamanCheeses = 0
+        self.shamanNormalSaves = 0
+        self.shamanNormalSavesNoSkill = 0
+        self.shamanHardSaves = 0
+        self.shamanHardSavesNoSkill = 0
+        self.shamanDivineSaves = 0
+        self.shamanDivineSavesNoSkill = 0
         self.shopCheeses = 0 # self.client.shopCheeses += . shopCheeses # DIRECTLY UPDATE IN THE SERVER
         self.minimumCheesesMapEditor = 40
+        self.shamanExp = 0
+        self.shamanExpNext = 0
         
         # Bulle
         self.bulle_id = 0
@@ -91,6 +99,7 @@ class BulleProtocol(asyncio.Protocol):
         self.isVampire = False
         self.isUsedTotem = False
         self.resetTotem = False
+        self.isGuest = False
         
         # String
         self.ipAddress = ""
@@ -550,17 +559,17 @@ class BulleProtocol(asyncio.Protocol):
                         
                 elif place == 2:
                     if self.room.getPlayerCountUnique() >= self.server.bulleInfo["minimum_players"] and self.room.countStats and not self.isShaman and not self.canShamanRespawn and self.room.isAutoScore:
-                        self.cheeseCount += self.cheeseCounter
+                        self.cheeseCountDB += self.cheeseCount
                     self.playerScore += (3 if self.room.isRacing else 3) if not self.room.isAutoScore else 0
                             
                 elif place == 3:
                     if self.room.getPlayerCountUnique() >= self.server.bulleInfo["minimum_players"] and self.room.countStats and not self.isShaman and not self.canShamanRespawn and self.room.isAutoScore:
-                        self.cheeseCount += self.cheeseCounter
+                        self.cheeseCountDB += self.cheeseCount
                     self.playerScore += (2 if self.room.isRacing else 2) if not self.room.isAutoScore else 0
 
                 if not place in [1, 2, 3]:
                     if self.room.getPlayerCountUnique() >= self.server.bulleInfo["minimum_players"] and self.room.countStats and not self.isShaman and not self.canShamanRespawn and self.room.isAutoScore:
-                        self.cheeseCount += self.cheeseCounter
+                        self.cheeseCountDB += self.cheeseCount
                     self.playerScore += (1 if self.room.isRacing else 1) if not self.room.isAutoScore else 0
 
                 if self.room.isMulodrome:
@@ -712,5 +721,29 @@ class BulleProtocol(asyncio.Protocol):
         pass
         
     def sendUpdateDatabase(self):
-        self.sendPacket([28, 98], ByteArray().writeUTF("127.0.0.1:11801").toByteArray())
-        print("OK ")
+        if self.isGuest:
+            return
+    
+        info = self.server.cursor['users'].find_one({'Username':self.playerName})
+        self.server.cursor['users'].update_one({'Username':self.playerName},{'$set':{
+            # Stats
+            "FirstCount": self.firstCount + info["FirstCount"],
+            "CheeseCount": self.cheeseCountDB + info["CheeseCount"],
+            "BootcampCount": self.bootcampRounds + info["BootcampCount"],
+            "ShamanCheeses": self.shamanCheeses + info["ShamanCheeses"],
+            "NormalSavesCount": self.shamanNormalSaves + info["NormalSavesCount"],
+            "NormalSavesCountNS": self.shamanNormalSavesNoSkill + info["NormalSavesCountNS"],
+            "HardSavesCount": self.shamanHardSaves + info["HardSavesCount"],
+            "HardSavesCountNS": self.shamanHardSavesNoSkill + info["HardSavesCountNS"],
+            "DivineSavesCount": self.shamanDivineSaves + info["DivineSavesCount"],
+            "DivineSavesCountNS": self.shamanDivineSavesNoSkill + info["DivineSavesCountNS"],
+            # Title list
+            
+            # Shaman
+            "ShamanExp": self.shamanExp + info["ShamanExp"],
+            "ShamanNextExp": self.shamanExpNext + info["ShamanNextExp"],
+            "ShamanLevel": self.shamanLevel + info["ShamanLevel"],
+            
+            # Shop
+            "ShopCheeseCount": self.shopCheeses + info["ShopCheeseCount"],
+        }})

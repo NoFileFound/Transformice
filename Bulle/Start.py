@@ -5,6 +5,7 @@ sys.dont_write_bytecode = True
 
 import asyncio
 import base64
+import pymongo
 import socket
 import sqlite3
 import threading
@@ -50,6 +51,7 @@ class Bulle:
         
         # Other
         self.CursorMaps = None
+        self.cursor = None
         
     # Socket functions
     def send_packet(self, data):
@@ -124,8 +126,9 @@ class Bulle:
             shopCheeses = int(args[25])
             cheeseCount = int(args[26])
             playerSkills = args[27]
-            verification_code = int(args[28])
-            self.bulle_verification[verification_code] = [playerName, playerCode, playerLangue, playerLook, staffRoles, isMuted, playerGender, roomName, isHidden, isReported, titleNumber, titleStars, isMutedHours, isMutedReason, shamanType, shamanLevel, shamanItems, shamanBadge, shamanColor, petType, petEnd, furType, furEnd, mapCheeses, shopCheeses, cheeseCount, playerSkills]
+            isGuest = args[28]
+            verification_code = int(args[29])
+            self.bulle_verification[verification_code] = [playerName, playerCode, playerLangue, playerLook, staffRoles, isMuted, playerGender, roomName, isHidden, isReported, titleNumber, titleStars, isMutedHours, isMutedReason, shamanType, shamanLevel, shamanItems, shamanBadge, shamanColor, petType, petEnd, furType, furEnd, mapCheeses, shopCheeses, cheeseCount, playerSkills, isGuest]
                 
         elif code == Identifiers.bulle.BU_SendAnimZelda:
             playerID = int(args[0])
@@ -825,10 +828,19 @@ class Bulle:
     def checkMessage(self, message) -> bool: # UNFINISHED
         return False
         
+    def LoadDatabase(self):
+        try:
+            self.cursor = pymongo.MongoClient(self.bulleInfo["db_url"])[self.bulleInfo["db_name"]]
+            self.Logger.info(f"The database {self.bulleInfo['db_name']} was connected.\n")
+        except:
+            self.Logger.error(f"Unable to connect to the database {self.bulleInfo['db_name']}\n")
+            sys.exit(0)
+        
     def Main(self):
         self.CursorMaps = self.ConnectMAPDatabase()
         self.LoadEventMaps()
         self.LoadVanillaMaps()
+        self.LoadDatabase()
         self.isDebug = self.bulleInfo["debug"]
         self.connect_to_main_server()
 

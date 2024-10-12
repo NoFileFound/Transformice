@@ -607,7 +607,7 @@ class Client:
                 self.sendShamanType(self.shamanType, (self.shamanNormalSaves >= 5000 and self.shamanHardSaves >= 2000), False)
             self.DailyQuests.loadMissions()
             self.Shop.sendPromotionPopup()
-            self.sendMessage("<VP>[SYSTEM]</VP> Be sure to wish happy birthday to Raiden Shogun today ❤️ or you will be banned forever.")
+            #self.sendMessage("<VP>[SYSTEM]</VP> Be sure to wish happy birthday to Raiden Shogun today ❤️ or you will be banned forever.")
 
     async def connectToBulle(self, roomName, community="", isHidden=False, sendPacket=True, createRoomInfo=True, skipPassword=False): # UNFINISHED
         if self.isPrisoned:
@@ -673,7 +673,7 @@ class Client:
 
         try:
             temp_code = Other.randomGen()
-            self.server.bulles[self.bulleID["id"]].send_packet(Identifiers.bulle.BU_ConnectToGivenRoom, self.playerID, self.playerName, self.playerCode, community, base64.b64encode(self.playerLook.encode()).decode('utf-8'), self.getStaffPermissions(), self.isMuted, self.genderType, roomName, isHidden, isReported, self.titleNumber, self.titleStars, self.isMutedHours, self.isMutedReason, self.shamanType, self.shamanLevel, base64.b64encode(self.shopShamanItems.encode()).decode('utf-8'), self.equipedShamanBadge, self.shamanColor, self.petType, self.petEnd, self.furType, self.furEnd, self.mapEditorCheese, self.shopCheeses, self.cheeseCount, base64.b64encode(";".join(map(lambda skill: "%s:%s" %(skill[0], skill[1]), self.playerSkills.items())).encode()).decode('utf-8'), temp_code)
+            self.server.bulles[self.bulleID["id"]].send_packet(Identifiers.bulle.BU_ConnectToGivenRoom, self.playerID, self.playerName, self.playerCode, community, base64.b64encode(self.playerLook.encode()).decode('utf-8'), self.getStaffPermissions(), self.isMuted, self.genderType, roomName, isHidden, isReported, self.titleNumber, self.titleStars, self.isMutedHours, self.isMutedReason, self.shamanType, self.shamanLevel, base64.b64encode(self.shopShamanItems.encode()).decode('utf-8'), self.equipedShamanBadge, self.shamanColor, self.petType, self.petEnd, self.furType, self.furEnd, self.mapEditorCheese, self.shopCheeses, self.cheeseCount, base64.b64encode(";".join(map(lambda skill: "%s:%s" %(skill[0], skill[1]), self.playerSkills.items())).encode()).decode('utf-8'), self.isGuest, temp_code)
             self.Logger.debug(f"[{self.ipAddress}] Established connection to bulle{self.bulleID['id']} : {self.bulleID['ip_address']}:{bullePorts}.\n")
             if self.server.rooms[self.roomName][6] == True:
                 self.server.loop.call_later(1.1, asyncio.create_task, self.sendRoomInfoMessage())
@@ -1177,7 +1177,7 @@ class Client:
         for info in inventory:
             data.writeShort(int(info[0]))
             data.writeUnsignedShort(int(info[1]))
-            data.writeUnsignedByte(0)   # Unused but exist, wtf tfm
+            data.writeUnsignedByte(0)
             data.writeBoolean(True)
             data.writeBoolean(info[3])              # use?
             data.writeBoolean(info[3])              # equip?
@@ -1493,7 +1493,7 @@ class Client:
     def sendUnlockTitle(self, typ): # Shop
         pass
                 
-    def updateDatabase(self): # UNFINISHED
+    def updateDatabase(self):
         if self.isGuest or self.server.disableDatabase:
             return
             
@@ -1506,25 +1506,25 @@ class Client:
             "PlayerLook": self.playerLook,
 
             # Stats
-            "FirstCount": self.firstCount,
-            "CheeseCount": self.cheeseCount,
-            "ShamanCheeses": self.shamanCheeses,
-            "BootcampCount": self.bootcampCount,
-            "NormalSavesCount": self.shamanNormalSaves,
-            "NormalSavesCountNS": self.shamanNormalSavesNoSkill,
-            "HardSavesCount": self.shamanHardSaves,
-            "HardSavesCountNS": self.shamanHardSavesNoSkill,
-            "DivineSavesCount": self.shamanDivineSaves,
-            "DivineSavesCountNS": self.shamanDivineSavesNoSkill,
+            #"FirstCount": self.firstCount,
+            #"CheeseCount": self.cheeseCount,
+            #"ShamanCheeses": self.shamanCheeses,
+            #"BootcampCount": self.bootcampCount,
+            #"NormalSavesCount": self.shamanNormalSaves,
+            #"NormalSavesCountNS": self.shamanNormalSavesNoSkill,
+            #"HardSavesCount": self.shamanHardSaves,
+            #"HardSavesCountNS": self.shamanHardSavesNoSkill,
+            #"DivineSavesCount": self.shamanDivineSaves,
+            #"DivineSavesCountNS": self.shamanDivineSavesNoSkill,
             "PlayerBadges": ",".join(map(str, filter(None, [badge for badge in self.playerBadges]))),
             "PlayerStats": ",".join(map(str, self.playerStats)),
             "TitleNumber": self.titleNumber,
             # Title list
             
             # Shaman
-            "ShamanExp": self.shamanExp,
-            "ShamanNextExp": self.shamanExpNext,
-            "ShamanLevel": self.shamanLevel,
+            #"ShamanExp": self.shamanExp,
+            #"ShamanNextExp": self.shamanExpNext,
+            #"ShamanLevel": self.shamanLevel,
             "CurrentShamanBadge": self.equipedShamanBadge,
             "ShamanBadges": (",".join(map(str, filter(None, [badge for badge in self.shamanBadges])))),
             "ShamanLook": self.shamanLook,
@@ -1533,7 +1533,7 @@ class Client:
             "ShamanSkills": ";".join(map(lambda skill: "%s:%s" %(skill[0], skill[1]), self.playerSkills.items())),
             
             # Shop
-            "ShopCheeseCount": self.shopCheeses,
+            #"ShopCheeseCount": self.shopCheeses,
             "ShopFraiseCount": self.shopFraises,
             "ShopItems": self.shopItems,
             "ShopFavoriteItems": self.shopFavoriteItems,
