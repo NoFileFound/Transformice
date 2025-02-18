@@ -1,0 +1,8 @@
+{
+	"ja" : ["Japan", "jp", false, true, ""],
+	"br" : ["Brazil", "br", false, false, ""],
+	"en" : ["America", "us", false, false, ""],
+	"ro" : ["Romania", "ro", false, false, ""],
+	"pt" : ["Portgual", "pt", false, false, ""],
+	"ko" : ["North korea", "kp", false, false, ""]
+}

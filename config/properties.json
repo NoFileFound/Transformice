@@ -1,0 +1,28 @@
+{
+	"database_url": "mongodb://localhost:27017",
+	"collection_name": "transformice3",
+	"is_debug": true,
+	"twitchStreaming": true,
+	"flyerName": "flyer_2024_06_20.jpg",
+	"allow_email": true,
+	"legacy_login": false,
+	"beta_login": true,
+	"use_tag_system": true,
+	"login_attempts": 10,
+	"event": {
+		"banner_id": 6,
+		"banner_bg_img_legacy": "",
+		"banner_fg_img_legacy": ""
+	},
+	"map_editor_cheese_amount": 40,
+	"timers": {
+		"keep_alive": {
+			"enable": true,
+			"delay": 90
+		},
+		"create_account": {
+			"enable": true,
+			"delay": 15
+		}
+	}
+}
