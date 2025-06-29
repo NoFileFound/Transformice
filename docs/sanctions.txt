@@ -1,0 +1,4 @@
+bandef - permanently bans the player.
+banjeu - bans the player using the default ban commands.
+mutedef - permanently mutes the player. (mute defense)
+mutejeu - mutes the player using the default mute commands.

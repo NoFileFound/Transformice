@@ -1,0 +1,5 @@
+1. go to atelier801.com
+2. go to somebody's profile
+3. open inspect tools and search for <div class="avatar-profil">
+4. look at the link and get the last number (for example: http://avatars.atelier801.com/1/2.jpg?3 the number is 2)
+5. run the command with that number (for example: /avatar 2)

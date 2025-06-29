@@ -1,0 +1,42 @@
+package org.transformice.luapi.functions.tfm;
+
+// Imports
+import org.luaj.vm2.Varargs;
+import org.luaj.vm2.lib.VarArgFunction;
+import org.transformice.Room;
+
+// Packets
+import org.transformice.packets.send.lua.C_LuaMessage;
+import org.transformice.packets.send.room.C_CreateSoulmate;
+
+public final class TFM_linkMice extends VarArgFunction {
+    private final Room room;
+
+    public TFM_linkMice(Room room) {
+        this.room = room;
+    }
+
+    /**
+     * Invokes the tfm.exec.linkMice() function.
+     * @param args The arguments.
+     * @return NIL.
+     */
+    @Override
+    public Varargs invoke(Varargs args) {
+        if (this.room.luaDebugLib != null && !this.room.luaDebugLib.checkTestCode()) {
+            if (args.isnil(1)) {
+                this.room.luaAdmin.sendPacket(new C_LuaMessage("tfm.exec.linkMice : argument 1 can't be NIL."));
+            } if (args.isnil(2)) {
+                this.room.luaAdmin.sendPacket(new C_LuaMessage("tfm.exec.linkMice : argument 2 can't be NIL."));
+            } else {
+                String playerName = args.tojstring(1);
+                String playerName2 = args.tojstring(2);
+                boolean enable = args.toboolean(3);
+                if(this.room.getPlayers().get(playerName) != null && this.room.getPlayers().get(playerName2) != null) {
+                    this.room.sendAll(new C_CreateSoulmate(enable, this.room.getPlayers().get(playerName).getSessionId(), this.room.getPlayers().get(playerName2).getSessionId()));
+                }
+            }
+        }
+        return NIL;
+    }
+}

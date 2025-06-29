@@ -1,0 +1,22 @@
+{
+	1 : {
+		"item_id": "185",
+		"promotion_start_date": 1739591064,
+		"promotion_end_date": 1749592064,
+		"promotion_percentage": 10,
+		"promotion_author": "Bloom#0001",
+		"is_perm": true,
+		"is_sale": false,
+		"is_regular_item": false
+	},
+	2 : {
+		"item_id": "23_339",
+		"promotion_start_date": 1741943985,
+		"promotion_end_date": 1745946985,
+		"promotion_percentage": 50,
+		"promotion_author": "Bloom#0001",
+		"is_perm": false,
+		"is_sale": true,
+		"is_regular_item": true
+	}
+}

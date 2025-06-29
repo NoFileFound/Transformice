@@ -1,0 +1,76 @@
+{
+	"database_url": "mongodb://localhost:27017",
+	"collection_name": "transformice3",
+	"is_debug": true,
+	"twitchStreaming": true,
+	"flyerName": "flyer_2024_06_20.jpg",
+	"allow_email": true,
+	"legacy_login": false,
+	"beta_login": false,
+	"use_tag_system": true,
+	"login_attempts": 10,
+	"yt_key": "AIzaSyDQ7jD1wcD5A_GeV4NfZqWJswtLplPDr74",
+	"map_editor_cheese_amount": 40,
+	"max_players": -1,
+	"shop_sprites": [339, 338, 336, 335, 334, 333, 332, 331, 330, 329, 328, 326, 325, 324, 323, 322, 321, 320, 319, 318, 317, 316, 315, 314, 312, 311, 310, 309, 308, 307, 305, 304, 303, 302, 301, 300, 299, 298, 297, 296, 295, 293, 292, 291, 290, 289, 286, 285, 283, 282, 281, 280, 279, 278, 277, 276, 275, 274, 273, 272, 271, 270, 269, 268, 267, 266, 265, 264, 262, 261, 260, 259, 258, 256, 255, 254, 253, 252, 251, 250, 249, 248, 247, 246, 245, 244, 243, 241, 240, 239, 238, 237, 236, 235, 234, 233, 229, 228, 227, 226, 225, 223, 222, 221],
+	"shaman_sprites": [148, 163, 184, 185, 262, 285, 334, 660, 711, 1013, 1024, 1031],
+	"event": {
+		"event_name": "Valentine",
+		"banner_id": 6,
+		"banner_bg_img_legacy": "",
+		"banner_fg_img_legacy": ""
+	},
+	"timers": {
+		"keep_alive": {
+			"enable": true,
+			"delay": 90
+		},
+		"create_account": {
+			"enable": true,
+			"delay": 15
+		},
+		"reload_cafe": {
+			"enable": true,
+			"delay": 500
+		},
+		"create_cafe_topic": {
+			"enable": true,
+			"delay": 10
+		},
+		"create_cafe_post": {
+			"enable": true,
+			"delay": 10
+		},
+		"marriage": {
+			"enable": true
+		},
+		"chat_message": {
+			"enable": true,
+			"delay": 2
+		},
+		"skip_music": {
+			"enable": true,
+			"delay": 10
+		}
+	},
+	"constants": {
+		"default_shop_cheeses": 99999,
+		"default_shop_fraises": 99999,
+		"default_normal_saves": 0,
+		"default_hard_saves": 0,
+		"default_divine_saves": 0,
+		"default_normal_saves_noskill": 0,
+		"default_hard_saves_noskill": 0,
+		"default_divine_saves_noskill": 0,
+		"default_firsts": 0,
+		"default_cheeses": 0,
+		"default_shaman_cheeses": 0,
+		"default_bootcamps": 0
+	},
+	"email_info": {
+		"smtpHost": "",
+		"smtpPort": 0,
+		"smtpUsername": "",
+		"smtpPassword": ""
+	}
+}

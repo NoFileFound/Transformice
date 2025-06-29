@@ -1,0 +1,7 @@
+keep_alive -> seconds
+create_account -> hours
+reload_cafe -> milliseconds
+create_cafe_topic -> minutes
+create_cafe_post -> seconds
+chat_message -> seconds
+skip_music -> seconds

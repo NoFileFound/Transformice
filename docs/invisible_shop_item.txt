@@ -1,0 +1,15 @@
+This is not a bug, just unloaded item resource.
+
+to fix it simply do:
+
+
+/infoshop to get the shop item info.
+
+goto properties.json
+
+if its shop item add the id to shop_sprites.
+if its shop shaman item add the id to shaman_sprites.
+
+restart the server
+
+fixed!

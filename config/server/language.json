@@ -1,0 +1,633 @@
+{
+  "af": [
+    "Afrikaans",
+    "za",
+    false,
+    false,
+    ""
+  ],
+  "az": [
+    "Azərbaycan dili",
+    "az",
+    false,
+    false,
+    ""
+  ],
+  "id": [
+    "Bahasa Indonesia",
+    "id",
+    false,
+    false,
+    ""
+  ],
+  "ms": [
+    "Bahasa Melayu",
+    "my",
+    false,
+    false,
+    ""
+  ],
+  "bi": [
+    "Bislama",
+    "vu",
+    false,
+    false,
+    ""
+  ],
+  "bs": [
+    "Bosanski jezik",
+    "ba",
+    false,
+    false,
+    ""
+  ],
+  "ca": [
+    "Català",
+    "ad",
+    false,
+    false,
+    ""
+  ],
+  "ny": [
+    "ChiCheŵa",
+    "mw",
+    false,
+    false,
+    ""
+  ],
+  "da": [
+    "Dansk",
+    "dk",
+    false,
+    false,
+    ""
+  ],
+  "de": [
+    "Deutsch",
+    "de",
+    false,
+    false,
+    ""
+  ],
+  "et": [
+    "Eesti keel",
+    "ee",
+    false,
+    false,
+    ""
+  ],
+  "na": [
+    "Ekakairũ Naoero",
+    "nr",
+    false,
+    false,
+    ""
+  ],
+  "en": [
+    "English",
+    "gb",
+    false,
+    false,
+    ""
+  ],
+  "es": [
+    "Español",
+    "es",
+    false,
+    false,
+    ""
+  ],
+  "to": [
+    "Faka Tonga",
+    "to",
+    false,
+    false,
+    ""
+  ],
+  "mg": [
+    "Fiteny malagasy",
+    "mg",
+    false,
+    false,
+    ""
+  ],
+  "fr": [
+    "Français",
+    "fr",
+    false,
+    false,
+    ""
+  ],
+  "sm": [
+	"Gagana fa'a Samoa",
+	"ws",
+	false,
+	false,
+	""
+  
+  ],
+  "hr": [
+    "Hrvatski",
+    "hr",
+    false,
+    false,
+    ""
+  ],
+  "it": [
+    "Italiano",
+    "it",
+    false,
+    false,
+    ""
+  ],
+  "mh": [
+    "Kajin M̧ajeļ",
+    "mh",
+    false,
+    false,
+    ""
+  ],
+  "kl": [
+    "Kalaallisut",
+    "gl",
+    false,
+    false,
+    ""
+  ],
+  "rn": [
+    "KiRundi",
+    "bi",
+    false,
+    false,
+    ""
+  ],
+  "rw": [
+    "Kinyarwanda",
+    "rw",
+    false,
+    false,
+    ""
+  ],
+  "sw": [
+    "Kiswahili",
+    "ke",
+    false,
+    false,
+    ""
+  ],
+  "ht": [
+    "Kreyòl ayisyen",
+    "ht",
+    false,
+    false,
+    ""
+  ],
+  "lv": [
+    "Latviešu valoda",
+    "lv",
+    false,
+    true,
+    ""
+  ],
+  "lt": [
+    "Lietuvių kalba",
+    "lt",
+    false,
+    true,
+    ""
+  ],
+  "lb": [
+    "Lëtzebuergesch",
+    "lu",
+    false,
+    false,
+    ""
+  ],
+  "hu": [
+    "Magyar",
+    "hu",
+    false,
+    false,
+    ""
+  ],
+  "mt": [
+    "Malti",
+    "mt",
+    false,
+    false,
+    ""
+  ],
+  "nl": [
+    "Nederlands",
+    "nl",
+    false,
+    false,
+    ""
+  ],
+  "no": [
+    "Norsk",
+    "no",
+    false,
+    false,
+    ""
+  ],
+  "uz": [
+    "O'zbek",
+    "uz",
+    false,
+    false,
+    ""
+  ],
+  "pl": [
+    "Polski",
+    "pl",
+    false,
+    false,
+    ""
+  ],
+  "pt": [
+    "Português",
+    "pt",
+    false,
+    false,
+    ""
+  ],
+  "br": [
+    "Português brasileiro",
+    "br",
+    false,
+    false,
+    ""
+  ],
+  "ro": [
+    "Română",
+    "ro",
+    false,
+    true,
+    ""
+  ],
+  "qu": [
+    "Runa Simi",
+    "bo",
+    false,
+    false,
+    ""
+  ],
+  "st": [
+    "SeSotho",
+    "ls",
+    false,
+    false,
+    ""
+  ],
+  "tn": [
+    "SeTswana",
+    "bw",
+    false,
+    false,
+    ""
+  ],
+  "sq": [
+    "Shqip",
+    "al",
+    false,
+    false,
+    ""
+  ],
+  "ss": [
+    "SiSwati",
+    "sz",
+    false,
+    false,
+    ""
+  ],
+  "sk": [
+    "Slovenčina",
+    "sk",
+    false,
+    true,
+    ""
+  ],
+  "sl": [
+    "Slovenščina",
+    "si",
+    false,
+    true,
+    ""
+  ],
+  "so": [
+    "Soomaaliga",
+    "so",
+    false,
+    false,
+    ""
+  ],
+  "fi": [
+    "Suomen kieli",
+    "fi",
+    false,
+    false,
+    ""
+  ],
+  "sv": [
+    "Svenska",
+    "se",
+    false,
+    false,
+    ""
+  ],
+  "tl": [
+    "Tagalog",
+    "ph",
+    false,
+    false,
+    ""
+  ],
+  "vi": [
+    "Tiếng Việt",
+    "vn",
+    false,
+    false,
+    ""
+  ],
+  "tk": [
+    "Türkmen",
+    "tm",
+    false,
+    true,
+    ""
+  ],
+  "tr": [
+    "Türkçe",
+    "tr",
+    false,
+    true,
+    ""
+  ],
+  "fj": [
+    "Vosa Vakaviti",
+    "fj",
+    false,
+    false,
+    ""
+  ],
+  "wo": [
+    "Wollof",
+    "sn",
+    false,
+    false,
+    ""
+  ],
+  "yo": [
+    "Yorùbá",
+    "ng",
+    false,
+    false,
+    ""
+  ],
+  "is": [
+    "Íslenska",
+    "is",
+    false,
+    false,
+    ""
+  ],
+  "cs": [
+    "Česky",
+    "cz",
+    false,
+    true,
+    ""
+  ],
+  "el": [
+    "Ελληνικά",
+    "gr",
+    false,
+    true,
+    ""
+  ],
+  "be": [
+    "Беларуская",
+    "by",
+    false,
+    true,
+    ""
+  ],
+  "ky": [
+    "Кыргыз тили",
+    "kg",
+    false,
+    true,
+    ""
+  ],
+  "mk": [
+    "Македонски јазик",
+    "mk",
+    false,
+    true,
+    ""
+  ],
+  "mn": [
+    "Монгол",
+    "mn",
+    false,
+    true,
+    ""
+  ],
+  "ru": [
+    "Русский язык",
+    "ru",
+    false,
+    true,
+    ""
+  ],
+  "sr": [
+    "С рпски језик",
+    "rs",
+    false,
+    true,
+    ""
+  ],
+  "tg": [
+    "Тоҷикӣ",
+    "tj",
+    false,
+    true,
+    ""
+  ],
+  "uk": [
+    "Українська мова",
+    "ua",
+    false,
+    true,
+    ""
+  ],
+  "bg": [
+    "български език",
+    "bg",
+    false,
+    true,
+    ""
+  ],
+  "kk": [
+    "Қазақ тілі",
+    "kz",
+    false,
+    true,
+    ""
+  ],
+  "hy": [
+    "Հայերեն",
+    "am",
+    false,
+    true,
+    ""
+  ],
+  "he": [
+    "עברית",
+    "il",
+    true,
+    true,
+    ""
+  ],
+  "ur": [
+    "اردو",
+    "pk",
+    true,
+    true,
+    "Tahoma"
+  ],
+  "ar": [
+    "العربية",
+    "iar",
+    true,
+    true,
+    "Tahoma"
+  ],
+  "fa": [
+    "فارسی",
+    "ir",
+    true,
+    true,
+    "Tahoma"
+  ],
+  "dv": [
+    "ދިވެހި",
+    "mv",
+    true,
+    true,
+    "Tahoma"
+  ],
+  "ne": [
+    "नेपाली",
+    "np",
+    false,
+    true,
+    "Tahoma"
+  ],
+  "hi": [
+    "हिन्दी",
+    "in",
+    false,
+    true,
+    "Tahoma"
+  ],
+  "bn": [
+    "বাংলা",
+    "bd",
+    false,
+    true,
+    "Tahoma"
+  ],
+  "ta": [
+    "தமிழ்",
+    "lk",
+    false,
+    true,
+    "Tahoma"
+  ],
+  "th": [
+    "ไทย",
+    "th",
+    false,
+    true,
+    ""
+  ],
+  "lo": [
+    "ພາສາລາວ",
+    "la",
+    false,
+    true,
+    "Tahoma"
+  ],
+  "dz": [
+    "རྫོང་ཁ",
+    "bt",
+    false,
+    true,
+    "Tahoma"
+  ],
+  "my": [
+    "ဗမာစာ",
+    "mm",
+    false,
+    true,
+    "Tahoma"
+  ],
+  "ka": [
+    "ქართული",
+    "ge",
+    false,
+    true,
+    "Tahoma"
+  ],
+  "ti": [
+    "ትግርኛ",
+    "er",
+    false,
+    true,
+    "Tahoma"
+  ],
+  "am": [
+    "አማርኛ",
+    "et",
+    false,
+    true,
+    "Tahoma"
+  ],
+  "km": [
+    "ភាសាខ្មែរ",
+    "kh",
+    false,
+    true,
+    "Tahoma"
+  ],
+  "cn": [
+    "中国简体",
+    "cn",
+    false,
+    true,
+    "Tahoma"
+  ],
+  "zh": [
+    "中國繁體",
+    "hk",
+    false,
+    true,
+    "Tahoma"
+  ],
+  "ja": [
+    "日本語",
+    "jp",
+    false,
+    false,
+    ""
+  ],
+  "ko": [
+    "한국어",
+    "kr",
+    false,
+    true,
+    "Tahoma"
+  ]
+}
