@@ -8,8 +8,8 @@ public final class C_PlayerChangeTitle implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
     public C_PlayerChangeTitle(int gender, short titleId) {
-        this.byteArray.writeByte(gender);
-        this.byteArray.writeShort(titleId);
+        this.byteArray.writeUnsignedByte(gender);
+        this.byteArray.writeUnsignedShort(titleId);
     }
 
     @Override

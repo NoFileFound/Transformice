@@ -11,6 +11,7 @@ import org.transformice.Client;
 import org.transformice.Server;
 import org.transformice.libraries.SrcRandom;
 import org.transformice.packets.send.newpackets.C_SaveWallpaper;
+import org.transformice.packets.send.transformice.C_NewConsumable;
 import org.transformice.properties.configs.InventoryConfig;
 
 // Packets
@@ -142,12 +143,14 @@ public final class ParseInventory {
                 this.client.getTradeConsumables().clear();
                 this.client.isTradeConfirm = false;
                 this.client.sendPacket(new C_TradeResult("", 4));
+                this.client.sendPacket(new C_TradeComplete());
                 this.loadInventory();
                 player.currentTradeName = "";
                 player.isOpenTrade = false;
                 player.getTradeConsumables().clear();
                 player.isTradeConfirm = false;
                 player.sendPacket(new C_TradeResult("", 4));
+                player.sendPacket(new C_TradeComplete());
                 player.getParseInventoryInstance().loadInventory();
             }
         }

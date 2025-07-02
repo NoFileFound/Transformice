@@ -21,6 +21,6 @@ public final class Editor implements CommandHandler {
     @Override
     public void execute(Client player, Server server, List<String> args) {
         player.sendEnterRoom((char)3 + "[Editeur] " + player.getPlayerName(), "");
-        player.sendOldPacket(new C_InitMapEditor(true, false));
+        player.sendOldPacket(new C_InitMapEditor(-1));
     }
 }

@@ -1,14 +1,9 @@
 package org.transformice.packets.send.inventory;
 
 // Imports
-import org.bytearray.ByteArray;
 import org.transformice.packets.SendPacket;
 
 public final class C_TradeComplete implements SendPacket {
-    private final ByteArray byteArray = new ByteArray();
-
-    public C_TradeComplete() {}
-
     @Override
     public int getC() {
         return 31;
@@ -21,6 +16,6 @@ public final class C_TradeComplete implements SendPacket {
 
     @Override
     public byte[] getPacket() {
-        return this.byteArray.toByteArray();
+        return new byte[0];
     }
 }

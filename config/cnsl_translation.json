@@ -121,6 +121,7 @@
 		"roomkick_notify": "<BL>%s</BL> has been roomkicked from <N>[%s]</N> by %s",
 		"unmuted_notify": "%s just unmuted the player %s (%s.).",
 		"bandef_notify": "%s permanently banned the player %s (%s)",
-		"chatlog_noresult": "The player <BV>%s</BV> has no chat/whisper messages."
+		"chatlog_noresult": "The player <BV>%s</BV> has no chat/whisper messages.",
+		"loadedvanillamaps": "Loaded total %d vanilla maps."
 	}
 }

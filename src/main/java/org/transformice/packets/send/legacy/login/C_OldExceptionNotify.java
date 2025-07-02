@@ -1,17 +1,16 @@
-package org.transformice.packets.send.login;
+package org.transformice.packets.send.legacy.login;
 
 // Imports
 import org.bytearray.ByteArray;
 import org.transformice.packets.SendPacket;
 
-public final class C_SayPopup implements SendPacket {
+public final class C_OldExceptionNotify implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
-    public C_SayPopup(boolean show, String message) {
-        this.byteArray.writeByte((show) ? 1 : 2);
-        if(show) {
-            this.byteArray.writeString(message);
-        }
+    public C_OldExceptionNotify(String playerName, String error) {
+        this.byteArray.writeString(playerName, false);
+        this.byteArray.writeByte(1);
+        this.byteArray.writeString(error, false);
     }
 
     @Override
@@ -21,7 +20,7 @@ public final class C_SayPopup implements SendPacket {
 
     @Override
     public int getCC() {
-        return 11;
+        return 25;
     }
 
     @Override

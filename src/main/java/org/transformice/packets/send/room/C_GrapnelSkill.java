@@ -9,8 +9,8 @@ public final class C_GrapnelSkill implements SendPacket {
 
     public C_GrapnelSkill(int session, int x, int y) {
         this.byteArray.writeInt(session);
-        this.byteArray.writeShort((short)x);
-        this.byteArray.writeShort((short)y);
+        this.byteArray.writeShort((short) (x * 30));
+        this.byteArray.writeShort((short) (y * 30));
     }
 
     @Override

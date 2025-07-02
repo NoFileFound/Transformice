@@ -20,16 +20,17 @@ public final class S_PlayerMovement implements RecvPacket {
         if(roundCode == client.getRoom().getLastRoundId()) {
             client.isFacingRight = data.readBoolean();
             client.isFacingLeft = data.readBoolean();
-            var position = new Pair<>((int)(data.readInt128() * (30.0 / 100)), (int)(data.readInt128()* (30.0 / 100)));
-            if (!position.equals(client.getPosition())) {
+            var position = new Pair<>((int)(data.readInt128() * (30.0 / 100)), (int)(data.readInt128() * (30.0 / 100)));
+            if(client.getPosition().getFirst() == -1 && client.getPosition().getSecond() == -1) {
                 client.setPosition(position);
-                if (client.isAfk) {
+            } else if(!client.getPosition().equals(position)) {
+                client.setPosition(position);
+                if(client.isAfk) {
                     client.isAfk = false;
                 }
             }
 
             client.setVelocity(new Pair<>((int)(data.readInt128() * (30.0 / 100)), (int)(data.readInt128()* (30.0 / 100))));
-
             var frictionVar1 = data.readInt128() * (30.0 / 100);
             var frictionVar2 = data.readInt128() * (30.0 / 100);
             client.isJumping = data.readBoolean();

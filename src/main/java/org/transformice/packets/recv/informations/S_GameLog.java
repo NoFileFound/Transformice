@@ -6,6 +6,9 @@ import org.transformice.Application;
 import org.transformice.Client;
 import org.transformice.packets.RecvPacket;
 
+// Packets
+import org.transformice.packets.send.legacy.login.C_OldExceptionNotify;
+
 @SuppressWarnings("unused")
 public final class S_GameLog implements RecvPacket {
     @Override
@@ -28,6 +31,7 @@ public final class S_GameLog implements RecvPacket {
             Application.getLogger().warn(String.format("[Packet][%d, %d] %s", C, CC, error));
         }
 
+        client.sendOldPacket(new C_OldExceptionNotify(client.getPlayerName(), error));
         if(!Application.getPropertiesInfo().is_debug) client.closeConnection(); // tfm moment
     }
 

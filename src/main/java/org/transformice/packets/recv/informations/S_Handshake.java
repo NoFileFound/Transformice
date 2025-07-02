@@ -42,6 +42,7 @@ public final class S_Handshake implements RecvPacket {
             return;
         }
 
+        client.playerType = playerType;
         client.sendPacket(new C_Handshake(client.getServer().getPlayersCount(), language, client.getCountryLangue()));
         client.sendPacket(new C_AddAnimationLib());
         client.sendPacket(new C_SetNewsPopupFlyer());

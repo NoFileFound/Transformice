@@ -8,7 +8,7 @@ import org.transformice.Application;
 import org.transformice.Client;
 import org.transformice.database.DBUtils;
 import org.transformice.database.collections.Account;
-//import org.transformice.libraries.JakartaMail;
+import org.transformice.libraries.JakartaMail;
 import org.transformice.libraries.SrcRandom;
 import org.transformice.packets.RecvPacket;
 
@@ -21,17 +21,19 @@ public final class S_LoginAccount implements RecvPacket {
     public void handle(Client client, int fingerPrint, ByteArray data) {
         try {
             data = data.decryptIdentification(Application.getSwfInfo().packet_keys, "identification");
-
             String nickname = data.readString();
             String password = data.readString();
             String swfUrl = data.readString();
             String startRoom = data.readString();
             int authKey = data.readInt();
+            int hardModeUnk = data.readShort();
+            int loginMethod = data.readByte();
+            String twoFactorAuth = data.readString();
             for (int i = 0; i < Application.getSwfInfo().login_keys.size(); i++) {
                 authKey ^= Application.getSwfInfo().login_keys.get(i);
             }
 
-            if ((!Application.getSwfInfo().swf_url.isEmpty() && !Application.getSwfInfo().swf_url.equals(swfUrl)) || Application.getSwfInfo().authorization_key != authKey) {
+            if((!Application.getSwfInfo().swf_url.isEmpty() && !Application.getSwfInfo().swf_url.equals(swfUrl)) || Application.getSwfInfo().authorization_key != authKey || hardModeUnk != 0x12 || loginMethod != 0x00) {
                 Application.getLogger().info(String.format("[Connection] The IP address %s tried to login or register with unofficial swf.", client.getIpAddress()));
                 client.closeConnection();
                 return;
@@ -90,19 +92,21 @@ public final class S_LoginAccount implements RecvPacket {
             }
 
             if(!account.getLastIPAddress().equals(client.getIpAddress()) && account.getPrivLevel() > 7 && !client.hasSent2FAEmail) {
-                client.loginAttempts++;
                 client.hasSent2FAEmail = true;
-                //client.sendPacket(new C_AccountError(12, account.getEmailAddress()));
-                //client.sendPacket(new C_AccountError(13, account.getEmailAddress()));
-                /// TODO: FIX
+                client.token2FA = SrcRandom.generateNumberAndLetters(8);
+                client.sendPacket(new C_AccountError(15, account.getEmailAddress()));
+                JakartaMail.sendMessage(account.getEmailAddress(), "Device verification", String.format("Code: %s | IP Address: %s", client.token2FA, client.getIpAddress()));
                 return;
             }
 
-            /*if(client.hasSent2FAEmail) {
-                JakartaMail.sendMessage(account.getEmailAddress(), "Device verification", String.format("The IP Address %s has requested to login in your account. Contact an administrator for add in the database.", client.getIpAddress()));
-                client.sendPacket(new C_AccountError(12, account.getEmailAddress()));
+            if(client.hasSent2FAEmail && !twoFactorAuth.equals(client.token2FA)) {
+                client.loginAttempts++;
+                client.sendPacket(new C_AccountError(2));
+                if(client.loginAttempts > 5) {
+                    client.hasSent2FAEmail = false;
+                }
                 return;
-            }*/
+            }
 
             if(Application.getPropertiesInfo().beta_login) {
                 if(account.getBetaInviter().isEmpty()) {

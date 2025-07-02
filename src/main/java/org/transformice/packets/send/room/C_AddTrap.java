@@ -11,8 +11,8 @@ public final class C_AddTrap implements SendPacket {
         this.byteArray.writeShort((short)type);
         this.byteArray.writeShort((short)posX);
         this.byteArray.writeShort((short)posY);
-        this.byteArray.writeShort((short)width);
-        this.byteArray.writeShort((short)heigh);
+        this.byteArray.writeShort((short)(width * 100));
+        this.byteArray.writeShort((short)(heigh * 100));
         this.byteArray.writeShort((short)percentage);
     }
 

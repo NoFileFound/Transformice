@@ -10,7 +10,9 @@ public final class C_CreateSoulmate implements SendPacket {
     public C_CreateSoulmate(boolean enable, int playerSessionId1, int playerSessionId2) {
         this.byteArray.writeBoolean(enable);
         this.byteArray.writeInt(playerSessionId1);
-        this.byteArray.writeInt(playerSessionId2);
+        if(enable) {
+            this.byteArray.writeInt(playerSessionId2);
+        }
     }
 
     @Override

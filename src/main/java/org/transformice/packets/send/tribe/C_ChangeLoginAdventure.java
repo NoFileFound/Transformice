@@ -11,8 +11,8 @@ public final class C_ChangeLoginAdventure implements SendPacket {
     public C_ChangeLoginAdventure() {
         this.byteArray.writeUnsignedByte(1);
         this.byteArray.writeUnsignedByte(Application.getPropertiesInfo().event.banner_id);
-        this.byteArray.writeBoolean(true);
-        this.byteArray.writeBoolean(true);
+        this.byteArray.writeBoolean(true); /// Shows the adventure banner id.
+        this.byteArray.writeBoolean(true); /// A new adventure begins
     }
 
     @Override

@@ -13,8 +13,7 @@ public final class S_ReturnToEditor implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
         client.getRoom().isMapEditorMapValidating = false;
-
-        /// TODO: Finish
+        client.sendOldPacket(new C_InitMapEditor(1));
     }
 
     @Override

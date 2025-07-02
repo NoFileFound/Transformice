@@ -15,13 +15,13 @@ public final class C_PlayerIdentity implements SendPacket {
         var info = buildLanguageMap();
         var privInfo = client.calculatePrivileges();
 
-        this.byteArray.writeUnsignedInt(client.isGuest() ? 0 : client.getAccount().getId());
+        this.byteArray.writeInt(client.isGuest() ? 0 : client.getAccount().getId());
         this.byteArray.writeString(client.getPlayerName());
         this.byteArray.writeInt(client.isGuest() ? 0 : client.getAccount().getPlayedTime());
         this.byteArray.writeByte(Langue.fromValue(client.playerCommunity));
         this.byteArray.writeInt(client.getSessionId());
         this.byteArray.writeBoolean(!client.isGuest());
-        this.byteArray.writeUnsignedByte(privInfo.size());
+        this.byteArray.writeByte(privInfo.size());
         for(Integer integer : privInfo) {
             this.byteArray.writeByte(integer.byteValue());
         }

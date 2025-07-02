@@ -3,6 +3,8 @@ package org.transformice.utils;
 // Imports
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -14,6 +16,11 @@ import java.util.regex.Pattern;
 import java.util.zip.Deflater;
 import org.transformice.Application;
 import org.transformice.libraries.SrcRandom;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 public final class Utils {
     /**
@@ -202,5 +209,19 @@ public final class Utils {
             }
         }
         return null;
+    }
+
+    /**
+     * Checks if the xml code is valid.
+     * @param xml The given xml code.
+     * @return True if the xml code is valid or else false.
+     */
+    public static boolean checkValidXML(String xml) {
+        try {
+            DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
+            return true;
+        } catch (ParserConfigurationException | SAXException | IOException error) {
+            return false;
+        }
     }
 }

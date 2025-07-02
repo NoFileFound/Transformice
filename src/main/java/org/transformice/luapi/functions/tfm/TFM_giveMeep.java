@@ -28,7 +28,7 @@ public final class TFM_giveMeep extends VarArgFunction {
                 this.room.luaAdmin.sendPacket(new C_LuaMessage("tfm.exec.giveMeep : argument 1 can't be NIL."));
             } else {
                 String playerName = args.tojstring(1);
-                boolean canMeep = args.isnil(2) || args.toboolean(2);;
+                boolean canMeep = args.isnil(2) || args.toboolean(2);
                 if(this.room.getPlayers().get(playerName) != null) {
                     this.room.getPlayers().get(playerName).canMeep = canMeep;
                     this.room.getPlayers().get(playerName).sendPacket(new C_EnableMeep(canMeep));

@@ -1,24 +1,24 @@
-package org.transformice.packets.send.inventory;
+package org.transformice.packets.send.legacy.player;
 
 // Imports
 import org.bytearray.ByteArray;
 import org.transformice.packets.SendPacket;
 
-public final class C_NewConsumable implements SendPacket {
+public final class C_OldIgnoreCommand implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
-    public C_NewConsumable(int itemId, int quantity) {
-        this.byteArray.writeByte(0).writeUnsignedShort(itemId).writeUnsignedShort(quantity);
+    public C_OldIgnoreCommand(String playerName) {
+        this.byteArray.writeString(playerName);
     }
 
     @Override
     public int getC() {
-        return 100;
+        return 8;
     }
 
     @Override
     public int getCC() {
-        return 67;
+        return 19;
     }
 
     @Override

@@ -5,6 +5,7 @@ import static org.transformice.utils.Utils.getCommunityFromLanguage;
 import org.bytearray.ByteArray;
 import org.transformice.Client;
 import org.transformice.Room;
+import org.transformice.Server;
 import org.transformice.packets.SendPacket;
 
 public final class C_RoomsList implements SendPacket {
@@ -19,8 +20,7 @@ public final class C_RoomsList implements SendPacket {
 
         this.byteArray.writeByte(type);
         if(type == 18) {
-            /// TODO: Lua modules
-            this.byteArray.writeByte(1).writeString("").writeString("").writeString("Modules").writeString("0").writeString("lm").writeString("test/test2");
+            this.byteArray.writeByte(1).writeString("int").writeString("int").writeString("v Modules").writeString("0").writeString("lm").writeString(convertMinigamesToStr(player.getServer()));
         }
 
         int cnt = 0;
@@ -100,5 +100,18 @@ public final class C_RoomsList implements SendPacket {
         if(details.miceWeight != 0) return true;
         if(details.maximumPlayers != 0) return true;
         return !details.mapRotation.isEmpty();
+    }
+
+    /**
+     * Convert minigames to string for modules.
+     * @param server The server.
+     * @return A string contains every minigame.
+     */
+    private static String convertMinigamesToStr(Server server) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < server.getMinigameList().size(); i++) {
+            sb.append("&~#").append(server.getMinigameList().get(i)).append(",0");
+        }
+        return sb.toString();
     }
 }

@@ -161,4 +161,22 @@ public final class DBUtils {
     public static Tribe findTribeByName(String tribeName) {
         return DBManager.getDataStore().find(Tribe.class).filter(eq("tribeName", tribeName)).first();
     }
+
+    /**
+     * Searches for map by given map code.
+     * @param mapCode The map code.
+     * @return A map object.
+     */
+    public static MapEditor findMapByCode(Integer mapCode) {
+        return DBManager.getDataStore().find(MapEditor.class).filter(eq("mapCode", mapCode)).first();
+    }
+
+    /**
+     * Searches for map by given map category.
+     * @param mapCategory The map category.
+     * @return A map object.
+     */
+    public static MapEditor findMapByCategory(Integer mapCategory) {
+        return DBManager.getDataStore().find(MapEditor.class).filter(eq("mapCategory", mapCategory)).first();
+    }
 }

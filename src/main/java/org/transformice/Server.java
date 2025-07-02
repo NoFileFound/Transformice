@@ -2,7 +2,11 @@ package org.transformice;
 
 // Imports
 import static org.transformice.utils.Utils.getUnixTime;
+import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
@@ -10,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -48,6 +54,7 @@ public final class Server {
     @Getter private final PacketHandler packetHandler;
     @Getter private final CommandLoader commandHandler;
     @Getter private final List<String> tempBlackList;
+    @Getter private final ArrayList<String> minigameList;
     @Getter private final Int2ObjectMap<Object[]> shopGifts;
     @Getter private final Object2ObjectMap<String, Client> players;
     @Getter private final Object2ObjectMap<String, Room> rooms;
@@ -71,8 +78,10 @@ public final class Server {
     public final Map<String, Timer> canChangeDailyQuestTimer;
 
     // Vanilla
-    public static final List<Integer> vanillaMapList = new ArrayList<>(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 136, 137, 138, 139, 140, 141, 142, 143, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210));
-    public static final List<Integer> vanillaNoShamMapList = new ArrayList<>(List.of(7, 8, 14, 22, 23, 28, 29, 54, 55, 57, 58, 60, 61, 70, 77, 78, 87, 88, 92, 122, 123, 124, 125, 126, 1007, 888, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210));
+    public static Map<Integer, String> specialMapXmlList = new HashMap<>();
+    public static Map<Integer, String> vanillaMapXmlList = new HashMap<>();
+    public static final List<Integer> vanillaMapList = new ArrayList<>(List.of(0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233));
+    public static final List<Integer> vanillaNoShamMapList = new ArrayList<>(List.of(8, 10, 14, 22, 23, 28, 29, 33, 42, 55, 57, 58, 61, 70, 77, 78, 87, 88, 108, 122, 123, 124, 125, 126, 144, 148, 149, 150, 151, 172, 173, 174, 175, 178, 179, 180, 188, 189, 190, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 218, 219, 220, 221, 222, 224, 225, 231, 232, 233));
 
     // Titles
     public final Map<Integer, Double> firstTitleList = Map.ofEntries(
@@ -171,6 +180,7 @@ public final class Server {
         this.rooms = new Object2ObjectOpenHashMap<>();
         this.gameReports = new Object2ObjectOpenHashMap<>();
         this.tempBlackList = new ArrayList<>();
+        this.minigameList = new ArrayList<>();
         this.shopGifts = new Int2ObjectOpenHashMap<>();
         this.chats = new Object2ObjectOpenHashMap<>();
         this.whisperMessages = new Object2ObjectOpenHashMap<>();
@@ -192,6 +202,9 @@ public final class Server {
 
         // Variables
         this.lastGiftID = 0;
+
+        this.loadVanillaMapDB();
+        this.loadSpecialMapsDB();
     }
 
     /**
@@ -320,7 +333,7 @@ public final class Server {
     public List<Room> getRoomsByGameMode(int mode, String commu) {
         List<Room> rooms = new ArrayList<>();
         for (Room room : this.rooms.values()) {
-            if(room.isTribeHouse() || room.isEditeur() || room.isTotem()) continue;
+            if(room.isTribeHouse() || room.isEditeur() || room.isTotem() || !room.getRoomPassword().isEmpty()) continue;
             if(room.getRoomCommunity().equals(commu) || room.getRoomCommunity().equals("int")) {
                 if((mode == 1 ? room.isNormal() : mode == 3 ? room.isVanilla() : mode == 8 ? room.isSurvivor() : mode == 9 ? room.isRacing() : mode == 11 ? room.isMusic() : mode == 2 ? room.isBootcamp() : mode == 10 ? room.isDefilante() : mode == 16 ? room.isVillage() : mode == 18 && room.isMinigame())) {
                     rooms.add(room);
@@ -392,6 +405,13 @@ public final class Server {
         List<Report> reports = DBUtils.findAllReports();
         for(Report report : reports) {
             this.gameReports.put(report.getPlayerName(), report);
+        }
+
+        // Load the minigames
+        try (Stream<Path> stream = Files.walk(Path.of("./lua/minigames"))) {
+            stream.filter(Files::isRegularFile).filter(path -> path.toString().toLowerCase().endsWith(".lua")).forEach(path -> this.minigameList.add(path.getFileName().toString().replace(".lua", "")));
+        } catch (IOException ignored) {
+
         }
 
         if (!Application.getPropertiesInfo().is_debug) {
@@ -586,6 +606,60 @@ public final class Server {
             Room room = new Room(this, roomName, player.getPlayerName(), roomDetails);
             this.rooms.put(roomName, room);
             room.addPlayer(player);
+        }
+    }
+
+    /**
+     * Loads the vanilla xml database.
+     */
+    private void loadVanillaMapDB() {
+        try (Stream<Path> stream = Files.walk(Paths.get("config/maps/vanilla"))) {
+            Server.vanillaMapXmlList = stream
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().toLowerCase().endsWith(".xml"))
+                    .collect(Collectors.toMap(
+                            path -> {
+                                String fileName = path.getFileName().toString();
+                                String numberPart = fileName.substring(0, fileName.lastIndexOf('.'));
+                                return Integer.parseInt(numberPart);
+                            },
+                            path -> {
+                                try {
+                                    return Files.readString(path);
+                                } catch (IOException e) {
+                                    return "";
+                                }
+                            }
+                    ));
+        } catch (IOException ignored) {
+        }
+
+        Application.getLogger().info(Application.getTranslationManager().get("loadedvanillamaps", Server.vanillaMapXmlList.size()));
+    }
+
+    /**
+     * Loads the vanilla xml database.
+     */
+    private void loadSpecialMapsDB() {
+        try (Stream<Path> stream = Files.walk(Paths.get("config/maps/special"))) {
+            Server.specialMapXmlList = stream
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().toLowerCase().endsWith(".xml"))
+                    .collect(Collectors.toMap(
+                            path -> {
+                                String fileName = path.getFileName().toString();
+                                String numberPart = fileName.substring(0, fileName.lastIndexOf('.'));
+                                return Integer.parseInt(numberPart);
+                            },
+                            path -> {
+                                try {
+                                    return Files.readString(path);
+                                } catch (IOException e) {
+                                    return "";
+                                }
+                            }
+                    ));
+        } catch (IOException ignored) {
         }
     }
 

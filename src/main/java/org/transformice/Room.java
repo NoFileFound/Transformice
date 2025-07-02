@@ -27,6 +27,8 @@ import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.TimeOutDebugLib;
 import org.luaj.vm2.lib.jse.JsePlatform;
+import org.transformice.database.DBUtils;
+import org.transformice.database.collections.MapEditor;
 import org.transformice.libraries.Pair;
 import org.transformice.libraries.SrcRandom;
 import org.transformice.libraries.Timer;
@@ -62,6 +64,9 @@ public final class Room {
     public int lastCloudID = -1;
     public int lastImageID = -1;
     public int musicSkipVotes;
+    public int receivedYesVotes = 0;
+    public int receivedNoVotes = 0;
+    public int EMapCode;
     public boolean canAddPassword;
     public boolean canChangeMusic;
     public boolean autoMapFlipMode = true;
@@ -91,6 +96,7 @@ public final class Room {
     public int shaman1NumCompleted;
     public int shaman2NumCompleted;
     public boolean isCurrentlyPlay;
+    public String forceNextMap = "-1";
     private int mulodromeRoundCount;
     private int blueTeamCount;
     private int redTeamCount;
@@ -269,10 +275,21 @@ public final class Room {
             this.canAddPassword = true;
         }
 
-        if (this.roomName.matches("(\\*#|#)([a-z]+)(\\d+(([\\w\\s]+)|)|)")) {
-            Matcher m = Pattern.compile("(\\*#|#)([a-z]+)(\\d+(([\\w\\s]+)|)|)").matcher(this.roomName);
+        String roomNameFormatted;
+        if(this.roomName.contains("-#")) {
+            roomNameFormatted = this.roomName.substring(this.roomName.indexOf("-#") + 1);
+        } else if(this.roomName.contains("@#")) {
+            roomNameFormatted = this.roomName.substring(this.roomName.indexOf("@#") + 1);
+        } else {
+            roomNameFormatted = this.roomName;
+        }
+
+        if (roomNameFormatted.matches("(\\*#|#)([a-z]+)(\\d+(([\\w\\s]+)|)|)")) {
+            Matcher m = Pattern.compile("(\\*#|#)([a-z]+)(\\d+(([\\w\\s]+)|)|)").matcher(roomNameFormatted);
             if(m.find()) {
                 this.minigameName = m.group(2);
+                this.isMinigame = true;
+                this.isNormal = false;
             }
         }
 
@@ -366,7 +383,7 @@ public final class Room {
         }
 
         if (this.isVotingMode) {
-            /// TODO: Save the vote into a db.
+            /// TODO: FIX
         }
 
         this.initVotingMode = true;
@@ -1172,16 +1189,14 @@ public final class Room {
      * Kills the mice that are afk in current room.
      */
     private void killAfk() {
-        if (!this.isEditeur && !this.disableAutoRespawn && !this.isTotem && !this.isTribeHouse && !this.disableAfkDeath) {
-            if ((getUnixTime() - (this.gameStartTimeMillis / 1000)) < 32 && (getUnixTime() - (this.gameStartTimeMillis / 1000) > 28)) {
-                for (Client player : this.players.values()) {
-                    if (!player.isDead && player.isAfk) {
-                        player.sendPlayerDeath();
-                    }
+        if (!this.isEditeur && this.disableAutoRespawn && !this.isTotem && !this.isTribeHouse && !this.disableAfkDeath) {
+            for (Client player : this.players.values()) {
+                if (!player.isDead && player.isAfk) {
+                    player.sendPlayerDeath();
                 }
-
-                this.checkChangeMap();
             }
+
+            this.checkChangeMap();
         }
     }
 
@@ -1196,6 +1211,83 @@ public final class Room {
         if(loop) {
             this.autoRespawnTimer.schedule(() -> this.respawnMice(true), 2, TimeUnit.SECONDS);
         }
+    }
+
+    /**
+     * Selects the next map.
+     * @return A map object.
+     */
+    private MapDetails selectMap() {
+        if(!this.forceNextMap.equals("-1")) {
+            MapDetails currentMap;
+            if(!this.forceNextMap.startsWith("@")) {
+                currentMap = new MapDetails(Integer.parseInt(this.forceNextMap));
+            } else {
+                MapEditor map = DBUtils.findMapByCode(Integer.parseInt(this.forceNextMap.substring(1)));
+                currentMap = new MapDetails(map.getMapCategory(), map.getMapCode(), map.getMapAuthor(), map.getMapXML(), map.getMapYesVotes(), map.getMapNoVotes());
+            }
+
+            currentMap.isInverted = (SrcRandom.RandomNumber(1, 50) > 25);
+            this.forceNextMap = "-1";
+            return currentMap;
+        }
+
+        if(this.isVanilla) {
+            int mapCode = Server.vanillaMapList.get(SrcRandom.RandomNumber(0, Server.vanillaMapList.size() - 1));
+            MapDetails currentMap = new MapDetails(mapCode);
+            while (currentMap == this.currentMap) {
+                mapCode = Server.vanillaMapList.get(SrcRandom.RandomNumber(0, Server.vanillaMapList.size() - 1));
+                currentMap = new MapDetails(mapCode);
+            }
+
+            currentMap.isInverted = (SrcRandom.RandomNumber(1, 50) > 25);
+            return currentMap;
+        }
+
+        if(this.isVillage) {
+            return new MapDetails(-1, 801, "", Server.specialMapXmlList.get(801), 0, 0);
+        }
+
+        if(this.isTribeHouse) {
+            String tribeHouse = this.roomName.substring(this.roomName.indexOf(0x03));
+            var myTribe = this.server.getTribeByName(tribeHouse);
+            if(myTribe != null) {
+                if(myTribe.getTribeHouseMap() == 0) {
+                    return new MapDetails(-1, 0, "", Server.specialMapXmlList.get(0), 0, 0);
+                }
+
+                MapEditor map = DBUtils.findMapByCode(myTribe.getTribeHouseMap());
+                return new MapDetails(map.getMapCategory(), map.getMapCode(), map.getMapAuthor(), map.getMapXML(), map.getMapYesVotes(), map.getMapNoVotes());
+            }
+        }
+
+        if(this.isEditeur) {
+            return new MapDetails((this.EMapCode != 0) ? 100 : 0, this.EMapCode, "-", this.mapEditorXml, 0, 0);
+        }
+
+        int mapCategory = (this.isRacing ? 17 : this.isSurvivor ? SrcRandom.RandomNumber(10, 11) : this.isDefilante ? 18 : -1);
+        if(mapCategory == -1) {
+            if(this.isBootcamp) {
+                mapCategory = (SrcRandom.RandomNumber(1, 50) > 50 ? 13 : 3);
+            }
+
+            else if(this.isSurvivor && SrcRandom.RandomNumber(1, 100) > 90 && this.players.size() > 10) {
+                mapCategory = 24;
+            }
+
+            else if(this.isNormal) {
+                mapCategory = SrcRandom.RandomNumber(0, 8);
+                if(mapCategory == 3) mapCategory = 9;
+            }
+        }
+
+        MapEditor map = DBUtils.findMapByCategory(mapCategory);
+        if(map == null) {
+            return new MapDetails(-1, 0, "", "<C><P /><Z><S /><D /><O /></Z></C>", 0, 0);
+        }
+        MapDetails mapDetails = new MapDetails(map.getMapCategory(), map.getMapCode(), map.getMapAuthor(), map.getMapXML(), map.getMapYesVotes(), map.getMapNoVotes());
+        mapDetails.isInverted = (SrcRandom.RandomNumber(1, 50) > 25);
+        return mapDetails;
     }
 
     /**
@@ -1259,38 +1351,6 @@ public final class Room {
 
 
 
-    private MapDetails selectMap() {
-        /*
-        boolean isDebug = true;
-        if(isDebug) {
-            return new MapDetails(
-                    81 // 95
-            );
-        }
-
-         */
-        if(this.isVanilla) {
-            int mapCode = Server.vanillaMapList.get(SrcRandom.RandomNumber(0, Server.vanillaMapList.size() - 1));
-            MapDetails map = new MapDetails(mapCode);
-            while (map == this.currentMap) {
-                mapCode = Server.vanillaMapList.get(SrcRandom.RandomNumber(0, Server.vanillaMapList.size() - 1));
-                map = new MapDetails(mapCode);
-            }
-
-            return map;
-        }
-
-        return new MapDetails(
-                2,
-                1000,
-                "Bloom#0001",
-                "<C><P MEDATA=\";;;;-0;0:::1-\" dodue=\"\" F=\"5\" /><Z><S><S Y=\"387\" H=\"68\" L=\"800\" P=\"0,0,0.3,0.2,0,0,0,0\" X=\"401\" T=\"18\" /></S><D><T Y=\"346\" X=\"46\" /><F Y=\"347\" X=\"765\" /><P Y=\"351\" T=\"1\" X=\"416\" P=\"0,0\" /><T Y=\"352\" X=\"580\" /><F Y=\"349\" X=\"194\" /><F Y=\"347\" X=\"385\" /></D><O /><L /></Z></C>",
-                0,
-                0
-        );
-    }
-
-
 
 
 
@@ -1315,7 +1375,7 @@ public final class Room {
         public int mapPerma;
         public int mapCode;
         public String mapName;
-        public String mapXml = "";
+        public String mapXml;
         public int mapYesVotes = -1;
         public int mapNoVotes = -1;
         public boolean isDudoe;
@@ -1331,15 +1391,16 @@ public final class Room {
         public MapDetails(int mapCode) {
             this.mapPerma = -1;
             this.mapCode = mapCode;
-            this.mapName = "Transformice";
-            this.isDudoe = false;
-            this.isConj = ((mapCode >= 101 && mapCode <= 107) || mapCode == 211 || mapCode == 212 || mapCode == 213);
+            this.mapName = "";
+            this.isDudoe = (mapCode >= 176 && mapCode <= 183) || mapCode == 216;
+            this.isConj = (mapCode >= 101 && mapCode <= 107) || (mapCode >= 211 && mapCode <= 213);
             this.isAIE = false;
             this.isNoShaman = Server.vanillaNoShamMapList.contains(mapCode);
-            this.isDualShaman = (mapCode >= 44 && mapCode <= 53) || (mapCode >= 138 && mapCode <= 143);
-            this.isCatchTheCheese = (mapCode >= 108 && mapCode <= 114);
+            this.isDualShaman = (mapCode >= 44 && mapCode <= 53) || (mapCode >= 138 && mapCode <= 143) || mapCode == 223 || mapCode == 227;
+            this.isCatchTheCheese = (mapCode >= 108 && mapCode <= 113) || mapCode == 144 || mapCode == 170 || mapCode == 171 || mapCode == 214 || mapCode == 215;
             this.isTransform = (mapCode >= 200 && mapCode <= 210);
             this.isInverted = false;
+            this.mapXml = Server.vanillaMapXmlList.getOrDefault(mapCode, "");
         }
 
         // for normal
@@ -1350,11 +1411,11 @@ public final class Room {
             this.mapXml = mapXml;
             this.mapYesVotes = mapYesVotes;
             this.mapNoVotes = mapNoVotes;
-            this.isDudoe = false;
-            this.isConj = false;
-            this.isAIE = false;
-            this.isNoShaman = false;
-            this.isDualShaman = false;
+            this.isDudoe = mapXml.contains("dodue");
+            this.isConj = mapXml.contains("conju");
+            this.isAIE = mapXml.contains("aie");
+            this.isNoShaman = !mapXml.contains("DC") && !mapXml.contains("DC2");
+            this.isDualShaman = mapXml.contains("DC2");
             this.isCatchTheCheese = false;
             this.isTransform = false;
             this.isInverted = false;

@@ -11,6 +11,7 @@ import org.transformice.Client;
 import org.transformice.Server;
 import org.transformice.database.DBUtils;
 import org.transformice.database.collections.Account;
+import org.transformice.database.collections.MapEditor;
 import org.transformice.database.collections.Sanction;
 import org.transformice.database.collections.Tribe;
 import org.transformice.database.embeds.TribeHistoricEntry;
@@ -21,6 +22,7 @@ import org.transformice.utils.Langue;
 import org.transformice.utils.Utils;
 
 // Packets
+import org.transformice.packets.send.legacy.C_ChangeTribeHouseResult;
 import org.transformice.packets.send.informations.C_TranslationMessage;
 
 public final class ParseTribulle {
@@ -270,9 +272,32 @@ public final class ParseTribulle {
         if (this.client.getAccount().getTribeRank() == null || !this.client.getAccount().getTribeRank().hasPerm(TribeRank.TribePerms.CHANGE_TRIBE_HOUSE_MAP))
             return;
 
+        MapEditor mapDetails = DBUtils.findMapByCode(mapCode);
+        if(mapDetails == null) {
+            this.client.sendOldPacket(new C_ChangeTribeHouseResult(16));
+            return;
+        }
 
-        /// TODO: [Unimplemented] modules-parsetribulle->sendChangeTribeHouseMap
-        throw new RuntimeException("[Unimplemented] modules-parsetribulle->sendChangeTribeHouseMap");
+        if(mapDetails.getMapCategory() != 22) {
+            this.client.sendOldPacket(new C_ChangeTribeHouseResult(17));
+            return;
+        }
+
+        Tribe myTribe = this.server.getTribeByName(this.client.getAccount().getTribeName());
+        myTribe.setTribeHouseMap(mapCode);
+        myTribe.getTribeHistory().add(new TribeHistoricEntry(8, String.format("{\"auteur\":\"%s\",\"code\":\"%s\"}", this.client.getPlayerName(), mapCode)));
+        myTribe.save();
+        for(String member : myTribe.getTribeMembers()) {
+            Client memberClient = this.server.getPlayers().get(member);
+            if(memberClient != null && memberClient.isOpenTribe) {
+                memberClient.getParseTribulleInstance().sendTribullePacket(TribulleNew.Send.ET_SignaleChangementParametresTribu, this.buildTribeMembersInfo(this.client.getAccount().getTribeName(), false));
+            }
+        }
+
+        this.sendTribullePacket(TribulleNew.Send.ET_ResultatChangerCodeMaisonTFM, new ByteArray().writeInt(tribulleId).writeByte(1));
+        if(this.client.getRoom().isTribeHouse()) {
+            this.client.getRoom().changeMap();
+        }
     }
 
     /**
@@ -1316,7 +1341,7 @@ public final class ParseTribulle {
             Client friendClient = this.server.getPlayers().get(friendName);
             friendAccount = friendClient.getAccount();
 
-            return new ByteArray().writeInt(friendAccount.getId()).writeString(friendAccount.getPlayerName()).writeByte(friendAccount.getPlayerGender()).writeInt(friendAccount.getAvatarId()).writeBoolean(friendAccount.getFriendList().contains(playerName)).writeBoolean(true).writeInt(4).writeString(friendClient.getRoomName()).writeInt(friendAccount.getLastOn());
+            return new ByteArray().writeInt(friendAccount.getId()).writeString(friendAccount.getPlayerName()).writeByte(friendAccount.getPlayerGender()).writeInt(friendAccount.getAvatarId()).writeBoolean(friendAccount.getFriendList().contains(playerName)).writeBoolean(true).writeInt(4).writeString(friendClient.getRoomName().contains("-@") ? "" : friendClient.getRoomName()).writeInt(friendAccount.getLastOn());
         }
 
         if(this.server.getCachedAccounts().containsKey(friendName)) {
@@ -1360,7 +1385,7 @@ public final class ParseTribulle {
         data.writeInt(playerClient != null ? 0 : accountClient.getLastOn());
         data.writeByte(accountClient.getTribeRank().getPosition());
         data.writeInt(playerClient != null ? 4 : 1);
-        data.writeString(playerClient != null ? playerClient.getRoomName() : "");
+        data.writeString(playerClient != null ? playerClient.getRoomName().contains("-@") ? "" : playerClient.getRoomName() : "");
         return data;
     }
 

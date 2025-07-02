@@ -12,7 +12,7 @@ import org.transformice.packets.send.legacy.editor.C_InitMapEditor;
 public final class S_LeaveEditor implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
-        client.sendOldPacket(new C_InitMapEditor(false, true));
+        client.sendOldPacket(new C_InitMapEditor(0));
         client.sendEnterRoom(client.getServer().getRecommendedRoom(""), "");
     }
 

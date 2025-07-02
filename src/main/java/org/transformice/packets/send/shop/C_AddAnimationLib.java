@@ -10,7 +10,7 @@ public final class C_AddAnimationLib implements SendPacket {
     public C_AddAnimationLib() {
         this.byteArray.writeInt(0);
         this.byteArray.writeInt(0);
-        this.byteArray.writeUnsignedByte(0);
+        this.byteArray.writeUnsignedByte(0); /// readUTF()
     }
 
     @Override

@@ -44,7 +44,6 @@ public class C_Profile implements SendPacket {
             this.byteArray.writeUnsignedShort(badge.getValue());
         }
 
-
         this.byteArray.writeByte(11);
 
         /// 	Play 1,500 rounds

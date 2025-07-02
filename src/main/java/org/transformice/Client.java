@@ -84,6 +84,7 @@ public final class Client {
     public int loginAttempts;
     public int verCode;
     public int currentGameMode;
+    public int playerHealth;
     public int playerScore;
     public long lastSonarTime;
     public boolean canRedistributeSkills = true;
@@ -117,6 +118,7 @@ public final class Client {
     public boolean isJumping;
     public byte silenceType;
     public String playerCommunity;
+    public String playerType;
     public String osLanguage;
     public String osName;
     public String registerCaptcha;
@@ -128,6 +130,7 @@ public final class Client {
     public String tmpEmailAddress;
     public String tmpEmailAddressCode;
     public String tmpMouseLook = "";
+    public String token2FA;
     public Pair<Integer, String> tempTotemInfo = new Pair<>(0, "");
     public Pair<Integer, Integer> mulodromeInfo = new Pair<>(0, 0);
     private boolean isClosed;
@@ -156,7 +159,7 @@ public final class Client {
     @Getter private final Map<Integer, Integer> tradeConsumables;
     @Getter private final Map<String, Integer> modoCommunitiesCount;
     @Getter @Setter private Room room;
-    @Getter @Setter private Pair<Integer, Integer> position;
+    @Getter @Setter private Pair<Integer, Integer> position = new Pair<>(-1, -1);
     @Getter @Setter private Pair<Integer, Integer> velocity;
     @Getter @Setter private String funCorpNickname;
     @Getter @Setter private Integer funCorpNickcolor;
@@ -308,10 +311,12 @@ public final class Client {
         this.playerName = playerName;
         this.isGuest = isGuest;
         this.loginAttempts = 0;
+        this.hasSent2FAEmail = false;
         this.currentMarriageInvite = "";
         this.currentTribeInvite = "";
         this.currentMessage = "";
         this.currentTradeName = "";
+        this.token2FA = "";
         this.loginTime = Utils.getUnixTime();
         this.roomName = this.server.getRecommendedRoom(roomName);
         if (this.account != null) {
@@ -431,10 +436,10 @@ public final class Client {
             if(!this.server.changeDailyQuestTimer.containsKey(this.playerName)) {
                 this.server.changeDailyQuestTimer.put(this.playerName, new Timer(true, 24));
             }
+        }
 
-            if(!this.server.canChangeDailyQuestTimer.containsKey(this.playerName)) {
-                this.server.canChangeDailyQuestTimer.put(this.playerName, new Timer(true, 24));
-            }
+        if(!this.server.canChangeDailyQuestTimer.containsKey(this.playerName)) {
+            this.server.canChangeDailyQuestTimer.put(this.playerName, new Timer(true, 24));
         }
 
         this.sendEnterRoom(this.roomName, "");
@@ -899,7 +904,6 @@ public final class Client {
 
         Room roomInst = this.server.getRooms().get(roomName);
         if(roomInst != null && !roomInst.getRoomPassword().isEmpty() && !roomInst.getRoomPassword().equals(password)) {
-            /// TODO: [GAME BUG] Can't go to another room if don't enter the password.
             this.sendPacket(new C_RoomPassword(roomName));
             return;
         }
@@ -1072,6 +1076,7 @@ public final class Client {
         this.racingCompleted = 0;
         this.defilanteCompleted = 0;
         this.cheeseIdxs.clear();
+        this.position = new Pair<>(-1, -1);
     }
 
     /**
@@ -1324,7 +1329,7 @@ public final class Client {
                     this.room.getCurrentMap().mapCode,
                     this.room.getPlayersCount(),
                     this.room.getLastRoundId(),
-                    (this.room.getCurrentMap().mapPerma != -1) ? Utils.compressZlib(this.room.getCurrentMap().mapXml.getBytes()) : new byte[]{},
+                    (!this.room.getCurrentMap().mapXml.isEmpty()) ? Utils.compressZlib(this.room.getCurrentMap().mapXml.getBytes()) : new byte[]{},
                     this.room.getCurrentMap().mapName,
                     this.room.getCurrentMap().mapPerma,
                     this.room.getCurrentMap().isInverted,

@@ -107,7 +107,7 @@ public final class ParseDailyQuests {
      * Sends the daily quest mark.
      */
     public void sendMissionMark() {
-        this.client.sendPacket(new C_DailyQuestsMark(!this.client.getAccount().getPlayerMissions().isEmpty()));
+        this.client.sendPacket(new C_DailyQuestsMark(true)); /// !this.client.getAccount().getPlayerMissions().isEmpty()
     }
 
     /**

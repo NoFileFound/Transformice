@@ -21,8 +21,8 @@ public final class C_PlayerShamanInfo implements SendPacket {
         this.byteArray.writeByte(firstShaman.getAccount().getShamanType());
         this.byteArray.writeByte((secondShaman != null) ? secondShaman.getAccount().getShamanType() : 0);
 
-        this.byteArray.writeUnsignedShort((firstShaman.getAccount().isShamanNoSkills() ? 0 : firstShaman.getAccount().getPlayerSkills().size()));
-        this.byteArray.writeUnsignedShort((secondShaman != null && secondShaman.getAccount().isShamanNoSkills()) ? secondShaman.getAccount().getPlayerSkills().size() : 0);
+        this.byteArray.writeUnsignedShort((firstShaman.getAccount().isShamanNoSkills() ? 0 : firstShaman.getAccount().getShamanLevel()));
+        this.byteArray.writeUnsignedShort((secondShaman != null && secondShaman.getAccount().isShamanNoSkills()) ? secondShaman.getAccount().getShamanLevel() : 0);
         this.byteArray.writeShort((short) (firstShaman.getParseSkillsInstance().getShamanBadge()));
         this.byteArray.writeShort((short) (secondShaman != null ? secondShaman.getParseSkillsInstance().getShamanBadge() : 0));
 

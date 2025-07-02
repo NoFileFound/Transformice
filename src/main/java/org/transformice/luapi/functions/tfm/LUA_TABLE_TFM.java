@@ -194,6 +194,7 @@ public class LUA_TABLE_TFM extends TwoArgFunction {
         table.get("tfm").get("exec").set("disablePhysicalConsumables", new TFM_disablePhysicalConsumables(this.room));
         table.get("tfm").get("exec").set("disableWatchCommand", new TFM_disableWatchCommand(this.room));
         table.get("tfm").get("exec").set("displayParticle", new TFM_displayParticle(this.room));
+        table.get("tfm").get("exec").set("TFM_executeChatCommand", new TFM_executeChatCommand(this.room));
         table.get("tfm").get("exec").set("explosion", new TFM_explosion(this.room));
         table.get("tfm").get("exec").set("freezePlayer", new TFM_freezePlayer(this.room));
         table.get("tfm").get("exec").set("getPlayerSync", new TFM_getPlayerSync(this.room));
@@ -217,15 +218,18 @@ public class LUA_TABLE_TFM extends TwoArgFunction {
         table.get("tfm").get("exec").set("removeCheese", new TFM_removeCheese(this.room));
         table.get("tfm").get("exec").set("removeImage", new TFM_removeImage(this.room));
         table.get("tfm").get("exec").set("removeJoint", new TFM_removeJoint(this.room));
+        table.get("tfm").get("exec").set("removeMonster", new TFM_removeMonster(this.room));
         table.get("tfm").get("exec").set("removeObject", new TFM_removeObject(this.room));
         table.get("tfm").get("exec").set("removePhysicObject", new TFM_removePhysicObject(this.room));
         table.get("tfm").get("exec").set("respawnPlayer", new TFM_respawnPlayer(this.room));
         table.get("tfm").get("exec").set("setAieMode", new TFM_setAieMode(this.room));
         table.get("tfm").get("exec").set("setAutoMapFlipMode", new TFM_setAutoMapFlipMode(this.room));
         table.get("tfm").get("exec").set("setGameTime", new TFM_setGameTime(this.room));
+        table.get("tfm").get("exec").set("setMonsterSpeed", new TFM_setMonsterSpeed(this.room));
         table.get("tfm").get("exec").set("setNameColor", new TFM_setNameColor(this.room));
         table.get("tfm").get("exec").set("setPlayerCollision", new TFM_setPlayerCollision(this.room));
         table.get("tfm").get("exec").set("setPlayerGravityScale", new TFM_setPlayerGravityScale(this.room));
+        table.get("tfm").get("exec").set("setPlayerHealth", new TFM_setPlayerHealth(this.room));
         table.get("tfm").get("exec").set("setPlayerLook", new TFM_setPlayerLook(this.room));
         table.get("tfm").get("exec").set("setPlayerNightMode", new TFM_setPlayerNightMode(this.room));
         table.get("tfm").get("exec").set("setPlayerScore", new TFM_setPlayerScore(this.room));
@@ -239,6 +243,7 @@ public class LUA_TABLE_TFM extends TwoArgFunction {
         table.get("tfm").get("exec").set("setVampirePlayer", new TFM_setVampirePlayer(this.room));
         table.get("tfm").get("exec").set("setWorldGravity", new TFM_setWorldGravity(this.room));
         table.get("tfm").get("exec").set("snow", new TFM_snow(this.room));
+        table.get("tfm").get("exec").set("spawnMonster", new TFM_spawnMonster(this.room));
         table.get("tfm").get("exec").set("stopMusic", new TFM_stopMusic(this.room));
         return table.get("tfm");
     }

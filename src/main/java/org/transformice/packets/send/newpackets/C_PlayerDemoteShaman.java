@@ -7,7 +7,7 @@ import org.transformice.packets.SendPacket;
 public final class C_PlayerDemoteShaman implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
-    public C_PlayerDemoteShaman(int sessionId, int cheeses) {
+    public C_PlayerDemoteShaman(int sessionId) {
         this.byteArray.writeInt(sessionId);
     }
 

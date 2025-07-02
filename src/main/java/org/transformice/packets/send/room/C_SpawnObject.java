@@ -7,6 +7,7 @@ import org.transformice.packets.SendPacket;
 public final class C_SpawnObject implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
+    /// TODO: FIX
     public C_SpawnObject(int objectId, int shamanObjectId, int x, int y, int angle, int velx, int vely, boolean has_contact_listener, boolean is_collidable, byte[] colors) {
         this.byteArray.writeInt(objectId);
         this.byteArray.writeInt128(shamanObjectId);

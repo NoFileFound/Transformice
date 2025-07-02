@@ -9,7 +9,7 @@ public final class C_AntigravitySkill implements SendPacket {
 
     public C_AntigravitySkill(int objectId, int arg) {
         this.byteArray.writeInt(objectId);
-        this.byteArray.writeShort((short) arg);
+        this.byteArray.writeShort((short)(arg * 100));
     }
 
     @Override
