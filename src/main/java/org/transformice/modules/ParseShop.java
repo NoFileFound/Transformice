@@ -785,17 +785,19 @@ public final class ParseShop {
         /// 2 - shaman item
         /// 3 - emoji
 
-        for (Map.Entry<Integer, Double> entry : this.server.shopTitleList.entrySet()) {
-            int needResources = entry.getKey();
-            double titleIntegerID = entry.getValue();
-            if (this.client.getAccount().getShopItems().size() >= needResources && !this.client.getAccount().getTitleList().contains(titleIntegerID)) {
-                int decPart = (int) Math.round((titleIntegerID - (int) titleIntegerID) * 10);
-                for(int i = 0; i < decPart; i++) {
-                    this.client.getAccount().getTitleList().remove((int)titleIntegerID + (i / 10.0));
-                }
+        if(!this.client.isGuest()) {
+            for (Map.Entry<Integer, Double> entry : this.server.shopTitleList.entrySet()) {
+                int needResources = entry.getKey();
+                double titleIntegerID = entry.getValue();
+                if (this.client.getAccount().getShopItems().size() >= needResources && !this.client.getAccount().getTitleList().contains(titleIntegerID)) {
+                    int decPart = (int) Math.round((titleIntegerID - (int) titleIntegerID) * 10);
+                    for(int i = 0; i < decPart; i++) {
+                        this.client.getAccount().getTitleList().remove((int)titleIntegerID + (i / 10.0));
+                    }
 
-                this.client.getRoom().sendAllOld(new C_PlayerUnlockTitle(this.client.getSessionId(), (int)titleIntegerID, decPart));
-                this.client.getAccount().getTitleList().add(titleIntegerID);
+                    this.client.getRoom().sendAllOld(new C_PlayerUnlockTitle(this.client.getSessionId(), (int)titleIntegerID, decPart));
+                    this.client.getAccount().getTitleList().add(titleIntegerID);
+                }
             }
         }
         /// TODO: Badges for fur items and animation after receive the badge.

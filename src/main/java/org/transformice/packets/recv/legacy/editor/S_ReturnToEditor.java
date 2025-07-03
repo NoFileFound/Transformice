@@ -12,6 +12,8 @@ import org.transformice.packets.send.legacy.editor.C_InitMapEditor;
 public final class S_ReturnToEditor implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
+        if(!client.getRoom().isEditeur()) return;
+
         client.getRoom().isMapEditorMapValidating = false;
         client.sendOldPacket(new C_InitMapEditor(1));
     }

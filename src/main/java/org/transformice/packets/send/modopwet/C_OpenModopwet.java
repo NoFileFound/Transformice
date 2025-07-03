@@ -19,7 +19,7 @@ public final class C_OpenModopwet implements SendPacket {
             List<ReportReporter> playerReporters = (List<ReportReporter>) report[6];
             Sanction myMuteSanction = (Sanction) report[7];
 
-            this.byteArray.writeByte(1); // category
+            this.byteArray.writeByte(playerReporters.getLast().getReportType()); // category
             this.byteArray.writeUnsignedShort((int) report[0]);
             this.byteArray.writeString((String) report[2]);
             this.byteArray.writeString((String) report[1]);

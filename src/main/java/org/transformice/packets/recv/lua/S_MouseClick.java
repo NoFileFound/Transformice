@@ -5,12 +5,22 @@ import org.bytearray.ByteArray;
 import org.transformice.Client;
 import org.transformice.packets.RecvPacket;
 
+// Packets
+import org.transformice.packets.send.player.C_MovePlayer;
+
 @SuppressWarnings("unused")
 public final class S_MouseClick implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
+        int posX = data.readInt128();
+        int posY = data.readInt128();
+
+        if(client.isDebugTeleport) {
+            client.sendPacket(new C_MovePlayer(posX, posY, false, 0, 0, false));
+        }
+
         if (client.getRoom().luaMinigame != null) {
-            client.getRoom().luaApi.callEvent("eventMouse", client.getPlayerName(), data.readInt128(), data.readInt128());
+            client.getRoom().luaApi.callEvent("eventMouse", client.getPlayerName(), posX, posY);
         }
     }
 

@@ -9,7 +9,7 @@ import org.transformice.packets.RecvPacket;
 public final class S_MulodromePlay implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
-        if (!client.getRoom().getRedTeam().isEmpty() || !client.getRoom().getBlueTeam().isEmpty()) {
+        if (!client.getRoom().getRedTeam().isEmpty() && !client.getRoom().getBlueTeam().isEmpty()) {
             client.getRoom().initMulodrome();
         }
     }

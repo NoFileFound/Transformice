@@ -13,10 +13,10 @@ import org.transformice.packets.send.legacy.login.C_OldExceptionNotify;
 public final class S_GameLog implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
-        int C = data.readByte();
-        int CC = data.readByte();
-        int OldC = data.readByte();
-        int OldCC = data.readByte();
+        int C = data.readByte() & 0xFF;
+        int CC = data.readByte() & 0xFF;
+        int OldC = data.readByte() & 0xFF;
+        int OldCC = data.readByte() & 0xFF;
         String error = data.readString();
 
         if(C == 1 && CC == 1) {

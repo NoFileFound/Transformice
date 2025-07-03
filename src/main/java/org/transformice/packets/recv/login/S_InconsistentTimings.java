@@ -9,7 +9,7 @@ import org.transformice.packets.RecvPacket;
 public final class S_InconsistentTimings implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
-        client.getServer().sendServerMessage(String.format("[AntiCheat] The player <N>%s</N> has abnormal speed.", client.getPlayerName()), false, null);
+        client.getServer().sendServerMessage(String.format("[AntiCheat] The player <N>%s</N> has abnormal speed with %d milliseconds.", client.getPlayerName(), data.readInt()), false, null);
         client.closeConnection();
     }
 

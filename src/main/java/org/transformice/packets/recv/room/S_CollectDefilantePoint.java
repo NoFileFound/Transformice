@@ -9,6 +9,8 @@ import org.transformice.packets.RecvPacket;
 public final class S_CollectDefilantePoint implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
+        if(!client.getRoom().isDefilante()) return;
+
         int pointId = data.readInt();
         if(pointId < 0) {
             client.closeConnection();

@@ -18,7 +18,7 @@ public final class C_InitMapEditor implements SendPacket {
             this.byteArray.writeString("", false);
         } else if(actionType == 2) {
             // validate the map
-            this.byteArray.writeString("", false);
+            this.byteArray.writeString("0", false);
         }
     }
 

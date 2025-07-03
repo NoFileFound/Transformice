@@ -14,7 +14,7 @@ public final class S_ViewLeaderboard implements RecvPacket {
     public void handle(Client client, int fingerPrint, ByteArray data) {
         ByteArray packet = new ByteArray();
 
-        packet.writeInt128(DBManager.getCounterValue("lastSeasonId"));
+        //packet.writeInt128(DBManager.getCounterValue("lastSeasonId"));
         packet.writeInt128(100); /// TODO: Implement periodically seasons.
         /// TODO: Finish the leaderboard
 

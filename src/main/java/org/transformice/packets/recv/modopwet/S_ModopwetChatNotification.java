@@ -15,7 +15,7 @@ public final class S_ModopwetChatNotification implements RecvPacket {
             return;
         }
 
-        if(client.getAccount().getPrivLevel() >= 9) {
+        if(client.hasStaffPermission("Modo", "Modopwet")) {
             client.isSubscribedModoNotifications = data.readBoolean();
 
             int sz = data.readByte();

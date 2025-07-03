@@ -18,7 +18,7 @@ public final class C_PlayerSendMissionList implements SendPacket {
             this.byteArray.writeShort((short)quest.getMissionTotal());
             this.byteArray.writeShort(quest.getId() == 60801 ? 0 : (short)quest.getMissionPrize());
             this.byteArray.writeShort(quest.getId() == 60801 ? (short)quest.getMissionPrize() : 0);
-            this.byteArray.writeBoolean(canChangeMission);
+            this.byteArray.writeBoolean(quest.getId() != 60801 && canChangeMission);
         }
     }
 

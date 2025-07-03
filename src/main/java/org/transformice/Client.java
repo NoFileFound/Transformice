@@ -116,6 +116,7 @@ public final class Client {
     public boolean isNewPlayer;
     public boolean isVampire;
     public boolean isJumping;
+    public boolean isDebugTeleport;
     public byte silenceType;
     public String playerCommunity;
     public String playerType;
@@ -134,9 +135,6 @@ public final class Client {
     public Pair<Integer, String> tempTotemInfo = new Pair<>(0, "");
     public Pair<Integer, Integer> mulodromeInfo = new Pair<>(0, 0);
     private boolean isClosed;
-    private int bootcampCompleted;
-    private int racingCompleted;
-    private int defilanteCompleted;
     private long loginTime;
     private final Channel channel;
     private final ArrayList<Integer> cheeseIdxs;
@@ -625,7 +623,7 @@ public final class Client {
             if(this.room.getCurrentMap().isCatchTheCheese)
                 return;
 
-            if(this.room.getAliveCount() > 1) {
+            if(this.room.getAliveCount() > 0) {
                 this.sendOldPacket(new C_PlayerSaveRemainingNotification());
                 return;
             }
@@ -689,7 +687,7 @@ public final class Client {
             }
         }
 
-        if(countStats) {
+        if(countStats && !this.isGuest()) {
             boolean canEarnXP = false;
             if(place == 1) {
                 this.account.setFirstCount(this.account.getFirstCount() + 1);
@@ -705,20 +703,11 @@ public final class Client {
 
             if(this.room.isRacing()) {
                 canEarnXP = true;
-                this.racingCompleted++;
-                if(this.racingCompleted > 5) {
-                    this.racingCompleted = 0;
-                    this.parseInventoryInstance.addConsumable("2254", 1, false);
-                }
+                this.parseInventoryInstance.addConsumable("2254", 1, false);
             }
 
             if(this.room.isBootcamp()) {
-                this.bootcampCompleted++;
-                if(this.bootcampCompleted > 5) {
-                    this.bootcampCompleted = 0;
-                    this.parseInventoryInstance.addConsumable("2261", 1, false);
-                }
-
+                this.parseInventoryInstance.addConsumable("2261", 1, false);
                 for (Map.Entry<Integer, Double> entry : this.server.bootcampTitleList.entrySet()) {
                     int needResources = entry.getKey();
                     double titleIntegerID = entry.getValue();
@@ -735,11 +724,7 @@ public final class Client {
             }
 
             if(this.room.isDefilante()) {
-                this.defilanteCompleted++;
-                if(this.defilanteCompleted > 5) {
-                    this.defilanteCompleted = 0;
-                    this.parseInventoryInstance.addConsumable("2504", 1, false);
-                }
+                this.parseInventoryInstance.addConsumable("2504", 1, false);
             }
 
             if (this.room.getCurrentShaman() == this || this.room.getCurrentSecondShaman() == this) {
@@ -904,6 +889,9 @@ public final class Client {
 
         Room roomInst = this.server.getRooms().get(roomName);
         if(roomInst != null && !roomInst.getRoomPassword().isEmpty() && !roomInst.getRoomPassword().equals(password)) {
+            if(roomName.indexOf('-') != -1) {
+                roomName = roomName.substring(roomName.indexOf('-') + 1);
+            }
             this.sendPacket(new C_RoomPassword(roomName));
             return;
         }
@@ -1072,9 +1060,6 @@ public final class Client {
         this.isNewPlayer = false;
         this.canTransform = false;
         this.currentPlace = 0;
-        this.bootcampCompleted = 0;
-        this.racingCompleted = 0;
-        this.defilanteCompleted = 0;
         this.cheeseIdxs.clear();
         this.position = new Pair<>(-1, -1);
     }
@@ -1087,7 +1072,7 @@ public final class Client {
         this.isDead = true;
         this.cheeseCount = 0;
         this.room.sendAllOld(new C_PlayerDied(this.sessionId, this.playerScore));
-        if (this.room.getAliveCount() < 1 || this.room.getCurrentMap().isTransform || this.isAfk) {
+        if (this.room.getAliveCount() < 0 || this.isAfk || this.room.getCurrentMap().isDualShaman) {
             this.canShamanRespawn = false;
         }
 
@@ -1254,9 +1239,11 @@ public final class Client {
      * @return If the client has permission.
      */
     public boolean hasStaffPermission(String position, String permissionType) {
-        if(this.account == null) return false;
+        if(this.isGuest) return false;
 
-        if((this.account.getPrivLevel() == 11 || this.account.getHasPublicAuthorization()) && permissionType.equals("StaffChannel")) return true;
+        if(this.account.getPrivLevel() == 11) return true;
+        if(this.account.getHasPublicAuthorization() && permissionType.equals("StaffChannel")) return true;
+
         return switch (position) {
             case "Sentinelle" -> this.account.getPrivLevel() == 4 || this.account.getStaffRoles().contains("Sentinelle");
             case "FunCorp" -> this.account.getPrivLevel() == 5 || this.account.getStaffRoles().contains("FunCorp");
@@ -1319,10 +1306,7 @@ public final class Client {
      * Sends the new map packet.
      */
     private void sendLoadMap() {
-        if(this.room.isEditeur() && this.room.isMapEditorMapValidating) {
-            byte[] mapXml = Utils.compressZlib(this.room.getMapEditorXml().getBytes());
-            this.sendPacket(new C_LoadMap(-1, this.room.getPlayersCount(), this.room.getLastRoundId(), mapXml, "-", 100, false, false, false, null));
-        } else if(this.room.isTotem() || this.room.isTutorial()) {
+        if(this.room.isTotem() || this.room.isTutorial()) {
             this.sendPacket(new C_LoadMap(this.room.isTutorial() ? 900 : 444, this.room.getPlayersCount(), this.room.getLastRoundId(), new byte[]{}, "", -1, false, false, false, null));
         } else {
             this.sendPacket(new C_LoadMap(
@@ -1335,7 +1319,7 @@ public final class Client {
                     this.room.getCurrentMap().isInverted,
                     this.room.getCurrentMap().isConj,
                     this.room.getCurrentMap().isAIE,
-                    this.room.getRoomDetails()
+                    (this.room.isEditeur() ? null : this.room.getRoomDetails())
             ));
         }
     }
@@ -1348,7 +1332,8 @@ public final class Client {
         this.isShaman = (shamans[0] == this || shamans[1] == this);
         if(this.room.getCurrentMap().isCatchTheCheese) {
             this.sendOldPacket(new C_CatchTheCheeseMap(shamans[0].getSessionId()));
-            if(this.room.getCurrentMap().mapCode > 109) {
+            this.room.sendAll(new C_PlayerGetCheese(shamans[0].getSessionId(), 1));
+            if(this.room.getCurrentMap().mapCode > 109 && this.room.getCurrentMap().mapCode < 114) {
                 this.sendPacket(new C_PlayerShamanInfo(shamans[0], null));
             }
         } else {

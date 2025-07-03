@@ -42,6 +42,7 @@ public final class S_StaffChatMessage implements RecvPacket {
             case 8: // #MapCrew
                 perm = client.hasStaffPermission("MapCrew", "StaffChannel");
                 break;
+            case 11: // msfc
             case 9: // #FunCorp
                 perm = client.hasStaffPermission("FunCorp", "StaffChannel");
                 break;
@@ -73,6 +74,13 @@ public final class S_StaffChatMessage implements RecvPacket {
                     if(player.playerCommunity.equals(client.playerCommunity)) {
                         player.sendPacket(new C_StaffChannelMessage(6, client.getPlayerName(), channelMessage));
                     }
+                }
+                return;
+            }
+
+            if(channelId == 11) { // msfc command
+                for(Client player : client.getRoom().getPlayers().values()) {
+                    player.sendPacket(new C_StaffChannelMessage(11, "", channelMessage));
                 }
                 return;
             }

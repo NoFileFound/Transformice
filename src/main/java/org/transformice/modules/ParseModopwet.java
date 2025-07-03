@@ -289,8 +289,10 @@ public final class ParseModopwet {
      * @param isFollowing Is using the [follow] command.
      */
     public void sendWatchReport(String playerName, boolean isFollowing) {
+        if(playerName.equals(this.client.getPlayerName()) || playerName.isEmpty()) return;
+
         Client playerClient = this.server.getPlayers().get(playerName);
-        if(playerClient != null && !playerName.equals(this.client.getPlayerName())) {
+        if(playerClient != null) {
             if(isFollowing) {
                 this.client.sendEnterRoom(playerClient.getRoom().getRoomName(), playerClient.getRoom().getRoomPassword());
             } else {
@@ -306,7 +308,7 @@ public final class ParseModopwet {
                     this.client.lastWatchedClient = playerClient;
                 }
             }
-        } else if(playerClient == null) {
+        } else {
             this.client.sendPacket(new C_ServerMessage(true, Application.getTranslationManager().get("invalidusername")));
         }
     }
@@ -358,7 +360,7 @@ public final class ParseModopwet {
             entryList.sort((o1, o2) -> {
                 Report v2 = o1.getValue();
                 Report v1 = o2.getValue();
-                return v1.getTimestamp() < v2.getTimestamp() ? -1 : 1;
+                return v1.getTimestamp().compareTo(v2.getTimestamp());
             });
         }
 

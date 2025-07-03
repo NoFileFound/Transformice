@@ -21,21 +21,23 @@ public final class S_PlayerMovement implements RecvPacket {
             client.isFacingRight = data.readBoolean();
             client.isFacingLeft = data.readBoolean();
             var position = new Pair<>((int)(data.readInt128() * (30.0 / 100)), (int)(data.readInt128() * (30.0 / 100)));
+            client.setVelocity(new Pair<>((int)(data.readInt128() * (1.0 / 10)), (int)(data.readInt128() * (1.0 / 10))));
             if(client.getPosition().getFirst() == -1 && client.getPosition().getSecond() == -1) {
-                client.setPosition(position);
+                client.setPosition(new Pair<>((int)((position.getFirst() + client.getVelocity().getFirst() * (client.lastPingResponse / 2000.0)) * (100.0 / 30)), (int)((position.getSecond() + client.getVelocity().getSecond() * (client.lastPingResponse / 2000.0)) * (100.0 / 30))));
+                client.setVelocity(new Pair<>(client.getVelocity().getFirst() * 10, client.getVelocity().getSecond() * 10));
             } else if(!client.getPosition().equals(position)) {
-                client.setPosition(position);
+                client.setPosition(new Pair<>((int)((position.getFirst() + client.getVelocity().getFirst() * (client.lastPingResponse / 2000.0)) * (100.0 / 30)), (int)((position.getSecond() + client.getVelocity().getSecond() * (client.lastPingResponse / 2000.0)) * (100.0 / 30))));
+                client.setVelocity(new Pair<>(client.getVelocity().getFirst() * 10, client.getVelocity().getSecond() * 10));
                 if(client.isAfk) {
                     client.isAfk = false;
                 }
             }
 
-            client.setVelocity(new Pair<>((int)(data.readInt128() * (30.0 / 100)), (int)(data.readInt128()* (30.0 / 100))));
-            var frictionVar1 = data.readInt128() * (30.0 / 100);
-            var frictionVar2 = data.readInt128() * (30.0 / 100);
+            var frictionVar1 = data.readInt128() / 100;
+            var frictionVar2 = data.readInt128() / 10;
             client.isJumping = data.readBoolean();
 
-            client.getRoom().sendAllOthers(client, new C_PlayerMovement(client.getSessionId(), new ByteArray().writeBoolean(client.isFacingRight).writeBoolean(client.isFacingLeft).writeInt128((int)(client.getPosition().getFirst() / 0.3)).writeInt128((int)(client.getPosition().getSecond() / 0.3)).writeInt128((int)(client.getVelocity().getFirst() / 0.3)).writeInt128((int)(client.getVelocity().getSecond() / 0.3)).writeInt128((int)(frictionVar1 / 0.3)).writeInt128((int)(frictionVar2 / 0.3)).writeBoolean(client.isJumping).writeBytes(data.toByteArray())));
+            client.getRoom().sendAllOthers(client, new C_PlayerMovement(client.getSessionId(), new ByteArray().writeBoolean(client.isFacingRight).writeBoolean(client.isFacingLeft).writeInt128(client.getPosition().getFirst()).writeInt128(client.getPosition().getSecond()).writeInt128(client.getVelocity().getFirst()).writeInt128(client.getVelocity().getSecond()).writeInt128(frictionVar1).writeInt128(frictionVar2).writeBoolean(client.isJumping).writeBytes(data.toByteArray())));
             if (client.getRoom().luaMinigame != null) {
                 client.getRoom().updatePlayerList(client);
             }

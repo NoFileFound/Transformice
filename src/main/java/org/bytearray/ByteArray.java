@@ -113,27 +113,23 @@ public final class ByteArray {
      * Reads a INT128 from the bytearray.
      * @return An INT128.
      */
-    public int readInt128(){
-        int local1 = 0;
-        int local3 = 0;
-        int local4 = -1;
-
-        while (true) {
-            byte local2 = this.readByte();
-            local1 |= ((local2 & 127) << (local3 * 7));
-            local4 <<= 7;
-            local3++;
-
-            if (!(((local2 & 128) == 128) && (local3 < 5))) {
-                break;
-            }
+    public int readInt128() {
+        int result = 0;
+        int cur = 0x80;
+        int count = 0;
+        int signBits = -1;
+        while ((cur & 0x80) == 0x80 && count < 5) {
+            cur = readUnsignedByte();
+            result |= (cur & 0x7F) << (count * 7);
+            signBits <<= 7;
+            count++;
         }
 
-        if (((local4 >> 1) & local1) != 0) {
-            local1 |= local4;
+        if (((signBits >> 1) & result) != 0) {
+            result |= signBits;
         }
 
-        return local1;
+        return result;
     }
 
     /**
@@ -271,31 +267,16 @@ public final class ByteArray {
      * Writes a new integer to the bytearray.
      * @param arg1 The given new integer (new game structure)
      */
-    public ByteArray writeInt128(long arg1) {
-        if (arg1 < 0 || String.valueOf(arg1).contains(".")) {
-            this.writeUnsignedByte((int) arg1);
-            this.writeUnsignedByte(0);
-            return this;
-        }
-
-        ArrayList<Integer> arr = new ArrayList<>();
-        do {
-            int byteValue = (int) (arg1 & 0x7F);
-            arg1 >>= 7;
-            if (arg1 != 0) {
-                byteValue |= 0x80;
-            }
-            arr.add(byteValue);
-
-        } while (arg1 != 0);
-
-        if (arr.getLast() >= 64 && arr.getLast() < 128) {
-            arr.set(arr.size() - 1, arr.getLast() + 128);
-            arr.add(0);
-        }
-
-        for (int info : arr) {
-            this.writeUnsignedByte(info);
+    public ByteArray writeInt128(int arg1) {
+        int remaining = arg1 >> 7;
+        boolean hasMore = true;
+        int end = ((arg1 & 0x80000000) == 0) ? 0 : -1;
+        while (hasMore) {
+            hasMore = (remaining != end) || ((remaining & 1) != ((arg1 >> 6) & 1));
+            int byteToWrite = (arg1 & 0x7F) | (hasMore ? 0x80 : 0);
+            writeByte(byteToWrite);
+            arg1 = remaining;
+            remaining >>= 7;
         }
 
         return this;

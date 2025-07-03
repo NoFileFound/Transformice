@@ -11,10 +11,10 @@ public final class C_DisplayParticle implements SendPacket {
         this.byteArray.writeByte(id);
         this.byteArray.writeInt128(x);
         this.byteArray.writeInt128(y);
-        this.byteArray.writeInt128(velX * 100L);
-        this.byteArray.writeInt128(velY * 100L);
-        this.byteArray.writeInt128(accX * 100L);
-        this.byteArray.writeInt128(accY * 100L);
+        this.byteArray.writeInt128(velX * 100);
+        this.byteArray.writeInt128(velY * 100);
+        this.byteArray.writeInt128(accX * 100);
+        this.byteArray.writeInt128(accY * 100);
     }
 
     @Override

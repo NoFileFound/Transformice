@@ -8,6 +8,8 @@ import dev.morphia.query.FindOptions;
 import dev.morphia.query.Sort;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import org.transformice.Application;
 import org.transformice.database.collections.*;
 import org.transformice.database.embeds.CafePost;
 
@@ -177,6 +179,17 @@ public final class DBUtils {
      * @return A map object.
      */
     public static MapEditor findMapByCategory(Integer mapCategory) {
-        return DBManager.getDataStore().find(MapEditor.class).filter(eq("mapCategory", mapCategory)).first();
+        List<MapEditor> maps = DBManager.getDataStore().find(MapEditor.class).filter(eq("mapCategory", mapCategory)).iterator().toList();
+        if (maps.isEmpty()) {
+            Application.getLogger().warn(Application.getTranslationManager().get("mapcatnotfound", mapCategory));
+            return null;
+        }
+
+        return maps.get(ThreadLocalRandom.current().nextInt(maps.size()));
+    }
+
+
+    public static void updateMapVotes(Integer mapCode, Integer mapYesVotes, Integer mapNoVotes) {
+        /// TODO: FIX
     }
 }

@@ -122,6 +122,7 @@
 		"unmuted_notify": "%s just unmuted the player %s (%s.).",
 		"bandef_notify": "%s permanently banned the player %s (%s)",
 		"chatlog_noresult": "The player <BV>%s</BV> has no chat/whisper messages.",
-		"loadedvanillamaps": "Loaded total %d vanilla maps."
+		"loadedvanillamaps": "Loaded total %d vanilla maps.",
+		"mapcatnotfound": "Can't find any map from the category %d"
 	}
 }

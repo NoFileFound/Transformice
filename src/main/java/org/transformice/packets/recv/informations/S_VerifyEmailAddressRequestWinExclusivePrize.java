@@ -11,6 +11,7 @@ import org.transformice.packets.RecvPacket;
 import org.transformice.packets.send.informations.C_SendEmailAddressCode;
 
 @SuppressWarnings("unused")
+@Deprecated()
 public final class S_VerifyEmailAddressRequestWinExclusivePrize implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {

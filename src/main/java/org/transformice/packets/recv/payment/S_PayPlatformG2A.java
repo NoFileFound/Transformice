@@ -13,6 +13,8 @@ import org.transformice.packets.send.payment.C_PaymentError;
 public final class S_PayPlatformG2A implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
+        int option = data.readByte();
+
         client.sendPacket(new C_ServerMessage(true, "In order this project to exist a payment system is never gonna get implemented. Thanks for understanding!"));
         client.sendPacket(new C_PaymentError());
     }

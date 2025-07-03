@@ -15,7 +15,7 @@ public final class S_OpenModopwet implements RecvPacket {
             return;
         }
 
-        if(client.getAccount().getPrivLevel() >= 9) {
+        if(client.hasStaffPermission("Modo", "Modopwet")) {
             boolean isOpen = data.readBoolean();
             client.isOpenModopwet = isOpen;
             client.getParseModopwetInstance().sendOpenModopwet(isOpen);

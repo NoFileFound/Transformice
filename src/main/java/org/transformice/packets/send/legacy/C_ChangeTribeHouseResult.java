@@ -8,7 +8,7 @@ public final class C_ChangeTribeHouseResult implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
     public C_ChangeTribeHouseResult(int errorCode) {
-        this.byteArray.writeByte(errorCode);
+        this.byteArray.writeString(String.valueOf(errorCode), false);
     }
 
     @Override

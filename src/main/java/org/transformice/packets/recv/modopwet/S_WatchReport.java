@@ -15,7 +15,7 @@ public final class S_WatchReport implements RecvPacket {
             return;
         }
 
-        if(client.getAccount().getPrivLevel() >= 9) {
+        if(client.hasStaffPermission("Modo", "Modopwet")) {
             client.getParseModopwetInstance().sendWatchReport(data.readString(), data.readBoolean());
         }
     }

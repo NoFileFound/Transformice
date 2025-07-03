@@ -9,7 +9,7 @@ public final class C_SetAIEMode implements SendPacket {
 
     public C_SetAIEMode(boolean enable, int sensibility) {
         this.byteArray.writeBoolean(enable);
-        this.byteArray.writeInt128(sensibility * 1000L);
+        this.byteArray.writeInt128(sensibility * 1000);
     }
 
     @Override

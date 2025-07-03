@@ -15,7 +15,7 @@ public final class S_OpenChatLog implements RecvPacket {
             return;
         }
 
-        if(client.getAccount().getPrivLevel() >= 9) {
+        if(client.hasStaffPermission("Modo", "Modopwet")) {
             client.getParseModopwetInstance().sendChatLog(data.readString());
         }
     }

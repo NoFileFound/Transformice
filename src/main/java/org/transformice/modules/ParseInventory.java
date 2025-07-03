@@ -10,7 +10,9 @@ import org.transformice.Application;
 import org.transformice.Client;
 import org.transformice.Server;
 import org.transformice.libraries.SrcRandom;
+import org.transformice.packets.send.login.C_MoneyEarned;
 import org.transformice.packets.send.newpackets.C_SaveWallpaper;
+import org.transformice.packets.send.player.C_GiveCurrency;
 import org.transformice.packets.send.transformice.C_NewConsumable;
 import org.transformice.properties.configs.InventoryConfig;
 
@@ -353,9 +355,13 @@ public final class ParseInventory {
                 }
                 break;
             case 800:
+                this.client.getRoom().sendAll(new C_PlayerRaiseItem(2, this.client.getSessionId(), new Object[]{0}));
+                this.client.sendPacket(new C_GiveCurrency(0, 1));
                 this.client.getAccount().setShopCheeses(this.client.getAccount().getShopCheeses() + 1);
                 break;
             case 801:
+                this.client.getRoom().sendAll(new C_PlayerRaiseItem(2, this.client.getSessionId(), new Object[]{2}));
+                this.client.sendPacket(new C_GiveCurrency(1, 1));
                 this.client.getAccount().setShopStrawberries(this.client.getAccount().getShopStrawberries() + 1);
                 break;
             case 2234:

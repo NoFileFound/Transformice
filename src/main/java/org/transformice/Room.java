@@ -383,7 +383,10 @@ public final class Room {
         }
 
         if (this.isVotingMode) {
-            /// TODO: FIX
+            DBUtils.updateMapVotes(this.currentMap.mapCode, this.currentMap.mapYesVotes + this.receivedYesVotes, this.currentMap.mapNoVotes + this.receivedNoVotes);
+            this.receivedYesVotes = 0;
+            this.receivedNoVotes = 0;
+            this.isVotingMode = false;
         }
 
         this.initVotingMode = true;
@@ -409,7 +412,7 @@ public final class Room {
                 if (!this.disableAutoScore) this.currentShaman.playerScore = numCom;
                 if (numCom > 0) {
                     this.currentShaman.getParseSkillsInstance().earnExp(true, numCom);
-                    this.currentShaman.getParseInventoryInstance().addConsumable(this.currentShaman.getAccount().isShamanNoSkills() ? "2620" : "2253", Math.max(3 + this.currentShaman.getAccount().getShamanType(), numCom / (6 - this.currentShaman.getAccount().getShamanType())), false);
+                    this.currentShaman.getParseInventoryInstance().addConsumable(this.currentShaman.getAccount().isShamanNoSkills() ? "2620" : "2253", Math.max(1 + this.currentShaman.getAccount().getShamanType(), numCom / (6 - this.currentShaman.getAccount().getShamanType())), false);
                 }
             }
 
@@ -421,7 +424,7 @@ public final class Room {
                 if (!this.disableAutoScore) this.currentSecondShaman.playerScore = numCom2;
                 if (numCom2 > 0) {
                     this.currentSecondShaman.getParseSkillsInstance().earnExp(true, numCom2);
-                    this.currentSecondShaman.getParseInventoryInstance().addConsumable(this.currentSecondShaman.getAccount().isShamanNoSkills() ? "2620" : "2253", Math.max(3 + this.currentSecondShaman.getAccount().getShamanType(), numCom2 / (6 - this.currentSecondShaman.getAccount().getShamanType())), false);
+                    this.currentSecondShaman.getParseInventoryInstance().addConsumable(this.currentSecondShaman.getAccount().isShamanNoSkills() ? "2620" : "2253", Math.max(1 + this.currentSecondShaman.getAccount().getShamanType(), numCom2 / (6 - this.currentSecondShaman.getAccount().getShamanType())), false);
                 }
             }
         }
@@ -658,7 +661,7 @@ public final class Room {
      * @return The number of alive mice.
      */
     public int getAliveCount() {
-        return (int)this.players.values().stream().filter(player -> !player.isDead && !player.isEnteredInHole && !player.isHidden && !player.isNewPlayer).count();
+        return (int)this.players.values().stream().filter(player -> !player.isDead && !player.isEnteredInHole && !player.isHidden && !player.isNewPlayer && !player.isShaman).count();
     }
 
     /**
@@ -1227,7 +1230,7 @@ public final class Room {
                 currentMap = new MapDetails(map.getMapCategory(), map.getMapCode(), map.getMapAuthor(), map.getMapXML(), map.getMapYesVotes(), map.getMapNoVotes());
             }
 
-            currentMap.isInverted = (SrcRandom.RandomNumber(1, 50) > 25);
+            currentMap.isInverted = (SrcRandom.RandomNumber(1, 100) > 85);
             this.forceNextMap = "-1";
             return currentMap;
         }
@@ -1240,16 +1243,16 @@ public final class Room {
                 currentMap = new MapDetails(mapCode);
             }
 
-            currentMap.isInverted = (SrcRandom.RandomNumber(1, 50) > 25);
+            currentMap.isInverted = (SrcRandom.RandomNumber(1, 100) > 85);
             return currentMap;
         }
 
         if(this.isVillage) {
-            return new MapDetails(-1, 801, "", Server.specialMapXmlList.get(801), 0, 0);
+            return new MapDetails(-1, 801, "_Atelier 801", Server.specialMapXmlList.get(801), 0, 0);
         }
 
         if(this.isTribeHouse) {
-            String tribeHouse = this.roomName.substring(this.roomName.indexOf(0x03));
+            String tribeHouse = this.roomName.substring(this.roomName.indexOf(0x03) + 1);
             var myTribe = this.server.getTribeByName(tribeHouse);
             if(myTribe != null) {
                 if(myTribe.getTribeHouseMap() == 0) {
@@ -1262,32 +1265,63 @@ public final class Room {
         }
 
         if(this.isEditeur) {
-            return new MapDetails((this.EMapCode != 0) ? 100 : 0, this.EMapCode, "-", this.mapEditorXml, 0, 0);
+            return new MapDetails((this.isMapEditorMapValidating ? 100 : -1), this.EMapCode, "-", this.mapEditorXml, 0, 0);
         }
 
-        int mapCategory = (this.isRacing ? 17 : this.isSurvivor ? SrcRandom.RandomNumber(10, 11) : this.isDefilante ? 18 : -1);
-        if(mapCategory == -1) {
-            if(this.isBootcamp) {
-                mapCategory = (SrcRandom.RandomNumber(1, 50) > 50 ? 13 : 3);
+        if(this.roomDetails.mapRotation.isEmpty()) {
+            int mapCategory = (this.isRacing ? 17 : this.isSurvivor ? SrcRandom.RandomNumber(10, 11) : this.isDefilante ? 18 : -1);
+            if(mapCategory == -1) {
+                if(this.isBootcamp) {
+                    mapCategory = (SrcRandom.RandomNumber(1, 50) > 50 ? 13 : 3);
+                }
+
+                else if(this.isSurvivor && SrcRandom.RandomNumber(1, 100) > 90 && this.players.size() > 10) {
+                    mapCategory = 24;
+                }
+
+                else if(this.isNormal) {
+                    mapCategory = SrcRandom.RandomNumber(0, 8);
+                    if(mapCategory == 3) mapCategory = 9;
+                }
             }
 
-            else if(this.isSurvivor && SrcRandom.RandomNumber(1, 100) > 90 && this.players.size() > 10) {
-                mapCategory = 24;
+            if(mapCategory == -1) {
+                return new MapDetails(-1, 0, "", "<C><P /><Z><S /><D /><O /></Z></C>", 0, 0);
             }
 
-            else if(this.isNormal) {
-                mapCategory = SrcRandom.RandomNumber(0, 8);
-                if(mapCategory == 3) mapCategory = 9;
+            MapEditor map = DBUtils.findMapByCategory(mapCategory);
+            if(map == null) {
+                return new MapDetails(-1, 0, "", "<C><P /><Z><S /><D /><O /></Z></C>", 0, 0);
+            }
+
+            MapDetails mapDetails = new MapDetails(map.getMapCategory(), map.getMapCode(), map.getMapAuthor(), map.getMapXML(), map.getMapYesVotes(), map.getMapNoVotes());
+            mapDetails.isInverted = (SrcRandom.RandomNumber(1, 100) > 85);
+            return mapDetails;
+        } else {
+            int mapCategory = this.roomDetails.mapRotation.getFirst();
+            this.roomDetails.mapRotation.removeFirst();
+            this.roomDetails.mapRotation.addLast(mapCategory);
+            if(mapCategory == -1) {
+                int mapCode = Server.vanillaMapList.get(SrcRandom.RandomNumber(0, Server.vanillaMapList.size() - 1));
+                MapDetails currentMap = new MapDetails(mapCode);
+                while (currentMap == this.currentMap) {
+                    mapCode = Server.vanillaMapList.get(SrcRandom.RandomNumber(0, Server.vanillaMapList.size() - 1));
+                    currentMap = new MapDetails(mapCode);
+                }
+
+                currentMap.isInverted = (SrcRandom.RandomNumber(1, 100) > 85);
+                return currentMap;
+            } else {
+                MapEditor map = DBUtils.findMapByCategory(mapCategory);
+                if(map == null) {
+                    return new MapDetails(-1, 0, "", "<C><P /><Z><S /><D /><O /></Z></C>", 0, 0);
+                }
+
+                MapDetails mapDetails = new MapDetails(map.getMapCategory(), map.getMapCode(), map.getMapAuthor(), map.getMapXML(), map.getMapYesVotes(), map.getMapNoVotes());
+                mapDetails.isInverted = (SrcRandom.RandomNumber(1, 100) > 85);
+                return mapDetails;
             }
         }
-
-        MapEditor map = DBUtils.findMapByCategory(mapCategory);
-        if(map == null) {
-            return new MapDetails(-1, 0, "", "<C><P /><Z><S /><D /><O /></Z></C>", 0, 0);
-        }
-        MapDetails mapDetails = new MapDetails(map.getMapCategory(), map.getMapCode(), map.getMapAuthor(), map.getMapXML(), map.getMapYesVotes(), map.getMapNoVotes());
-        mapDetails.isInverted = (SrcRandom.RandomNumber(1, 50) > 25);
-        return mapDetails;
     }
 
     /**
@@ -1368,7 +1402,7 @@ public final class Room {
         public int roundDuration = 100;
         public int miceWeight;
         public short maximumPlayers;
-        public ArrayList<Integer> mapRotation = new ArrayList<>(); /// TODO: add map rotation
+        public ArrayList<Integer> mapRotation = new ArrayList<>();
     }
 
     public static class MapDetails {

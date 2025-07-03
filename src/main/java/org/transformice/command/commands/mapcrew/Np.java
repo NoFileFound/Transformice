@@ -15,13 +15,18 @@ import org.transformice.packets.send.informations.C_TranslationMessage;
 @Command(
         name = "np",
         description = "Changes the current map",
-        permission = {Command.CommandPermission.TRIBE, Command.CommandPermission.MAPCREW, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
-        requiredArgs = 1
+        permission = {Command.CommandPermission.TRIBE, Command.CommandPermission.MAPCREW, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR}
 )
 @SuppressWarnings("unused")
 public final class Np implements CommandHandler {
     @Override
     public void execute(Client player, Server server, List<String> args) {
+        if(args.isEmpty()) {
+            player.getRoom().setMapChangeTimer(0);
+            player.getRoom().changeMap();
+            return;
+        }
+
         String mapCode = args.getFirst();
         if(mapCode.startsWith("@")) {
             MapEditor mapInfo = DBUtils.findMapByCode(Integer.parseInt(mapCode.substring(1)));

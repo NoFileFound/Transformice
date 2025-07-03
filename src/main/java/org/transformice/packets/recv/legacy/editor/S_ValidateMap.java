@@ -13,11 +13,13 @@ import org.transformice.packets.send.legacy.editor.C_InitMapEditor;
 public final class S_ValidateMap implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
+        if(!client.getRoom().isEditeur()) return;
+
         String mapXmlCode = new String(data.readBytes(data.getLength()));
         if(Utils.checkValidXML(mapXmlCode)) {
             client.sendOldPacket(new C_InitMapEditor(2));
-            client.getRoom().isMapEditorMapValidated = false;
             client.getRoom().isMapEditorMapValidating = true;
+            client.getRoom().isMapEditorMapValidated = false;
             client.getRoom().setMapEditorXml(mapXmlCode);
             client.getRoom().changeMap();
         }
