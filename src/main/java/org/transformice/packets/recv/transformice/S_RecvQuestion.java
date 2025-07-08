@@ -6,7 +6,7 @@ import org.transformice.Client;
 import org.transformice.packets.RecvPacket;
 
 @SuppressWarnings("unused")
-public class S_RecvQuestion implements RecvPacket {
+public final class S_RecvQuestion implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
         int questionType = data.readByte();

@@ -2,6 +2,7 @@ package org.transformice.packets.recv.player;
 
 // Imports
 import org.bytearray.ByteArray;
+import org.transformice.Application;
 import org.transformice.Client;
 import org.transformice.libraries.SrcRandom;
 import org.transformice.packets.RecvPacket;
@@ -47,6 +48,18 @@ public final class S_PlayerAction implements RecvPacket {
 
         if(client.isShaman) {
             client.getParseSkillsInstance().handleSkillAction(actionType);
+        }
+
+        if(client.getRoom().getCurrentMap().mapCode == 2002 && client.getRoom().isEventTime() && Application.getPropertiesInfo().event.event_name.equals("Hugging")) {
+            Client repPlayer = client.getServer().getPlayerBySessionId(playerSessionId);
+            if(repPlayer != null && repPlayer.getRoom() == client.getRoom()) {
+                if(client.nickNameColor != repPlayer.nickNameColor) {
+                    client.getRoom().setNicknameColor(client.getPlayerName(), -1);
+                    repPlayer.getRoom().setNicknameColor(repPlayer.getPlayerName(), -1);
+                    client.getParseInventoryInstance().addConsumable("2227", 1, true);
+                    repPlayer.getParseInventoryInstance().addConsumable("2227", 1, true);
+                }
+            }
         }
 
         if (client.getRoom().luaMinigame != null) {

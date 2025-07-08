@@ -168,8 +168,10 @@ public class LUA_TABLE_TFM extends TwoArgFunction {
         table.get("tfm").get("get").get("room").set("currentMap", !this.room.getCurrentMap().mapXml.isEmpty() ? ("@" + this.room.getCurrentMap().mapCode) : String.valueOf(this.room.getCurrentMap().mapCode));
         table.get("tfm").get("get").get("room").set("mirroredMap", LuaBoolean.valueOf(this.room.getCurrentMap().isInverted));
         table.get("tfm").get("get").get("room").set("objectList", new LuaTable());
+        table.get("tfm").get("get").get("room").set("isTribeHouse", LuaBoolean.valueOf(this.room.isTribeHouse()));
         table.get("tfm").get("get").get("room").set("playerList", this.room.getLuaPlayerList());
-
+        table.get("tfm").get("get").get("room").set("uniquePlayers", this.room.getDistinctPlayersCount());
+        table.get("tfm").get("get").get("room").set("language", this.room.getRoomCommunity());
         table.get("tfm").set("exec", new LuaTable());
         table.get("tfm").get("exec").set("addBonus", new TFM_addBonus(this.room));
         table.get("tfm").get("exec").set("addConjuration", new TFM_addConjuration(this.room));

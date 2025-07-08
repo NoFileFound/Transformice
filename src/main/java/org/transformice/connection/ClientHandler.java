@@ -52,49 +52,24 @@ public final class ClientHandler extends SimpleChannelHandler {
             client = (Client) context.getChannel().getAttachment();
         }
 
-        while(packet.getLength() > 0) {
-            int packetLength = this.getVLQLength(packet);
-            if(packet.getLength() >= packetLength) {
-                ByteArray buffer = new ByteArray(packet.readBytes(packetLength));
-                int fingerPrint = buffer.readUnsignedByte();
-                int C = buffer.readUnsignedByte();
-                int CC = buffer.readUnsignedByte();
-                boolean isLegacy = false;
-
-                if(C == 1 && CC == 1) {
-                    isLegacy = true;
-                    buffer.readShort(); // packet length
-                    C = buffer.readByte();
-                    CC = buffer.readByte();
-                    if(buffer.getLength() > 0) buffer.readByte(); // 01
-                }
-
-                var handler = client.getServer().getPacketHandler().getHandlers().get(new PacketStruct(((C << 8) | (CC & 0xFF)), isLegacy));
-                if (handler != null) {
-                    Application.getLogger().debug(Application.getTranslationManager().get("receivedpacket", isLegacy ? "[Legacy]" : "", client.getIpAddress(), C, CC));
-                    handler.handle(client, fingerPrint, buffer);
-                } else {
-                    Application.getLogger().warn(Application.getTranslationManager().get("unhandledpacket", isLegacy ? "[Legacy]" : "", C, CC));
-                }
-            }
+        int fingerPrint = packet.readUnsignedByte();
+        int C = packet.readUnsignedByte();
+        int CC = packet.readUnsignedByte();
+        boolean isLegacy = false;
+        if(C == 1 && CC == 1) {
+            isLegacy = true;
+            packet.readShort(); // packet length
+            C = packet.readByte();
+            CC = packet.readByte();
+            if(packet.getLength() > 0) packet.readByte(); // 01
         }
-    }
 
-    /**
-     * Calculates the variable length quantity from the processing data.
-     * @param data The given data.
-     * @return The calculated length.
-     */
-    private int getVLQLength(ByteArray data) {
-        int var2068 = 0;
-        int var2053 = 0;
-        while (true) {
-            int var56 = data.readByte();
-            var2068 = var2068 | (var56 & 127) << (7 * var2053);
-            var2053++;
-            if (!((var56 & 128) == 128 && var2053 < 5)) {
-                return var2068 + 1;
-            }
+        var handler = client.getServer().getPacketHandler().getHandlers().get(new PacketStruct(((C << 8) | (CC & 0xFF)), isLegacy));
+        if (handler != null) {
+            Application.getLogger().debug(Application.getTranslationManager().get("receivedpacket", isLegacy ? "[Legacy]" : "", client.getIpAddress(), C, CC));
+            handler.handle(client, fingerPrint, packet);
+        } else {
+            Application.getLogger().warn(Application.getTranslationManager().get("unhandledpacket", isLegacy ? "[Legacy]" : "", C, CC));
         }
     }
 }

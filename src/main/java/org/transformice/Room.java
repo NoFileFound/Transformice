@@ -40,6 +40,7 @@ import org.transformice.packets.send.chat.C_ChatMessage;
 import org.transformice.packets.send.legacy.editor.C_MapVotePopup;
 import org.transformice.packets.send.legacy.player.C_PlayerDisconnect;
 import org.transformice.packets.send.legacy.player.C_PlayerShamanPerfomance;
+import org.transformice.packets.send.login.C_SpawnMonster;
 import org.transformice.packets.send.lua.C_AddImage;
 import org.transformice.packets.send.lua.C_CleanupLuaScripting;
 import org.transformice.packets.send.lua.C_DisableProperties;
@@ -48,8 +49,10 @@ import org.transformice.packets.send.lua.C_SetNicknameColor;
 import org.transformice.packets.send.cafe.C_MulodromeEnd;
 import org.transformice.packets.send.cafe.C_MulodromeResult;
 import org.transformice.packets.send.cafe.C_MulodromeWinner;
+import org.transformice.packets.send.player.C_CreateNewNPC;
 import org.transformice.packets.send.player.C_GiveCurrency;
 import org.transformice.packets.send.player.C_ShamanRespawn;
+import org.transformice.packets.send.room.C_AddCollectible;
 import org.transformice.packets.send.room.C_InvokeSnow;
 import org.transformice.packets.send.transformice.C_SpawnPet;
 import org.transformice.packets.send.newpackets.C_NewPlayer;
@@ -97,12 +100,14 @@ public final class Room {
     public int shaman2NumCompleted;
     public boolean isCurrentlyPlay;
     public String forceNextMap = "-1";
+    public String forceMapXml = "";
     private int mulodromeRoundCount;
     private int blueTeamCount;
     private int redTeamCount;
     private boolean initVotingMode;
     private boolean isVotingBox;
     private boolean isVotingMode;
+    public boolean canRunEvent;
     private final Server server;
     @Getter private Client currentShaman;
     @Getter private Client currentSecondShaman;
@@ -158,6 +163,7 @@ public final class Room {
     @Getter @Setter private long luaStartTimeMillis;
     @Getter @Setter private String mapEditorXml;
     @Getter @Setter private String roomPassword;
+    @Getter @Setter private boolean isEventTime;
 
     // Timers
     public Timer luaLoopTimer;
@@ -170,6 +176,7 @@ public final class Room {
     private final Timer voteCloseTimer;
     private final List<Timer> consumablesTimers;
     private final Timer endSnowTimer;
+    private Timer startEventTimer;
 
     /**
      * Creates a new room.
@@ -206,6 +213,7 @@ public final class Room {
         this.gameStartTimeMillis = getUnixTime() * 1000;
         this.canChangeMusic = true;
         this.mapEditorXml = "";
+        this.canRunEvent = false;
 
         // Timers
         this.autoRespawnTimer = new Timer();
@@ -541,10 +549,66 @@ public final class Room {
             this.autoRespawnTimer.schedule(() -> this.respawnMice(true), 2, TimeUnit.SECONDS);
         }
 
+        if(this.isEventTime) {
+            if(Application.getPropertiesInfo().event.event_name.equals("Hugging")) {
+                if(this.currentMap.mapCode == 2002) {
+                    for(Client player : this.players.values()) {
+                        if(player.isFacingLeft) {
+                            this.setNicknameColor(player.getPlayerName(), 16751103);
+                        } else {
+                            this.setNicknameColor(player.getPlayerName(), 9820630);
+                        }
+                    }
+                } else {
+                    //// TODO: Add the npcs in the hugging event.
+                }
+            }
+
+            if(Application.getPropertiesInfo().event.event_name.equals("Ninja")) {
+                for(Client player : this.players.values()) {
+                    player.sendPacket(new C_AddCollectible(18, this.server.lastCollectibleId, 26, 64, 105));
+                    player.sendPacket(new C_CreateNewNPC(this.server.lastNPCSessionId, "Mayonaka", 571, false, "291;46_80587C+1A1007,0,129_A3936B+80587C+A3936B+493457+493457+80587C+FFFFFF+DFDFDF+493457,0,78_EFF7F3+EFF7F3+A3936B+A3936B,63_241F1F+728A8F+493457+493457+493457,0,105,75_A7BCB2+728A8F+1A272E+728A8F+493457+80587C,0,0,0", 832, 575, -1, true, true, 10, ""));
+                    player.sendPacket(new C_CreateNewNPC(this.server.lastNPCSessionId - 1, "Indiana Mouse", 27, true, "45;0,0,0,0,0,0,0,0,0", 1244, 216, -1, true, true, 10, ""));
+                }
+                this.server.lastNPCSessionId -= 2;
+                this.server.lastCollectibleId++;
+            }
+
+            if(Application.getPropertiesInfo().event.event_name.equals("Halloween")) {
+                switch(this.currentMap.mapCode) {
+                    case 5001: {
+                        for(Client player : this.players.values()) {
+                            player.playerHealth = 3;
+                        }
+                        /// TODO: Implement the big cat.
+                        break;
+                    }
+                    case 5002: {
+                        /// TODO: Implement the jackpot.
+                        break;
+                    }
+                    case 5003: {
+                        /// TODO: Implement the door handles.
+                        break;
+                    }
+                    case 5004: {
+                        /// TODO: Implement the Manor/Mansion map.
+                        break;
+                    }
+                }
+            }
+
+            this.isEventTime = false;
+            if(this.canRunEvent) {
+                this.startEventTimer.schedule(() -> this.isEventTime = true, TimeUnit.MINUTES);
+            }
+        }
+
         if (this.luaMinigame != null) {
             try {
                 this.luaMinigame.get("tfm").get("get").get("room").set("objectList", new LuaTable());
                 this.luaMinigame.get("tfm").get("get").get("room").set("playerList", this.getLuaPlayerList());
+                this.luaMinigame.get("tfm").get("get").get("room").set("uniquePlayers", this.getDistinctPlayersCount());
                 this.luaMinigame.get("tfm").get("get").get("room").set("currentMap", !this.currentMap.mapXml.isEmpty() ? ("@" + this.currentMap.mapCode) : String.valueOf(this.currentMap.mapCode));
                 this.luaMinigame.get("tfm").get("get").get("room").set("mirroredMap", LuaBoolean.valueOf(this.currentMap.isInverted));
                 if (!this.currentMap.mapXml.isEmpty()) {
@@ -560,6 +624,19 @@ public final class Room {
             try {
                 this.luaMinigame.get("tfm").get("get").get("room").set("xmlMapInfo", LuaValue.NIL);
             } catch (LuaError _) {}
+        }
+
+        this.canRunEvent = ((this.getDistinctPlayersCount() > Application.getPropertiesInfo().event.minimum_players && !this.isFunCorp) || Application.getPropertiesInfo().is_debug) && !this.getRoomDetails().withoutAdventureMaps;
+        if(this.canRunEvent) {
+            if(this.startEventTimer == null) {
+                this.startEventTimer = new Timer(true, Application.getPropertiesInfo().event.event_delay);
+                this.startEventTimer.schedule(() -> this.isEventTime = true, TimeUnit.MINUTES);
+            }
+        } else {
+            if(this.startEventTimer != null) {
+                this.startEventTimer.cancel();
+                this.startEventTimer = null;
+            }
         }
     }
 
@@ -725,7 +802,7 @@ public final class Room {
      * @return An array containing the shaman session ids.
      */
     public Client[] getShamanClients() {
-        if (this.disableAutoShaman || this.currentMap.isNoShaman) {
+        if (this.disableAutoShaman || this.currentMap.isNoShaman || (this.isEventTime && !Application.getPropertiesInfo().event.event_name.equals("Ninja"))) {
             this.currentShaman = null;
             this.currentSecondShaman = null;
             return new Client[]{null, null};
@@ -928,6 +1005,20 @@ public final class Room {
         this.changeMapTimer.schedule(this::changeMap, seconds+1, TimeUnit.SECONDS);
         for(Client client : this.players.values()) {
             client.sendPacket(new C_SetRoundTime(seconds+1));
+        }
+    }
+
+    /**
+     * Changes the player's nickname color.
+     * @param playerName The player name.
+     * @param color The color to change.
+     */
+    public void setNicknameColor(String playerName, int color) {
+        if(this.players.get(playerName) == null) return;
+
+        this.players.get(playerName).nickNameColor = color;
+        for(Client player : this.players.values()) {
+            player.sendPacket(new C_SetNicknameColor(this.players.get(playerName).getSessionId(), color));
         }
     }
 
@@ -1221,6 +1312,31 @@ public final class Room {
      * @return A map object.
      */
     private MapDetails selectMap() {
+        if(this.isEventTime) {
+            return switch (Application.getPropertiesInfo().event.event_name) {
+                case "Hugging" -> {
+                    int mapCode = (SrcRandom.RandomNumber(1, 100) > 50 ? 2002 : 2801);
+                    yield new MapDetails(9, mapCode, "Transformice", Server.specialMapXmlList.get(mapCode), 0, 0);
+                }
+                case "Halloween" -> {
+                    int mapCode = SrcRandom.RandomNumber(5000, 5004);
+                    yield new MapDetails(666, mapCode, "Halloween", Server.specialMapXmlList.get(mapCode), 0, 0);
+                }
+                case "Ninja" -> new MapDetails(9, 2001, "Transformice", Server.specialMapXmlList.get(2001), 0, 0);
+                case "Fishing" -> {
+                    int mapCode = SrcRandom.RandomNumber(3000, 30005);
+                    yield new MapDetails(666, mapCode, "Transformice", Server.specialMapXmlList.get(mapCode), 0, 0);
+                }
+                default -> new MapDetails(-1, 0, "", "<C><P /><Z><S /><D /><O /></Z></C>", 0, 0);
+            };
+        }
+
+        if(!this.forceMapXml.isEmpty()) {
+            String xmlCode = this.forceMapXml;
+            this.forceMapXml = "";
+            return new MapDetails(1, 0, "#Module", xmlCode, 0, 0);
+        }
+
         if(!this.forceNextMap.equals("-1")) {
             MapDetails currentMap;
             if(!this.forceNextMap.startsWith("@")) {
@@ -1297,7 +1413,8 @@ public final class Room {
             MapDetails mapDetails = new MapDetails(map.getMapCategory(), map.getMapCode(), map.getMapAuthor(), map.getMapXML(), map.getMapYesVotes(), map.getMapNoVotes());
             mapDetails.isInverted = (SrcRandom.RandomNumber(1, 100) > 85);
             return mapDetails;
-        } else {
+        }
+        else {
             int mapCategory = this.roomDetails.mapRotation.getFirst();
             this.roomDetails.mapRotation.removeFirst();
             this.roomDetails.mapRotation.addLast(mapCategory);
@@ -1371,7 +1488,6 @@ public final class Room {
 
 
 
-
     public void startLuaLoop() {
         /*this.luaLoopTimer = new Timer().scheduleAtFixedRate(() -> {
             if (this.luaMinigame != null) {
@@ -1396,7 +1512,7 @@ public final class Room {
         public String roomPassword = "";
         public boolean withoutShamanSkills;
         public boolean withoutPhysicalConsumables;
-        public boolean withoutAdventureMaps; //// TODO: add without adventure maps.
+        public boolean withoutAdventureMaps;
         public boolean withMiceCollisions;
         public boolean withFallDamage;
         public int roundDuration = 100;

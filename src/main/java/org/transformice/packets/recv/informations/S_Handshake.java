@@ -10,7 +10,6 @@ import org.transformice.packets.RecvPacket;
 // Packets
 import org.transformice.packets.send.language.C_ClientVerification;
 import org.transformice.packets.send.login.C_Handshake;
-import org.transformice.packets.send.newpackets.C_SetAdventureBanner;
 import org.transformice.packets.send.informations.C_SetAllowEmailAddress;
 import org.transformice.packets.send.newpackets.C_SetNewsPopupFlyer;
 import org.transformice.packets.send.tribe.C_ChangeLoginAdventure;
@@ -47,14 +46,8 @@ public final class S_Handshake implements RecvPacket {
         client.sendPacket(new C_AddAnimationLib());
         client.sendPacket(new C_SetNewsPopupFlyer());
         client.sendPacket(new C_SetAllowEmailAddress());
-        if(Application.getPropertiesInfo().legacy_login) {
-            client.sendPacket(new C_ChangeLoginBackground());
-            client.sendPacket(new C_ChangeLoginAdventure());
-        }
-        else {
-            client.sendPacket(new C_SetAdventureBanner());
-        }
-
+        client.sendPacket(new C_ChangeLoginBackground());
+        client.sendPacket(new C_ChangeLoginAdventure());
         client.verCode = SrcRandom.RandomNumber(1000000, 999999999);
         client.sendPacket(new C_ClientVerification(client.verCode));
     }

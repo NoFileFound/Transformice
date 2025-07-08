@@ -41,7 +41,7 @@ public final class S_EnterRoom implements RecvPacket {
 
             int sz = data.readUnsignedByte();
             for(int i = 0; i < sz; i++) {
-                details.mapRotation.add(data.readUnsignedByte());
+                details.mapRotation.add((int)data.readByte());
             }
         }
 

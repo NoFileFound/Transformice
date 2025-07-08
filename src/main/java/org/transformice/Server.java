@@ -46,6 +46,8 @@ import org.transformice.packets.send.level.C_OnlineStaffTeam;
 
 public final class Server {
     public int lastGiftID;
+    public int lastCollectibleId;
+    public int lastNPCSessionId = -1;
     private final List<Channel> channels = new ArrayList<>();
     private final Map<Integer, Client> clientSessions = new HashMap<>();
     private boolean isClosed;

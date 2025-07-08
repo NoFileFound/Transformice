@@ -38,12 +38,18 @@ public class TFM_newGame extends VarArgFunction {
             this.room.forceNextMap = mapCode.substring(1);
         }
 
-        if(mapCode.startsWith("#")) {
+        else if(mapCode.startsWith("#")) {
             var info = DBUtils.findMapByCategory(Integer.parseInt(mapCode.substring(1)));
             if(info != null) {
                 this.room.forceNextMap = String.valueOf(info.getMapCode());
             }
         }
+
+        else if(mapCode.startsWith("<")) {
+            this.room.forceMapXml = mapCode;
+        }
+
+        this.room.changeMap();
         return NIL;
     }
 }

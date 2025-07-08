@@ -5,7 +5,6 @@
 	"twitchStreaming": true,
 	"flyerName": "flyer_2024_06_20.jpg",
 	"allow_email": true,
-	"legacy_login": false,
 	"beta_login": false,
 	"use_tag_system": true,
 	"login_attempts": 10,
@@ -15,10 +14,12 @@
 	"shop_sprites": [339, 338, 336, 335, 334, 333, 332, 331, 330, 329, 328, 326, 325, 324, 323, 322, 321, 320, 319, 318, 317, 316, 315, 314, 312, 311, 310, 309, 308, 307, 305, 304, 303, 302, 301, 300, 299, 298, 297, 296, 295, 293, 292, 291, 290, 289, 286, 285, 283, 282, 281, 280, 279, 278, 277, 276, 275, 274, 273, 272, 271, 270, 269, 268, 267, 266, 265, 264, 262, 261, 260, 259, 258, 256, 255, 254, 253, 252, 251, 250, 249, 248, 247, 246, 245, 244, 243, 241, 240, 239, 238, 237, 236, 235, 234, 233, 229, 228, 227, 226, 225, 223, 222, 221],
 	"shaman_sprites": [148, 163, 184, 185, 262, 285, 334, 660, 711, 1013, 1024, 1031],
 	"event": {
-		"event_name": "Valentine",
-		"banner_id": 6,
-		"banner_bg_img_legacy": "",
-		"banner_fg_img_legacy": ""
+		"event_name": "Ninja",
+		"banner_id": 18,
+		"banner_bg_img_legacy": "x_da.png",
+		"banner_fg_img_legacy": "",
+		"event_delay": 1,
+		"minimum_players": 0
 	},
 	"timers": {
 		"keep_alive": {

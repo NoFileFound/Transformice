@@ -33,7 +33,6 @@ public final class PropertiesConfig implements Property {
         public boolean twitchStreaming;
         public String flyerName;
         public boolean allow_email = true;
-        public boolean legacy_login = false;
         public boolean beta_login = false;
         public boolean use_tag_system = true;
         public int login_attempts;
@@ -83,6 +82,8 @@ public final class PropertiesConfig implements Property {
             public int banner_id;
             public String banner_bg_img_legacy;
             public String banner_fg_img_legacy;
+            public int event_delay;
+            public int minimum_players;
         }
 
         public static class SMTP {

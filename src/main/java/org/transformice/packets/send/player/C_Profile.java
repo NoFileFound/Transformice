@@ -11,7 +11,7 @@ public class C_Profile implements SendPacket {
 
     public C_Profile(Account account, boolean isOnline) {
         this.byteArray.writeString(account.getPlayerName());
-        this.byteArray.writeInt(account.getAvatarId());
+        this.byteArray.writeInt(isOnline ? account.getAvatarId() : 0);
         this.byteArray.writeInt(account.getRegDate());
         this.byteArray.writeByte(this.getProfileColorId(account.getPrivLevel(), account.getStaffRoles()));
         this.byteArray.writeByte(account.getPlayerGender());

@@ -86,6 +86,7 @@ public final class Client {
     public int currentGameMode;
     public int playerHealth;
     public int playerScore;
+    public int nickNameColor;
     public long lastSonarTime;
     public boolean canRedistributeSkills = true;
     public boolean hasSent2FAEmail;
@@ -1062,6 +1063,7 @@ public final class Client {
         this.currentPlace = 0;
         this.cheeseIdxs.clear();
         this.position = new Pair<>(-1, -1);
+        this.nickNameColor = -1;
     }
 
     /**
