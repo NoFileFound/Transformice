@@ -48,6 +48,9 @@ public final class Server {
     public int lastGiftID;
     public int lastCollectibleId;
     public int lastNPCSessionId = -1;
+    public int lastMonsterId = -1;
+    public int leftistPlayers = 0;
+    public int rightistPlayers = 0;
     private final List<Channel> channels = new ArrayList<>();
     private final Map<Integer, Client> clientSessions = new HashMap<>();
     private boolean isClosed;
@@ -57,6 +60,7 @@ public final class Server {
     @Getter private final CommandLoader commandHandler;
     @Getter private final List<String> tempBlackList;
     @Getter private final ArrayList<String> minigameList;
+    @Getter private final ArrayList<Integer> blacklistedPackets = new ArrayList<>(List.of(6684));
     @Getter private final Int2ObjectMap<Object[]> shopGifts;
     @Getter private final Object2ObjectMap<String, Client> players;
     @Getter private final Object2ObjectMap<String, Room> rooms;
@@ -170,6 +174,11 @@ public final class Server {
             Map.entry(1, 115.1), Map.entry(2, 116.1), Map.entry(4, 117.1), Map.entry(6, 118.1), Map.entry(8, 119.1),
             Map.entry(10, 120.1), Map.entry(12, 121.1), Map.entry(14, 122.1), Map.entry(16, 123.1), Map.entry(18, 124.1),
             Map.entry(20, 125.1), Map.entry(22, 126.1)
+    );
+
+    // shop badges.
+    public final Map<Integer, Integer> shopBadgeList = Map.ofEntries(
+
     );
 
     /**

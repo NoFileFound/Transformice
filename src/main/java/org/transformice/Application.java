@@ -28,7 +28,7 @@ public final class Application {
     @Getter private static Map<Integer, InventoryConfig.ConsumableInfo> inventoryInfo;
     @Getter private static Map<Integer, PromotionsConfig.Promotion> promotionsInfo;
     @Getter private static Map<Integer, ShopOutfitsConfig.ShopOutfit> shopOutfitsInfo;
-    @Getter private static List<VillageNpcsConfig.VillageNPC> villageNPCSInfo;
+    @Getter private static Map<String, VillageNpcsConfig.VillageNPC> villageNPCSInfo;
     @Getter private static Map<Integer, ShopEmojisConfig.ShopEmoji> shopEmojiInfo;
     @Getter private static Map<Integer, ShopShamanItemConfig.ShopShamanItem> shopShamanItemInfo;
     @Getter private static Map<String, ShopItemConfig.ShopItem> shopItemInfo;
@@ -45,7 +45,7 @@ public final class Application {
         inventoryInfo = (Map<Integer, InventoryConfig.ConsumableInfo>) ConfigLoader.getProperty(InventoryConfig.class).getInstance();
         promotionsInfo = (Map<Integer, PromotionsConfig.Promotion>) ConfigLoader.getProperty(PromotionsConfig.class).getInstance();
         shopOutfitsInfo = (Map<Integer, ShopOutfitsConfig.ShopOutfit>) ConfigLoader.getProperty(ShopOutfitsConfig.class).getInstance();
-        villageNPCSInfo = (List<VillageNpcsConfig.VillageNPC>) ConfigLoader.getProperty(VillageNpcsConfig.class).getInstance();
+        villageNPCSInfo = (Map<String, VillageNpcsConfig.VillageNPC>) ConfigLoader.getProperty(VillageNpcsConfig.class).getInstance();
         shopEmojiInfo = (Map<Integer, ShopEmojisConfig.ShopEmoji>) ConfigLoader.getProperty(ShopEmojisConfig.class).getInstance();
         shopShamanItemInfo = (Map<Integer, ShopShamanItemConfig.ShopShamanItem>) ConfigLoader.getProperty(ShopShamanItemConfig.class).getInstance();
         shopItemInfo = (Map<String, ShopItemConfig.ShopItem>) ConfigLoader.getProperty(ShopItemConfig.class).getInstance();

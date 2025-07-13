@@ -12,13 +12,14 @@ import lombok.Getter;
 import lombok.Setter;
 import org.transformice.Application;
 import org.transformice.database.DBManager;
+import org.transformice.database.embeds.Adventure;
 import org.transformice.database.embeds.Quest;
 import org.transformice.database.embeds.TribeRank;
 import org.transformice.libraries.Pair;
 
 @Entity(value = "accounts", useDiscriminator = false)
 @Getter
-public class Account {
+public final class Account {
     private final @Id long id;
     private final String playerName;
     @Setter private String emailAddress;
@@ -88,6 +89,7 @@ public class Account {
     private final int[] survivorStats;
     private final int[] defilanteStats;
     @Setter private int adventurePoints;
+    private final List<Adventure> adventureList;
 
     /**
      * Creates a new player.
@@ -167,6 +169,7 @@ public class Account {
         this.survivorStats = new int[4];
         this.defilanteStats = new int[3];
         this.adventurePoints = 0;
+        this.adventureList = new ArrayList<>();
     }
 
     /**
@@ -181,6 +184,19 @@ public class Account {
                 return true;
             }
         }
+        return false;
+    }
+
+    /**
+     * Checks if the current player have the given adventure id.
+     * @param adventureId The given adventure id.
+     * @return True if he has it or else False.
+     */
+    public boolean containsAdventure(int adventureId) {
+        for(var adventure : this.adventureList) {
+            if(adventure.getAdventureId() == adventureId) return true;
+        }
+
         return false;
     }
 

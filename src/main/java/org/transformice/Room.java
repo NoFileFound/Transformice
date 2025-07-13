@@ -40,6 +40,7 @@ import org.transformice.packets.send.chat.C_ChatMessage;
 import org.transformice.packets.send.legacy.editor.C_MapVotePopup;
 import org.transformice.packets.send.legacy.player.C_PlayerDisconnect;
 import org.transformice.packets.send.legacy.player.C_PlayerShamanPerfomance;
+import org.transformice.packets.send.login.C_SetMonsterSpeed;
 import org.transformice.packets.send.login.C_SpawnMonster;
 import org.transformice.packets.send.lua.C_AddImage;
 import org.transformice.packets.send.lua.C_CleanupLuaScripting;
@@ -54,6 +55,7 @@ import org.transformice.packets.send.player.C_GiveCurrency;
 import org.transformice.packets.send.player.C_ShamanRespawn;
 import org.transformice.packets.send.room.C_AddCollectible;
 import org.transformice.packets.send.room.C_InvokeSnow;
+import org.transformice.packets.send.room.C_SummonEventElement;
 import org.transformice.packets.send.transformice.C_SpawnPet;
 import org.transformice.packets.send.newpackets.C_NewPlayer;
 import org.transformice.packets.send.room.C_RoundsCount;
@@ -70,6 +72,7 @@ public final class Room {
     public int receivedYesVotes = 0;
     public int receivedNoVotes = 0;
     public int EMapCode;
+    public int EMapCodeLoaded;
     public boolean canAddPassword;
     public boolean canChangeMusic;
     public boolean autoMapFlipMode = true;
@@ -155,6 +158,7 @@ public final class Room {
     @Getter private final Object2ObjectMap<String, Client> players;
     @Getter private final List<String> redTeam;
     @Getter private final List<String> blueTeam;
+    @Getter private final Map<Integer, Integer> monsterLifes;
     @Getter @Setter private Client currentSync;
     @Getter @Setter private Client forceNextShaman;
     @Getter @Setter private int maximumPlayers;
@@ -169,7 +173,6 @@ public final class Room {
     public Timer luaLoopTimer;
     private final Timer autoRespawnTimer;
     private final Timer changeMapTimer;
-    private final Timer checkChangeMapTimer;
     private final Timer closeRoomRoundJoinTimer;
     private final Timer killAfkTimer;
     private final Timer mapStartTimer;
@@ -206,6 +209,7 @@ public final class Room {
         this.roomFunCorpPlayersLinked = new ArrayList<>();
         this.roomFunCorpPlayersNickColor = new HashMap<>();
         this.roomFunCorpPlayersMouseColor = new HashMap<>();
+        this.monsterLifes = new HashMap<>();
         this.disabledChatCommandsDisplay = new ArrayList<>();
         this.blueTeam = new ArrayList<>();
         this.redTeam = new ArrayList<>();
@@ -218,7 +222,6 @@ public final class Room {
         // Timers
         this.autoRespawnTimer = new Timer();
         this.changeMapTimer = new Timer();
-        this.checkChangeMapTimer = new Timer();
         this.closeRoomRoundJoinTimer = new Timer();
         this.killAfkTimer = new Timer();
         this.mapStartTimer = new Timer();
@@ -302,7 +305,7 @@ public final class Room {
         }
 
         this.changeMap();
-        this.checkChangeMapTimer.schedule(this::checkChangeMap, 6, TimeUnit.SECONDS);
+        new Timer().schedule(this::checkChangeMap, 6, TimeUnit.SECONDS);
     }
 
     /**
@@ -391,7 +394,11 @@ public final class Room {
         }
 
         if (this.isVotingMode) {
-            DBUtils.updateMapVotes(this.currentMap.mapCode, this.currentMap.mapYesVotes + this.receivedYesVotes, this.currentMap.mapNoVotes + this.receivedNoVotes);
+            MapEditor map = DBUtils.findMapByCode(this.currentMap.mapCode);
+            map.setMapYesVotes(this.currentMap.mapYesVotes + this.receivedYesVotes);
+            map.setMapNoVotes(this.currentMap.mapNoVotes + this.receivedNoVotes);
+            map.save();
+
             this.receivedYesVotes = 0;
             this.receivedNoVotes = 0;
             this.isVotingMode = false;
@@ -578,9 +585,10 @@ public final class Room {
                 switch(this.currentMap.mapCode) {
                     case 5001: {
                         for(Client player : this.players.values()) {
-                            player.playerHealth = 3;
+                            player.playerHealth = 4;
                         }
-                        /// TODO: Implement the big cat.
+                        this.sendSpawnMonster(700, 280, "chat");
+                        this.sendAll(new C_SummonEventElement(4));
                         break;
                     }
                     case 5002: {
@@ -998,6 +1006,21 @@ public final class Room {
     }
 
     /**
+     * Spawns a monster.
+     * @param x The monster's X axis.
+     * @param y The monster's Y axis.
+     * @param monsterType The monster type. (chat for big cat, f for phantom or sq for little ghost).
+     */
+    public void sendSpawnMonster(int x, int y, String monsterType) {
+        this.monsterLifes.putIfAbsent(this.server.lastMonsterId, monsterType.equals("chat") ? 10 * this.getAliveCount() : 5);
+        this.sendAll(new C_SpawnMonster(this.server.lastMonsterId, x, y, monsterType));
+        this.server.lastMonsterId++;
+        if(!monsterType.equals("chat")) {
+            this.sendAll(new C_SetMonsterSpeed(this.server.lastMonsterId, -2));
+        }
+    }
+
+    /**
      * Changes the map after given seconds.
      * @param seconds The given seconds.
      */
@@ -1020,6 +1043,21 @@ public final class Room {
         for(Client player : this.players.values()) {
             player.sendPacket(new C_SetNicknameColor(this.players.get(playerName).getSessionId(), color));
         }
+    }
+
+    /**
+     * Starts the lua loop.
+     */
+    public void startLuaLoop() {
+        if(this.luaLoopTimer == null) {
+            this.luaLoopTimer = new Timer();
+        }
+
+        this.luaLoopTimer.schedule(() -> {
+            if (this.luaMinigame != null) {
+                this.luaApi.callEvent("eventLoop", System.currentTimeMillis() - this.gameStartTimeMillis, ((!this.isChanged20secTimer ? this.roundTime + this.addTime : 20) * 1000L) + (this.gameStartTimeMillis - System.currentTimeMillis()));
+            }
+        }, 500, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -1484,29 +1522,6 @@ public final class Room {
 
         } catch (LuaError _) {}
     }
-
-
-
-
-    public void startLuaLoop() {
-        /*this.luaLoopTimer = new Timer().scheduleAtFixedRate(() -> {
-            if (this.luaMinigame != null) {
-                this.luaApi.callEvent("eventLoop", System.currentTimeMillis() - this.gameStartTimeMillis, ((!this.isChanged20secTimer ? this.roundTime + this.addTime : 20) * 1000L) + (this.gameStartTimeMillis - System.currentTimeMillis()));
-            }
-        }, 500, 500, TimeUnit.MILLISECONDS);
-         */
-    }
-
-
-
-
-
-
-
-
-
-
-
 
     public static class RoomDetails {
         public String roomPassword = "";

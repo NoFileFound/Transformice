@@ -29,6 +29,7 @@
 		"shopemojinotofound": "[Shop] The emoji id %d was not found in the config",
 		"shopshamanitemnotfound": "[Shop] The shaman item id %d was not found in the config",
 		"invalidsonarcode": "[Sonar] Unknown sonar code %d",
+		"invalidnpcfunctioncode": "[Trades] Invalid npc functions code %d",
 		"commandnotfound": "The command %s is not found",
 		"funcorponlycommand": "FunCorp commands only work when the room is in FunCorp mode.",
 		"commandargsnotmet": "You need more arguments to use this command.",

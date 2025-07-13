@@ -7,14 +7,8 @@ import org.transformice.packets.SendPacket;
 public final class C_EditorMessage implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
-    public C_EditorMessage(int actionType) {
-        if(actionType == 0) {
-            this.byteArray.writeString("", false);
-        } else {
-            this.byteArray.writeString("", false);
-            this.byteArray.writeByte(1);
-            this.byteArray.writeString("", false);
-        }
+    public C_EditorMessage() {
+        this.byteArray.writeString("", false);
     }
 
     @Override

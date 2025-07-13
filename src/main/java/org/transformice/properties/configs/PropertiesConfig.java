@@ -78,12 +78,30 @@ public final class PropertiesConfig implements Property {
         }
 
         public static class EventInfo {
+            public int adventure_id;
             public String event_name;
+            public String event_cheese_suffix;
+            public String event_shop_news_file_id;
+            public String decoration_list_left_image;
+            public int decoration_list_left_color;
+            public String decoration_list_right_image;
+            public int decoration_list_right_color;
             public int banner_id;
             public String banner_bg_img_legacy;
             public String banner_fg_img_legacy;
             public int event_delay;
             public int minimum_players;
+            public int event_points;
+            public ArrayList<EventAdventureTasks> adventure_tasks;
+            public ArrayList<Integer> adventure_progress;
+        }
+
+        public static class EventAdventureTasks {
+            public int task_consumable_id;
+            public int task_finish_points;
+            public int task_progess_type;
+            public int task_progess_type2_minimum;
+            public int task_progess_type1_tooltip_id;
         }
 
         public static class SMTP {

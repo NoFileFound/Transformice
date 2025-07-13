@@ -20,8 +20,6 @@ public class LUA_TABLE_SY extends TwoArgFunction {
         table.get("system").set("bindMouse", new SY_bindMouse(this.room));
         table.get("system").set("disableChatCommandDisplay", new SY_disableChatCommandDisplay(this.room));
         table.get("system").set("exit", new SY_exit(this.room));
-        table.get("system").set("giveAdventurePoint", new SY_giveAdventurePoint(this.room));
-        table.get("system").set("giveEventGift", new SY_giveEventGift(this.room));
         table.get("system").set("loadFile", new SY_loadFile(this.room));
         table.get("system").set("loadPlayerData", new SY_loadPlayerData(this.room));
         table.get("system").set("newTimer", new SY_newTimer(this.room));

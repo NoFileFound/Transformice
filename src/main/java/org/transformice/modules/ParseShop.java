@@ -10,7 +10,6 @@ import org.transformice.Server;
 import org.transformice.database.DBManager;
 import org.transformice.database.collections.Account;
 import org.transformice.libraries.Pair;
-import org.transformice.packets.send.legacy.player.C_PlayerUnlockTitle;
 import org.transformice.properties.configs.shop.PromotionsConfig;
 import org.transformice.properties.configs.shop.ShopItemConfig;
 import org.transformice.properties.configs.shop.ShopOutfitsConfig;
@@ -20,13 +19,16 @@ import org.transformice.utils.Utils;
 import org.transformice.packets.send.chat.C_ServerMessage;
 import org.transformice.packets.send.informations.C_ShopTimestamp;
 import org.transformice.packets.send.informations.C_TranslationMessage;
+import org.transformice.packets.send.legacy.player.C_PlayerUnlockTitle;
 import org.transformice.packets.send.newpackets.C_LoadItemSprites;
 import org.transformice.packets.send.newpackets.C_LoadShamanSprites;
 import org.transformice.packets.send.newpackets.C_OpenFashionSquadOutfitsWindow;
 import org.transformice.packets.send.newpackets.C_OpenFashionSquadSalesWindow;
 import org.transformice.packets.send.newpackets.C_PurchasedEmojis;
-import org.transformice.packets.send.transformice.C_OpenDressingWindow;
+import org.transformice.packets.send.player.C_PlayerUnlockBadge;
 import org.transformice.packets.send.player.C_ShopOpen;
+import org.transformice.packets.send.transformice.C_OpenDressingWindow;
+import org.transformice.packets.send.transformice.C_VisualizeShopOutfit;
 import org.transformice.packets.send.shop.*;
 
 public final class ParseShop {
@@ -764,28 +766,13 @@ public final class ParseShop {
     }
 
     /**
-     * Sends the updated look in the shop.
+     * Sends the result after buying a shop item.
+     * @param item_id The shop item id.
+     * @param item_type The shop item type.
      */
-    private void sendShopLookChange() {
-        this.client.sendPacket(new C_ShopMouseLook(this.client.getAccount().getMouseLook(), this.client.getAccount().getMouseColor()));
-    }
-
-    /**
-     * Sends the updated look.
-     */
-    private void sendShopShamanLookChange() {
-        this.client.sendPacket(new C_ShopShamanLook(this.client.getAccount().getShamanLook()));
-    }
-
-
     private void sendBuyResult(int item_id, int item_type) {
         this.client.getParseDailyQuestsInstance().sendMissionIncrease(6);
-
-        /// 1 - regular item
-        /// 2 - shaman item
-        /// 3 - emoji
-
-        if(!this.client.isGuest()) {
+        if(!this.client.isGuest() && item_type != 2) {
             for (Map.Entry<Integer, Double> entry : this.server.shopTitleList.entrySet()) {
                 int needResources = entry.getKey();
                 double titleIntegerID = entry.getValue();
@@ -800,6 +787,62 @@ public final class ParseShop {
                 }
             }
         }
-        /// TODO: Badges for fur items and animation after receive the badge.
+
+        if(item_type == 1) {
+            if(this.server.shopBadgeList.get(item_id) != null) {
+                this.client.getRoom().sendAll(new C_PlayerUnlockBadge(this.client.getSessionId(), this.server.shopBadgeList.get(item_id)));
+                this.client.getAccount().getShopBadges().put(this.server.shopBadgeList.get(item_id), 1);
+            }
+        }
+    }
+
+    /**
+     * Sends the updated look in the shop.
+     */
+    private void sendShopLookChange() {
+        this.client.sendPacket(new C_ShopMouseLook(this.client.getAccount().getMouseLook(), this.client.getAccount().getMouseColor()));
+    }
+
+    /**
+     * Sends the updated look.
+     */
+    private void sendShopShamanLookChange() {
+        this.client.sendPacket(new C_ShopShamanLook(this.client.getAccount().getShamanLook()));
+    }
+
+    /**
+     * Sends the shop outfit virtualization for pruchase.
+     * @param outfitId The outfit id.
+     */
+    public void sendVisualizeShopOutfit(int outfitId) {
+        var outfitInfo = Application.getShopOutfitsInfo().get(outfitId);
+        if(outfitInfo == null) return;
+
+        String[] outfitLook = outfitInfo.outfit_look.split(";");
+        int clothPrice = (this.client.getAccount().getShopClothes().size() > 2) ? 100 : (this.client.getAccount().getShopClothes().size() == 1 ? 50 : 5);
+        int outfitFur = Integer.parseInt(outfitLook[0]);
+        int i = 0;
+        List<Object[]> infos = new ArrayList<>();
+        for(String visualItem : outfitLook[1].split(",")) {
+            if(!visualItem.equals("0")) {
+                int itemId;
+                String itemCustom;
+                boolean hasCustom = visualItem.contains("_");
+                if(hasCustom) {
+                    itemId = Integer.parseInt(visualItem.substring(0, visualItem.indexOf("_")));
+                    itemCustom = visualItem.substring(visualItem.indexOf("_") + 1);
+                } else {
+                    itemId = Integer.parseInt(visualItem);
+                    itemCustom = "";
+                }
+
+                int fullItemId = Integer.parseInt(i + String.valueOf(itemId));
+                infos.add(new Object[]{itemId, itemCustom, fullItemId, this.client.getAccount().getShopItems().containsKey(fullItemId), false, Application.getShopItemInfo().get(i + "_" + itemId).strawberry_price, this.getPromotionPrice(fullItemId, false, Application.getShopItemInfo().get(i + "_" + itemId).strawberry_price)});
+            }
+
+            i++;
+        }
+
+        this.client.sendPacket(new C_VisualizeShopOutfit(outfitId, outfitInfo.outfit_look, clothPrice, outfitFur, infos));
     }
 }

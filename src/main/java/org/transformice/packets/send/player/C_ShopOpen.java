@@ -54,17 +54,20 @@ public class C_ShopOpen implements SendPacket {
                 this.byteArray.writeInt(entry.getValue().require_item);
             }
         }
+
         this.byteArray.writeByte(shopOutfits.size());
         for(var entry : shopOutfits.entrySet()) {
             this.byteArray.writeUnsignedShort(entry.getKey());
             this.byteArray.writeString(entry.getValue().outfit_look);
             this.byteArray.writeByte(entry.getValue().outfit_bg);
         }
+
         this.byteArray.writeShort((short)purchasedClothes.size());
         for(var entry : purchasedClothes) {
             String[] parts = entry.split("/");
             this.byteArray.writeString(parts[1] + ";" + parts[2] + ";" + parts[3]);
         }
+
         this.byteArray.writeShort((short)purchasedShamanItems.size());
         for(var entry : purchasedShamanItems.entrySet()) {
             this.byteArray.writeShort(entry.getKey().shortValue());
@@ -81,6 +84,7 @@ public class C_ShopOpen implements SendPacket {
                 this.byteArray.writeByte(0);
             }
         }
+
         this.byteArray.writeShort((short)shopShamanItems.size());
         for(var entry : shopShamanItems.entrySet()) {
             this.byteArray.writeInt(entry.getKey());
@@ -90,6 +94,7 @@ public class C_ShopOpen implements SendPacket {
             this.byteArray.writeInt(entry.getValue().cheese_price);
             this.byteArray.writeShort((short)entry.getValue().strawberry_price);
         }
+
         this.byteArray.writeInt128(shopEmojis.size());
         for(var entry : shopEmojis.entrySet()) {
             this.byteArray.writeInt128(entry.getKey());
@@ -97,6 +102,7 @@ public class C_ShopOpen implements SendPacket {
             this.byteArray.writeInt128(entry.getValue().strawberry_price);
             this.byteArray.writeBoolean(entry.getValue().is_new);
         }
+
         this.byteArray.writeInt128(purchasedEmojis.size());
         for(var entry : purchasedEmojis) {
             this.byteArray.writeInt128(entry);

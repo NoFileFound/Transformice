@@ -1,21 +1,19 @@
-package org.transformice.packets.send.room;
+package org.transformice.packets.send.newpackets;
 
 // Imports
 import org.bytearray.ByteArray;
 import org.transformice.packets.SendPacket;
 
-public final class C_GrapnelSkill implements SendPacket {
+public final class C_DisplayDismissibleImage implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
-    public C_GrapnelSkill(int session, int x, int y) {
-        this.byteArray.writeInt(session);
-        this.byteArray.writeShort((short) x);
-        this.byteArray.writeShort((short) y);
+    public C_DisplayDismissibleImage(String imagineId) {
+        this.byteArray.writeString(imagineId);
     }
 
     @Override
     public int getC() {
-        return 5;
+        return 144;
     }
 
     @Override

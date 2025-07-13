@@ -3,6 +3,7 @@ package org.transformice.command;
 // Imports
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -10,6 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.reflections.Reflections;
 import org.transformice.Application;
 import org.transformice.Client;
+import org.transformice.database.DBUtils;
+import org.transformice.database.collections.MapEditor;
 import org.transformice.database.embeds.TribeRank;
 
 public class CommandLoader {
@@ -36,6 +39,47 @@ public class CommandLoader {
         String[] split = rawMessage.split(" ");
         String commandName = split[0].toLowerCase();
         ArrayList<String> args = new ArrayList<>(Arrays.asList(split).subList(1, split.length));
+
+        // Special commands.
+        if(client.hasStaffPermission("MapCrew", "Commands")) {
+            /// /lsp command.
+            if(commandName.matches("lsp\\d+(\\.\\d+)?")) {
+                int mapCategory = Integer.parseInt(commandName.substring(3).split("\\.")[0]);
+                if(mapCategory < 0 || mapCategory > 87) {
+                    return;
+                }
+                List<MapEditor> maps = DBUtils.findMapsByCategory(mapCategory);
+                StringBuilder mapList = new StringBuilder();
+                mapList.append(String.format("<font size='12'><N>Total Maps </N> <BV>%s</BV> <N>with category: </N> <V>p%s</V></font><br>", maps.size(), mapCategory));
+                for (MapEditor map : maps) {
+                    int totalVotes = map.getMapYesVotes() + map.getMapNoVotes();
+                    double rating = (1.0 * map.getMapYesVotes() / totalVotes) * 100;
+                    mapList.append(String.format("<N>%s</N> - @%s - %d - %s%s - P%s<br>", map.getMapAuthor(), map.getMapCode(), (int)rating, map.getMapYesVotes(), map.getMapNoVotes(), map.getMapCategory()));
+                }
+
+                CommandHandler.sendLogMessage(client, 0, mapList.toString());
+                return;
+            }
+
+            /// /p command
+            if(commandName.matches("p\\d+(\\.\\d+)?")) {
+                int mapCategory = Integer.parseInt(commandName.substring(1).split("\\.")[0]);
+                if(mapCategory < 0 || mapCategory > 87) {
+                    return;
+                }
+                MapEditor map = DBUtils.findMapByCode(client.getRoom().getCurrentMap().mapCode);
+                if(map == null) {
+                    CommandHandler.sendServerMessage(client, Application.getTranslationManager().get("mapcatnotfound", mapCategory));
+                    return;
+                }
+                int oldCategory = map.getMapCategory();
+                map.setMapCategory(mapCategory);
+                map.save();
+
+                client.getServer().sendServerMessage(String.format("[%s] @%d : %d -> %d", client.getPlayerName(), map.getMapCode(), oldCategory, mapCategory), false, null);
+                return;
+            }
+        }
 
         // gets the command.
         CommandHandler handler = this.getHandler(commandName);

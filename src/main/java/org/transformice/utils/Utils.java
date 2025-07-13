@@ -161,7 +161,7 @@ public final class Utils {
                     .mapToObj(_ -> String.valueOf(symbols.charAt(SrcRandom.RandomNumber(0, symbols.length() - 1))))
                     .reduce("", String::concat);
 
-            text = text.replaceAll("(?i)\\b" + word + "\\b", replacement);
+            text = text.replaceAll("(?i)\\b" + Pattern.quote(word) + "\\b", Matcher.quoteReplacement(replacement));
         }
         return text;
     }

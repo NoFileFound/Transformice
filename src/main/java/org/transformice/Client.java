@@ -17,11 +17,16 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaError;
+import org.luaj.vm2.lib.Bit32Lib;
+import org.luaj.vm2.lib.PackageLib;
 import org.luaj.vm2.lib.TimeOutDebugLib;
+import org.luaj.vm2.lib.jse.JseIoLib;
+import org.luaj.vm2.lib.jse.JseOsLib;
 import org.luaj.vm2.lib.jse.JsePlatform;
 import org.transformice.database.collections.Account;
 import org.transformice.database.collections.Sanction;
 import org.transformice.database.collections.Tribe;
+import org.transformice.database.embeds.Adventure;
 import org.transformice.libraries.GeoIP;
 import org.transformice.libraries.Pair;
 import org.transformice.libraries.SrcRandom;
@@ -30,6 +35,7 @@ import org.transformice.luapi.LuaApiLib;
 import org.transformice.modules.*;
 import org.transformice.packets.SendPacket;
 import org.transformice.packets.TribullePacket;
+import org.transformice.packets.send.newpackets.C_DecoratePlayerList;
 import org.transformice.utils.Utils;
 
 // Packets
@@ -60,6 +66,7 @@ import org.transformice.packets.send.newpackets.C_PlayerGetCheese;
 import org.transformice.packets.send.newpackets.C_PurchasedEmojis;
 import org.transformice.packets.send.newpackets.C_RoomDetailsMessage;
 import org.transformice.packets.send.newpackets.C_RoomPlayerList;
+import org.transformice.packets.send.newpackets.C_SetCheeseSpriteSuffix;
 import org.transformice.packets.send.player.C_CreateNewNPC;
 import org.transformice.packets.send.player.C_EnableMeep;
 import org.transformice.packets.send.player.C_PlayerShamanInfo;
@@ -71,6 +78,7 @@ import org.transformice.packets.send.room.info.C_RoomType;
 import org.transformice.packets.send.transformation.C_EnableTransformation;
 import org.transformice.packets.send.transformice.C_CollectibleActionPacket;
 import org.transformice.packets.send.transformice.C_ExportMapCheeseAmount;
+import org.transformice.packets.send.transformice.C_SetShopNews;
 import org.transformice.packets.send.tribulle.*;
 
 public final class Client {
@@ -133,6 +141,7 @@ public final class Client {
     public String tmpEmailAddressCode;
     public String tmpMouseLook = "";
     public String token2FA;
+    public String lastNpcName;
     public Pair<Integer, String> tempTotemInfo = new Pair<>(0, "");
     public Pair<Integer, Integer> mulodromeInfo = new Pair<>(0, 0);
     private boolean isClosed;
@@ -368,7 +377,15 @@ public final class Client {
         this.parseShopInstance.sendShopSprites();
         this.sendPacket(new C_PurchasedEmojis(this.account.getPurchasedEmojis()));
         this.parseShopInstance.sendShopPromotions();
+        if(!Application.getPropertiesInfo().event.event_shop_news_file_id.isEmpty()) {
+            this.sendPacket(new C_SetShopNews(Application.getPropertiesInfo().event.event_shop_news_file_id));
+        }
+        if(!Application.getPropertiesInfo().event.event_cheese_suffix.isEmpty()) {
+            this.sendPacket(new C_SetCheeseSpriteSuffix(Application.getPropertiesInfo().event.event_cheese_suffix));
+        }
+
         this.parseDailyQuestsInstance.sendMissionMark();
+        this.sendPacket(new C_DecoratePlayerList(Application.getPropertiesInfo().event.decoration_list_left_image, this.server.leftistPlayers, Application.getPropertiesInfo().event.decoration_list_left_color, Application.getPropertiesInfo().event.decoration_list_right_image, this.server.rightistPlayers, Application.getPropertiesInfo().event.decoration_list_right_color));
         this.sendPacket(new C_ShowCommunityPartners());
         if(!this.isGuest) {
             this.sendPacket(new C_VerifiedEmailAddress(this.account.getEmailAddress(), this.account.isVerifiedEmail()));
@@ -421,6 +438,17 @@ public final class Client {
                 }
 
                 this.account.getLetters().clear();
+            }
+
+            if(!Application.getPropertiesInfo().event.event_name.isEmpty() && !this.account.containsAdventure(Application.getPropertiesInfo().event.adventure_id)) {
+                this.account.getAdventureList().add(new Adventure(Application.getPropertiesInfo().event.adventure_id, Application.getPropertiesInfo().event.banner_id, Utils.getUnixTime()));
+                for(var task : Application.getPropertiesInfo().event.adventure_tasks) {
+                    this.account.getAdventureList().getLast().getAdventureTasks().add(new Adventure.AdventureTask(task.task_consumable_id));
+                }
+
+                for(var _ : Application.getPropertiesInfo().event.adventure_progress) {
+                    this.account.getAdventureList().getLast().getAdventureProgress().add(0);
+                }
             }
 
             // Timers
@@ -586,7 +614,6 @@ public final class Client {
                 Object[] errorInfo = error.getError();
                 endTime = (int) (System.currentTimeMillis() - startTime);
                 this.room.stopLuaScript(true);
-
                 if (error.getMessage().contains("RuntimeException")) {
                     this.sendPacket(new C_LuaMessage("<V>[" + this.room.getRoomName() + "]</V> Init Error : " + this.playerName + ".lua:" + ((int) errorInfo[0] == -1 ? "" : (errorInfo[0] + ":")) + " Lua destroyed : Runtime too long!"));
                 } else {
@@ -840,6 +867,14 @@ public final class Client {
             }
         }
 
+        if(this.account.getMouseLook().split(";")[0].equals(Application.getPropertiesInfo().event.decoration_list_right_image.replace(".png", ""))) {
+            this.server.rightistPlayers += this.cheeseCount;
+        }
+
+        if(this.account.getMouseLook().split(";")[0].equals(Application.getPropertiesInfo().event.decoration_list_left_image.replace(".png", ""))) {
+            this.server.leftistPlayers += this.cheeseCount;
+        }
+
         this.room.sendAll(new C_PlayerVictory(this.sessionId, this.room.isDefilante() ? 1 : 0, this.playerScore, place, timeTaken));
         if (this.room.getPlayersCount() >= 2 && this.room.checkIfTooFewRemaining() && !this.room.getCurrentMap().isDualShaman && this.room.getCurrentShaman() != null && this.room.getCurrentShaman().isOpportunist) {
             this.room.getCurrentShaman().sendEnterHole(0, -1, -1, -1);
@@ -939,9 +974,11 @@ public final class Client {
 
         if(this.room.isVillage()) {
             int cnt = -1;
-            for(var info : Application.getVillageNPCSInfo()) {
-                this.sendPacket(new C_CreateNewNPC(cnt, info.name, info.title_id, info.feiminine, info.look, info.x, info.y, info.emote, info.facing_right, info.face_player, info.npc_interface, info.message));
-                cnt -= 1;
+            for(var npc : Application.getVillageNPCSInfo().entrySet()) {
+                if(npc.getValue().isVillage == 1 || npc.getValue().isVillage == 2) {
+                    this.sendPacket(new C_CreateNewNPC(cnt, npc.getKey(), npc.getValue().title_id, npc.getValue().feiminine, npc.getValue().look, npc.getValue().x, npc.getValue().y, npc.getValue().emote, npc.getValue().facing_right, npc.getValue().face_player, npc.getValue().npc_interface, npc.getValue().message));
+                    cnt -= 1;
+                }
             }
         }
 
@@ -1016,11 +1053,29 @@ public final class Client {
     public void sendRound() {
         this.playerStartTimeMillis = this.room.getGameStartTimeMillis();
         this.isNewPlayer = this.room.isCurrentlyPlay;
+        this.sendPacket(new C_StartRoundCountdown(false));
         this.sendLoadMap();
+
+        Client[] shamans = this.room.getShamanClients();
+        this.isShaman = (shamans[0] == this || shamans[1] == this);
+        if(this.isShaman && !this.room.disableAllShamanSkills && !this.room.getCurrentMap().isCatchTheCheese) {
+            this.getParseSkillsInstance().sendShamanRoomSkills();
+        }
+
         this.sendPacket(new C_RoomPlayerList(this.room.getPlayerList()));
         this.sendOldPacket(new C_PlayerSync(this.room.getSyncCode(), (this.room.isEditeur() && !this.room.isMapEditorMapValidating)));
         this.sendPacket(new C_SetRoundTime(this.room.getRoundTime() + (int)(((this.room.getGameStartTimeMillis() / 1000) - Utils.getUnixTime())) + this.room.addTime));
-        this.sendShamanInfo();
+        if(this.room.getCurrentMap().isCatchTheCheese) {
+            this.sendOldPacket(new C_CatchTheCheeseMap(shamans[0].getSessionId()));
+            this.room.sendAll(new C_PlayerGetCheese(shamans[0].getSessionId(), 1));
+            if(this.room.getCurrentMap().mapCode > 109 && this.room.getCurrentMap().mapCode < 114) {
+                this.sendPacket(new C_PlayerShamanInfo(shamans[0], null));
+            }
+        } else {
+            this.room.sendAll(new C_SetNicknameColor(this.getSessionId(), this.account.getShamanColor()));
+            this.sendPacket(new C_PlayerShamanInfo(shamans[0], shamans[1]));
+        }
+
         this.sendPacket(new C_StartRoundCountdown(!this.room.isEditeur() && !this.room.isTutorial() && !this.room.isTotem() && !this.room.isCurrentlyPlay && !this.room.isBootcamp() && !this.room.isDefilante() && this.room.getPlayersCount() > 2));
         if (this.room.isTotem()) {
             this.sendTotemUsedCount();
@@ -1036,6 +1091,7 @@ public final class Client {
             this.sendPacket(new C_EnableMeep(true));
         }
 
+        this.sendPacket(new C_DecoratePlayerList(Application.getPropertiesInfo().event.decoration_list_left_image, this.server.leftistPlayers, Application.getPropertiesInfo().event.decoration_list_left_color, Application.getPropertiesInfo().event.decoration_list_right_image, this.server.rightistPlayers, Application.getPropertiesInfo().event.decoration_list_right_color));
         if(this.hasStaffPermission("Modo", "")) {
             this.sendPacket(new C_DisableInitialItemCooldown());
         }
@@ -1064,6 +1120,9 @@ public final class Client {
         this.cheeseIdxs.clear();
         this.position = new Pair<>(-1, -1);
         this.nickNameColor = -1;
+
+        // debug
+        this.isDebugTeleport = false;
     }
 
     /**
@@ -1323,28 +1382,6 @@ public final class Client {
                     this.room.getCurrentMap().isAIE,
                     (this.room.isEditeur() ? null : this.room.getRoomDetails())
             ));
-        }
-    }
-
-    /**
-     * Sends the shaman info when enter the room.
-     */
-    private void sendShamanInfo() {
-        Client[] shamans = this.room.getShamanClients();
-        this.isShaman = (shamans[0] == this || shamans[1] == this);
-        if(this.room.getCurrentMap().isCatchTheCheese) {
-            this.sendOldPacket(new C_CatchTheCheeseMap(shamans[0].getSessionId()));
-            this.room.sendAll(new C_PlayerGetCheese(shamans[0].getSessionId(), 1));
-            if(this.room.getCurrentMap().mapCode > 109 && this.room.getCurrentMap().mapCode < 114) {
-                this.sendPacket(new C_PlayerShamanInfo(shamans[0], null));
-            }
-        } else {
-            if(this.isShaman && !this.room.disableAllShamanSkills) {
-                this.getParseSkillsInstance().sendShamanRoomSkills();
-            }
-
-            this.room.sendAll(new C_SetNicknameColor(this.getSessionId(), this.account.getShamanColor()));
-            this.sendPacket(new C_PlayerShamanInfo(shamans[0], shamans[1]));
         }
     }
 }

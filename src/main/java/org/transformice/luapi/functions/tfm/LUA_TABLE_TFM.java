@@ -174,9 +174,11 @@ public class LUA_TABLE_TFM extends TwoArgFunction {
         table.get("tfm").get("get").get("room").set("language", this.room.getRoomCommunity());
         table.get("tfm").set("exec", new LuaTable());
         table.get("tfm").get("exec").set("addBonus", new TFM_addBonus(this.room));
+        table.get("tfm").get("exec").set("addCollectible", new TFM_addCollectible(this.room));
         table.get("tfm").get("exec").set("addConjuration", new TFM_addConjuration(this.room));
         table.get("tfm").get("exec").set("addImage", new TFM_addImage(this.room));
         table.get("tfm").get("exec").set("addJoint", new TFM_addJoint(this.room));
+        table.get("tfm").get("exec").set("addMonster", new TFM_spawnMonster(this.room));
         table.get("tfm").get("exec").set("addNPC", new TFM_addNPC(this.room));
         table.get("tfm").get("exec").set("addPhysicObject", new TFM_addPhysicObject(this.room));
         table.get("tfm").get("exec").set("addShamanObject", new TFM_addShamanObject(this.room));
@@ -218,9 +220,11 @@ public class LUA_TABLE_TFM extends TwoArgFunction {
         table.get("tfm").get("exec").set("playerVictory", new TFM_playerVictory(this.room));
         table.get("tfm").get("exec").set("removeBonus", new TFM_removeBonus(this.room));
         table.get("tfm").get("exec").set("removeCheese", new TFM_removeCheese(this.room));
+        table.get("tfm").get("exec").set("removeCollectible", new TFM_removeCollectible(this.room));
         table.get("tfm").get("exec").set("removeImage", new TFM_removeImage(this.room));
         table.get("tfm").get("exec").set("removeJoint", new TFM_removeJoint(this.room));
         table.get("tfm").get("exec").set("removeMonster", new TFM_removeMonster(this.room));
+        table.get("tfm").get("exec").set("removeNPC", new TFM_removeNPC(this.room));
         table.get("tfm").get("exec").set("removeObject", new TFM_removeObject(this.room));
         table.get("tfm").get("exec").set("removePhysicObject", new TFM_removePhysicObject(this.room));
         table.get("tfm").get("exec").set("respawnPlayer", new TFM_respawnPlayer(this.room));

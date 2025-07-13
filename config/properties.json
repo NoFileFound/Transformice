@@ -14,12 +14,37 @@
 	"shop_sprites": [339, 338, 336, 335, 334, 333, 332, 331, 330, 329, 328, 326, 325, 324, 323, 322, 321, 320, 319, 318, 317, 316, 315, 314, 312, 311, 310, 309, 308, 307, 305, 304, 303, 302, 301, 300, 299, 298, 297, 296, 295, 293, 292, 291, 290, 289, 286, 285, 283, 282, 281, 280, 279, 278, 277, 276, 275, 274, 273, 272, 271, 270, 269, 268, 267, 266, 265, 264, 262, 261, 260, 259, 258, 256, 255, 254, 253, 252, 251, 250, 249, 248, 247, 246, 245, 244, 243, 241, 240, 239, 238, 237, 236, 235, 234, 233, 229, 228, 227, 226, 225, 223, 222, 221],
 	"shaman_sprites": [148, 163, 184, 185, 262, 285, 334, 660, 711, 1013, 1024, 1031],
 	"event": {
-		"event_name": "Ninja",
-		"banner_id": 18,
-		"banner_bg_img_legacy": "x_da.png",
+		"adventure_id": 77,
+		"event_name": "Hugging",
+		"event_cheese_suffix": "",
+		"event_shop_news_file_id": "",
+		"banner_id": 4,
+		"banner_bg_img_legacy": "x_papaque_2015.jpg",
 		"banner_fg_img_legacy": "",
-		"event_delay": 1,
-		"minimum_players": 0
+		"event_delay": 15,
+		"minimum_players": 0,
+		"event_points": 150,
+		"decoration_list_left_image": "351.png",
+		"decoration_list_left_color": 8479399,
+		"decoration_list_right_image": "352.png",
+		"decoration_list_right_color": 2634598,
+		"adventure_tasks": [
+			{
+				"task_consumable_id": 2227,
+				"task_finish_points": 20,
+				"task_progess_type": 1,
+				"task_progess_type2_minimum": 50,
+				"task_progess_type1_tooltip_id": -1
+			},
+			{
+				"task_consumable_id": 2227,
+				"task_finish_points": 40,
+				"task_progess_type": 1,
+				"task_progess_type2_minimum": 100,
+				"task_progess_type1_tooltip_id": -1
+			}
+		],
+		"adventure_progress": [2227]
 	},
 	"timers": {
 		"keep_alive": {

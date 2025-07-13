@@ -36,6 +36,7 @@ public final class S_LoadMap implements RecvPacket {
                 return;
             }
 
+            client.getRoom().EMapCodeLoaded = mapInfo.getMapCode();
             client.sendOldPacket(new C_LoadMap(mapInfo.getMapXML(), mapInfo.getMapYesVotes(), mapInfo.getMapNoVotes(), (hasPerm) ? mapInfo.getMapCategory() : 0));
         } catch (NumberFormatException ignored) {
             client.sendOldPacket(new C_LoadMapResult());

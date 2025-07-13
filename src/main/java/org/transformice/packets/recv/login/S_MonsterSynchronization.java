@@ -1,26 +1,25 @@
-package org.transformice.packets.recv.newpackets;
+package org.transformice.packets.recv.login;
 
 // Imports
 import org.bytearray.ByteArray;
 import org.transformice.Client;
 import org.transformice.packets.RecvPacket;
-import org.transformice.packets.send.newpackets.C_ViewLeaderboard;
 
 @SuppressWarnings("unused")
-public final class S_ViewLeaderboard implements RecvPacket {
+public final class S_MonsterSynchronization implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
-        client.sendPacket(new C_ViewLeaderboard(client.getPlayerName()));
+        /// TODO: Implement S_MonsterSynchronization
     }
 
     @Override
     public int getC() {
-        return 149;
+        return 26;
     }
 
     @Override
     public int getCC() {
-        return 21;
+        return 10;
     }
 
     @Override

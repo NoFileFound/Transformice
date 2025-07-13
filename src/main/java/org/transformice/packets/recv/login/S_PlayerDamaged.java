@@ -5,6 +5,7 @@ import org.bytearray.ByteArray;
 import org.transformice.Application;
 import org.transformice.Client;
 import org.transformice.packets.RecvPacket;
+import org.transformice.packets.send.login.C_PlayerDamaged;
 
 @SuppressWarnings("unused")
 public final class S_PlayerDamaged implements RecvPacket {
@@ -18,6 +19,7 @@ public final class S_PlayerDamaged implements RecvPacket {
             }
         }
 
+        client.getRoom().sendAll(new C_PlayerDamaged(client.getSessionId()));
         if (client.getRoom().luaMinigame != null) {
             client.getRoom().luaApi.callEvent("eventPlayerDamaged", client.getPlayerName());
         }

@@ -17,7 +17,7 @@
 	},
 	"22_337" : {
 		"color_num": 0,
-		"is_new": true,
+		"is_new": false,
 		"type": 0,
 		"cheese_price" : 6500,
 		"strawberry_price" : 450,
@@ -25,7 +25,7 @@
 	},
 	"22_336" : {
 		"color_num": 0,
-		"is_new": true,
+		"is_new": false,
 		"type": 0,
 		"cheese_price" : 6500,
 		"strawberry_price" : 450,
@@ -33,7 +33,7 @@
 	},
 	"22_335": {
 		"color_num": 0,
-		"is_new": true,
+		"is_new": false,
 		"type": 13,
 		"cheese_price": 6500,
 		"strawberry_price": 450,

@@ -4,7 +4,8 @@ package org.transformice.libraries;
 import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.record.Continent;
 import com.maxmind.geoip2.record.Country;
-import java.io.InputStream;
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import org.transformice.Application;
 
@@ -16,8 +17,12 @@ public final class GeoIP {
      */
     public static void loadGeoDatabase() {
         try {
-            InputStream databaseStream = GeoIP.class.getClassLoader().getResourceAsStream("geoip.dat");
-            reader = new DatabaseReader.Builder(databaseStream).build();
+            File dbFile = new File("config/GeoIP.dat");
+            if (!dbFile.exists()) {
+                throw new IOException("GeoIP.dat not found at " + dbFile.getAbsolutePath());
+            }
+
+            reader = new DatabaseReader.Builder(dbFile).build();
             Application.getLogger().info("GeoIP database loaded");
         } catch (Exception ex) {
             Application.getLogger().error("[#] GeoIP database could not be loaded", ex);

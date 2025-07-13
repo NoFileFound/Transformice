@@ -20,5 +20,6 @@ public final class Roomevent implements CommandHandler {
     public void execute(Client player, Server server, List<String> args) {
         player.getRoom().isFunCorpHighlighedRoom = !player.getRoom().isFunCorpHighlighedRoom;
         CommandHandler.sendServerMessage(player, "Done.");
+        /// TODO: Find the real message.
     }
 }

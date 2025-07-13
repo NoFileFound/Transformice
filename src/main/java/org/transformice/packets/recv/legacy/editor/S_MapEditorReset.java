@@ -11,7 +11,7 @@ public final class S_MapEditorReset implements RecvPacket {
     public void handle(Client client, int fingerPrint, ByteArray data) {
         if(!client.getRoom().isEditeur()) return;
 
-        client.getRoom().setMapEditorXml("");
+        client.getRoom().EMapCodeLoaded = 0;
         client.getRoom().isMapEditorMapValidating = false;
     }
 

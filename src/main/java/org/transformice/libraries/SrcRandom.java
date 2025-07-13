@@ -2,6 +2,7 @@ package org.transformice.libraries;
 
 // Imports
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.List;
 
 public final class SrcRandom {
@@ -28,12 +29,16 @@ public final class SrcRandom {
      * @return Random number in range between minimum and maximum without the numbers that contains in exceptions.
      */
     public static int RandomNumber(int min, int max, List<Integer> exceptions) {
-        int number = secureRandom.nextInt((max - min) + 1) + min;
-        if(exceptions.contains(number)) {
-            return RandomNumber(number, max, exceptions);
+        List<Integer> validNumbers = new ArrayList<>();
+
+        for (int i = min; i <= max; i++) {
+            if (!exceptions.contains(i)) {
+                validNumbers.add(i);
+            }
         }
 
-        return number;
+        int randomIndex = secureRandom.nextInt(validNumbers.size());
+        return validNumbers.get(randomIndex);
     }
 
     /**

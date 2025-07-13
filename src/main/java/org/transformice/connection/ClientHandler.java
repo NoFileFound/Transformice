@@ -64,6 +64,10 @@ public final class ClientHandler extends SimpleChannelHandler {
             if(packet.getLength() > 0) packet.readByte(); // 01
         }
 
+        if(this.server.getBlacklistedPackets().contains(((C << 8) | (CC & 0xFF)))) {
+            return;
+        }
+
         var handler = client.getServer().getPacketHandler().getHandlers().get(new PacketStruct(((C << 8) | (CC & 0xFF)), isLegacy));
         if (handler != null) {
             Application.getLogger().debug(Application.getTranslationManager().get("receivedpacket", isLegacy ? "[Legacy]" : "", client.getIpAddress(), C, CC));

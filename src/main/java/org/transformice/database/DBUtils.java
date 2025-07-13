@@ -7,11 +7,13 @@ import static org.transformice.utils.Utils.getUnixTime;
 import dev.morphia.query.FindOptions;
 import dev.morphia.query.Sort;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import org.transformice.Application;
 import org.transformice.database.collections.*;
 import org.transformice.database.embeds.CafePost;
+import org.transformice.libraries.Pair;
 
 public final class DBUtils {
     /**
@@ -174,7 +176,7 @@ public final class DBUtils {
     }
 
     /**
-     * Searches for map by given map category.
+     * Searches for a random map by given map category.
      * @param mapCategory The map category.
      * @return A map object.
      */
@@ -188,8 +190,70 @@ public final class DBUtils {
         return maps.get(ThreadLocalRandom.current().nextInt(maps.size()));
     }
 
+    /**
+     * Searches for every map in the given map category.
+     * @param mapCategory The map category.
+     * @return A list of map objects.
+     */
+    public static List<MapEditor> findMapsByCategory(Integer mapCategory) {
+        return DBManager.getDataStore().find(MapEditor.class).filter(eq("mapCategory", mapCategory)).iterator().toList();
+    }
 
-    public static void updateMapVotes(Integer mapCode, Integer mapYesVotes, Integer mapNoVotes) {
-        /// TODO: FIX
+    /**
+     * Searches for the top 10 players in a given criteria.
+     * @param criteria The given criteria.
+     * @return List of top 10 players and their scores.
+     */
+    public static List<Pair<Account, Integer>> findBest10PlayersByCriteria(String criteria) {
+        List<Pair<Account, Integer>> top10List = new ArrayList<>();
+        String lowerCriteria = criteria.toLowerCase();
+
+        boolean requiresManualSort = switch (lowerCriteria) {
+            case "racing", "survivor", "defilante" -> true;
+            default -> false;
+        };
+
+        List<Account> accounts;
+        if (requiresManualSort) {
+            accounts = DBManager.getDataStore().find(Account.class).iterator().toList();
+            accounts.sort(Comparator.comparingInt((Account acc) -> {
+                return switch (lowerCriteria) {
+                    case "racing" -> acc.getRacingStats()[2];
+                    case "survivor" -> acc.getSurvivorStats()[3];
+                    case "defilante" -> acc.getDefilanteStats()[2];
+                    default -> 0;
+                };
+            }).reversed());
+
+            if (accounts.size() > 10) {
+                accounts = accounts.subList(0, 10);
+            }
+        } else {
+            String fieldName = switch (lowerCriteria) {
+                case "cheesecount" -> "cheeseCount";
+                case "firstcount" -> "firstCount";
+                case "shamancheesecount" -> "normalSaves";
+                case "bootcampcount" -> "bootcampCount";
+                default -> throw new IllegalArgumentException("Unknown criteria: " + criteria);
+            };
+
+            accounts = DBManager.getDataStore().find(Account.class).iterator(new FindOptions().sort(Sort.descending(fieldName)).limit(10)).toList();
+        }
+
+        for (Account acc : accounts) {
+            int score = switch (lowerCriteria) {
+                case "cheesecount" -> acc.getCheeseCount();
+                case "firstcount" -> acc.getFirstCount();
+                case "shamancheesecount" -> acc.getNormalSaves();
+                case "bootcampcount" -> acc.getBootcampCount();
+                case "racing" -> acc.getRacingStats()[0];
+                case "survivor" -> acc.getSurvivorStats()[0];
+                case "defilante" -> acc.getDefilanteStats()[0];
+                default -> throw new IllegalArgumentException("Unknown criteria: " + criteria);
+            };
+            top10List.add(new Pair<>(acc, score));
+        }
+
+        return top10List;
     }
 }

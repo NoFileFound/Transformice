@@ -30,7 +30,7 @@ public final class TFM_giveConsumables extends VarArgFunction {
             } else {
                 String playerName = args.tojstring(1);
                 String consumableId = args.tojstring(2);
-                int amount = args.isnil(2) ? 1 : args.toint(2);
+                int amount = args.isnil(3) ? 1 : args.toint(3);
                 if(this.room.getPlayers().get(playerName) != null) {
                     this.room.getPlayers().get(playerName).getParseInventoryInstance().addConsumable(consumableId, amount, true);
                 }

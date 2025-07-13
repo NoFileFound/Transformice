@@ -1,6 +1,5 @@
-[
-	{
-		"name": "Oracle",
+{
+	"Oracle": {
 		"title_id": 299,
 		"feminine": true,
 		"look": "61;0,0,0,0,0,19_3d100f+1fa896+ffe15b,0,0,0",
@@ -10,75 +9,202 @@
 		"facing_right": false,
 		"face_player": true,
 		"npc_interface": 11,
-		"message": ""
+		"message": "",
+		"isVillage": 1,
+		"items": [
+			{
+				"type": 5,
+				"item_id": 450,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2505,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 2, 
+				"item_id": 60,
+				"quantity": 1, 
+				"cost_type": 4, 
+				"cost_id": 2505,
+				"cost_quantity": 10,
+				"hover_text_template": "", 
+				"hover_text_args": "" 
+			},
+			{
+				"type": 2, 
+				"item_id": 16,
+				"quantity": 1, 
+				"cost_type": 4, 
+				"cost_id": 2253,
+				"cost_quantity": 150,
+				"hover_text_template": "", 
+				"hover_text_args": "" 
+			},
+			{
+				"type": 2, 
+				"item_id": 21,
+				"quantity": 1, 
+				"cost_type": 4, 
+				"cost_id": 2253,
+				"cost_quantity": 150,
+				"hover_text_template": "", 
+				"hover_text_args": "" 
+			},
+			{
+				"type": 2, 
+				"item_id": 24,
+				"quantity": 1, 
+				"cost_type": 4, 
+				"cost_id": 2253,
+				"cost_quantity": 150,
+				"hover_text_template": "", 
+				"hover_text_args": "" 
+			},
+			{
+				"type": 2, 
+				"item_id": 28,
+				"quantity": 1, 
+				"cost_type": 4, 
+				"cost_id": 2253,
+				"cost_quantity": 150,
+				"hover_text_template": "", 
+				"hover_text_args": "" 
+			},
+			{
+				"type": 1,
+				"item_id": 362,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2505,
+				"cost_quantity": 5,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 1,
+				"item_id": 145,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2253,
+				"cost_quantity": 200,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 3,
+				"item_id": 390,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2253,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 3,
+				"item_id": 391,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2253,
+				"cost_quantity": 200,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 3,
+				"item_id": 399,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2253,
+				"cost_quantity": 150,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 3,
+				"item_id": 595,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2620,
+				"cost_quantity": 100,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 3,
+				"item_id": 589,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2620,
+				"cost_quantity": 150,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 3,
+				"item_id": 583,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2620,
+				"cost_quantity": 200,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 3,
+				"item_id": 578,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2621,
+				"cost_quantity": 75,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 3,
+				"item_id": 577,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2621,
+				"cost_quantity": 200,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 4,
+				"item_id": 2332,
+				"quantity": 2,
+				"cost_type": 4,
+				"cost_id": 2253,
+				"cost_quantity": 20,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 4,
+				"item_id": 2505,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2253,
+				"cost_quantity": 100,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 4,
+				"item_id": 2621,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2620,
+				"cost_quantity": 100,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			}
+		]
 	},
-	{
-		"name": "Papaille",
-		"title_id": 298,
-		"feminine": true,
-		"look": "4;2,0,2,2,0,0,0,0,1",
-		"x": 2394,
-		"y": 209,
-		"emote": -1,
-		"facing_right": false,
-		"face_player": true,
-		"npc_interface": 11,
-		"message": ""
-	},
-	{
-		"name": "Elise",
-		"title_id": 349,
-		"feminine": true,
-		"look": "3;10,0,1,0,1,0,0,1,0",
-		"x": 2329,
-		"y": 209,
-		"emote": -1,
-		"facing_right": true,
-		"face_player": true,
-		"npc_interface": 11,
-		"message": ""
-	},
-	{
-		"name": "Buffy",
-		"title_id": 347,
-		"feminine": true,
-		"look": "$Buffy",
-		"x": 1908,
-		"y": 499,
-		"emote": -1,
-		"facing_right": false,
-		"face_player": true,
-		"npc_interface": 11,
-		"message": ""
-	},
-	{
-		"name": "Indiana Mouse",
-		"title_id": 296,
-		"feminine": false,
-		"look": "45;0,0,0,0,0,0,0,0,0",
-		"x": 174,
-		"y": 714,
-		"emote": -1,
-		"facing_right": false,
-		"face_player": true,
-		"npc_interface": 11,
-		"message": ""
-	},
-	{
-		"name": "Prof",
-		"title_id": 327,
-		"feminine": false,
-		"look": "$Proviseur",
-		"x": 289,
-		"y": 715,
-		"emote": -1,
-		"facing_right": false,
-		"face_player": true,
-		"npc_interface": 11,
-		"message": ""
-	},
-	{
-		"name": "Cassidy",
+	"Cassidy": {
 		"title_id": 270,
 		"feminine": false,
 		"look": "$Barman",
@@ -88,10 +214,202 @@
 		"facing_right": false,
 		"face_player": true,
 		"npc_interface": 11,
-		"message": ""
+		"message": "",
+		"isVillage": 1,
+		"items": [
+			{
+				"type": 5,
+				"item_id": 10203,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2508,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 2,
+				"item_id": 23,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2261,
+				"cost_quantity": 150,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 1,
+				"item_id": 154,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2261,
+				"cost_quantity": 200,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 3,
+				"item_id": 400,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2261,
+				"cost_quantity": 100,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 4,
+				"item_id": 2508,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2261,
+				"cost_quantity": 100,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			}
+		]
 	},
-	{
-		"name": "Von Drekkemaus",
+	"Papaille": {
+		"title_id": 298,
+		"feminine": true,
+		"look": "4;2,0,2,2,0,0,0,0,1",
+		"x": 2394,
+		"y": 209,
+		"emote": -1,
+		"facing_right": false,
+		"face_player": true,
+		"npc_interface": 11,
+		"message": "",
+		"isVillage": 1,
+		"items": [
+			{
+				"type": 4,
+				"item_id": 800,
+				"quantity": 50,
+				"cost_type": 4,
+				"cost_id": 2253,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 4,
+				"item_id": 800,
+				"quantity": 50,
+				"cost_type": 4,
+				"cost_id": 2620,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 4,
+				"item_id": 800,
+				"quantity": 50,
+				"cost_type": 4,
+				"cost_id": 2254,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 4,
+				"item_id": 800,
+				"quantity": 50,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 4,
+				"item_id": 800,
+				"quantity": 50,
+				"cost_type": 4,
+				"cost_id": 2261,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 4,
+				"item_id": 800,
+				"quantity": 50,
+				"cost_type": 4,
+				"cost_id": 2504,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			}
+		]
+	},
+	"Elise": {
+		"title_id": 349,
+		"feminine": true,
+		"look": "3;10,0,1,0,1,0,0,1,0",
+		"x": 2329,
+		"y": 209,
+		"emote": -1,
+		"facing_right": true,
+		"face_player": true,
+		"npc_interface": 11,
+		"message": "",
+		"isVillage": 1,
+		"items": [
+			{
+				"type": 4,
+				"item_id": 21,
+				"quantity": 5,
+				"cost_type": 4,
+				"cost_id": 2253,
+				"cost_quantity": 1,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 4,
+				"item_id": 2633,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2253,
+				"cost_quantity": 5,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 4,
+				"item_id": 2633,
+				"quantity": 6,
+				"cost_type": 4,
+				"cost_id": 2254,
+				"cost_quantity": 5,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 4,
+				"item_id": 2641,
+				"quantity": 3,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 4,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			},
+			{
+				"type": 4,
+				"item_id": 2591,
+				"quantity": 6,
+				"cost_type": 4,
+				"cost_id": 2261,
+				"cost_quantity": 1,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			}
+		]
+	},
+	"Von Drekkemouse": {
 		"title_id": 287,
 		"feminine": false,
 		"look": "212;0,0,0,0,0,0,0,0,0",
@@ -101,10 +419,387 @@
 		"facing_right": false,
 		"face_player": true,
 		"npc_interface": 11,
-		"message": ""
+		"message": "",
+		"isVillage": 1,
+		"items": [
+			  {
+				"type": 5,
+				"item_id": 373,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2507,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 2,
+				"item_id": 22,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 150,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 1,
+				"item_id": 153,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 200,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 401,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 463,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Survie",
+				"hover_text_args": "1"
+			  },
+			  {
+				"type": 3,
+				"item_id": 464,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Survie",
+				"hover_text_args": "75"
+			  },
+			  {
+				"type": 3,
+				"item_id": 465,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Survie",
+				"hover_text_args": "200"
+			  },
+			  {
+				"type": 3,
+				"item_id": 466,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Survie",
+				"hover_text_args": "500"
+			  },
+			  {
+				"type": 3,
+				"item_id": 467,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Survie",
+				"hover_text_args": "1000"
+			  },
+			  {
+				"type": 3,
+				"item_id": 468,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Survie",
+				"hover_text_args": "2000"
+			  },
+			  {
+				"type": 3,
+				"item_id": 469,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Survie",
+				"hover_text_args": "5000"
+			  },
+			  {
+				"type": 3,
+				"item_id": 470,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Survie",
+				"hover_text_args": "10000"
+			  },
+			  {
+				"type": 3,
+				"item_id": 471,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Survie",
+				"hover_text_args": "30000"
+			  },
+			  {
+				"type": 3,
+				"item_id": 472,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Survie",
+				"hover_text_args": "50000"
+			  },
+			  {
+				"type": 3,
+				"item_id": 473,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Survie",
+				"hover_text_args": "80000"
+			  },
+			  {
+				"type": 3,
+				"item_id": 474,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Kill",
+				"hover_text_args": "1000"
+			  },
+			  {
+				"type": 3,
+				"item_id": 475,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Kill",
+				"hover_text_args": "10000"
+			  },
+			  {
+				"type": 3,
+				"item_id": 476,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Kill",
+				"hover_text_args": "50000"
+			  },
+			  {
+				"type": 3,
+				"item_id": 477,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "$ConditionDebloquage_Kill",
+				"hover_text_args": "100000"
+			  },
+			  {
+				"type": 4,
+				"item_id": 2507,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2260,
+				"cost_quantity": 100,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  }
+		]
 	},
-	{
-		"name": "Delphilante",
+	"Buffy": {
+		"title_id": 347,
+		"feminine": true,
+		"look": "$Buffy",
+		"x": 1908,
+		"y": 499,
+		"emote": -1,
+		"facing_right": false,
+		"face_player": true,
+		"npc_interface": 11,
+		"message": "",
+		"isVillage": 1,
+		"items": [
+			  {
+				"type": 5,
+				"item_id": 138,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2506,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 2,
+				"item_id": 17,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2254,
+				"cost_quantity": 150,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 1,
+				"item_id": 147,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2254,
+				"cost_quantity": 200,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 392,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2254,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 398,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2254,
+				"cost_quantity": 150,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 527,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2506,
+				"cost_quantity": 2,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 524,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2506,
+				"cost_quantity": 3,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 528,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2506,
+				"cost_quantity": 4,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 525,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2506,
+				"cost_quantity": 5,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 521,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2506,
+				"cost_quantity": 7,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 530,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2506,
+				"cost_quantity": 10,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 523,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2506,
+				"cost_quantity": 15,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 522,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2506,
+				"cost_quantity": 20,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 529,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2506,
+				"cost_quantity": 25,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 526,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2506,
+				"cost_quantity": 30,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 4,
+				"item_id": 2506,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2254,
+				"cost_quantity": 100,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  }
+		]
+	},
+	"Delphilante": {
 		"title_id": 66,
 		"feminine": true,
 		"look": "93;34_f1c666+bf966c,9_8fb4d2,53_94d0ff+b2b5b8+bb9975+f7d384,0,0,62_f7d384+f7d384+b2b5b8,0,26,5_8fb4d2+b2b5b8+f7d384+f7d384+b2b5b8",
@@ -114,6 +809,369 @@
 		"facing_right": true,
 		"face_player": true,
 		"npc_interface": 11,
-		"message": ""
+		"message": "",
+		"isVillage": 1,
+		"items": [
+			  {
+				"type": 5,
+				"item_id": 265,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2509,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 2,
+				"item_id": 48,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2504,
+				"cost_quantity": 100,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 1,
+				"item_id": 291,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2504,
+				"cost_quantity": 80,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 511,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2509,
+				"cost_quantity": 2,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 515,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2509,
+				"cost_quantity": 3,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 518,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2509,
+				"cost_quantity": 4,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 516,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2509,
+				"cost_quantity": 5,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 513,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2509,
+				"cost_quantity": 7,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 512,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2509,
+				"cost_quantity": 10,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 514,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2509,
+				"cost_quantity": 15,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 519,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2509,
+				"cost_quantity": 20,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 520,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2509,
+				"cost_quantity": 25,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 517,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2509,
+				"cost_quantity": 30,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 4,
+				"item_id": 2509,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2504,
+				"cost_quantity": 100,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  }
+		]
+	},
+	"Prof": {
+		"title_id": 327,
+		"feminine": false,
+		"look": "$Proviseur",
+		"x": 289,
+		"y": 715,
+		"emote": -1,
+		"facing_right": false,
+		"face_player": true,
+		"npc_interface": 11,
+		"message": "",
+		"isVillage": 1,
+		"items": [
+			  {
+				"type": 4,
+				"item_id": 800,
+				"quantity": 20,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 10,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 4,
+				"item_id": 2641,
+				"quantity": 6,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 4,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 4,
+				"item_id": 2520,
+				"quantity": 3,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 5,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 4,
+				"item_id": 2589,
+				"quantity": 2,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 5,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 4,
+				"item_id": 2628,
+				"quantity": 3,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 5,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  }
+		]
+	},
+	"Indiana Mouse": {
+		"title_id": 296,
+		"feminine": false,
+		"look": "45;0,0,0,0,0,0,0,0,0",
+		"x": 174,
+		"y": 714,
+		"emote": -1,
+		"facing_right": false,
+		"face_player": true,
+		"npc_interface": 11,
+		"message": "",
+		"isVillage": 2,
+		"items": [
+			  {
+				"type": 1,
+				"item_id": 6,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 1,
+				"item_id": 17,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 393,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 255,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 320,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 397,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 402,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 341,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 403,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 335,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 3,
+				"item_id": 417,
+				"quantity": 1,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 50,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 4,
+				"item_id": 2346,
+				"quantity": 4,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 5,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 4,
+				"item_id": 2444,
+				"quantity": 2,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 10,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  },
+			  {
+				"type": 4,
+				"item_id": 2447,
+				"quantity": 3,
+				"cost_type": 4,
+				"cost_id": 2257,
+				"cost_quantity": 5,
+				"hover_text_template": "",
+				"hover_text_args": ""
+			  }
+		]
 	}
-]
+}

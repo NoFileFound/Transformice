@@ -73,7 +73,7 @@ public final class DBManager {
      * Creates the counters collection if needed.
      */
     private static void createCounters() {
-        String[] counters = {"lastPlayerId", "lastSanctionId", "lastCafePostId", "lastCafeTopicId", "lastTribeId", "lastReportId", "lastSaleId", "lastOutfitId", "lastSeasonId"};
+        String[] counters = {"lastPlayerId", "lastSanctionId", "lastCafePostId", "lastCafeTopicId", "lastTribeId", "lastReportId", "lastSaleId", "lastOutfitId", "lastMapCode"};
         for (String counter : counters) {
             Counter document = getDataStore().find(Counter.class).filter(Filters.eq("_id", counter)).first();
             if(document != null) continue;
