@@ -503,7 +503,7 @@ public final class ParseSkills {
 
         if(shamanObjectId == 81 /* Gravitational Anomaly */) {
             if(!playerSkills.containsKey(63)) return;
-            this.client.getRoom().sendAll(new C_GravitationalSkill(0, 0, this.client.getAccount().getPlayerSkills().get(63) * 2));
+            this.client.getRoom().sendAll(new C_GravitationalSkill(0, 0, (this.client.getAccount().getPlayerSkills().get(63) * 2) * 1000));
             return;
         }
 

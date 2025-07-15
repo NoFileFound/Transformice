@@ -14,6 +14,7 @@ import org.transformice.packets.send.informations.C_TranslationMessage;
 
 @Command(
         name = "np",
+        usage = "(mapCode)",
         description = "Changes the current map",
         permission = {Command.CommandPermission.TRIBE, Command.CommandPermission.MAPCREW, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR}
 )

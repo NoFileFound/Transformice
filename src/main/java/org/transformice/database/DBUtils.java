@@ -176,6 +176,15 @@ public final class DBUtils {
     }
 
     /**
+     * Searches for every map who was made by the given player name.
+     * @param playerName The player name/
+     * @return A list of map objects.
+     */
+    public static List<MapEditor> findMapByCreator(String playerName) {
+        return DBManager.getDataStore().find(MapEditor.class).filter(eq("mapAuthor", playerName)).iterator().toList();
+    }
+
+    /**
      * Searches for a random map by given map category.
      * @param mapCategory The map category.
      * @return A map object.

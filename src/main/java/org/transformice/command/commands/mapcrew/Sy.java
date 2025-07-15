@@ -12,6 +12,7 @@ import org.transformice.packets.send.legacy.player.C_PlayerSync;
 
 @Command(
         name = "sy",
+        usage = "[playerName]",
         description = "Sets the current room's synchronizer.",
         permission = {Command.CommandPermission.TRIBE, Command.CommandPermission.MAPCREW, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1

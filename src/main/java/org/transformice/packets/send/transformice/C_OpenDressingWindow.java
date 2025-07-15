@@ -31,15 +31,7 @@ public final class C_OpenDressingWindow implements SendPacket {
         var filteredPromotions = promotions.entrySet().stream().filter(entry -> entry.getValue().is_regular_item).toList();
         this.byteArray.writeInt(filteredPromotions.size());
         for (var entry : filteredPromotions) {
-            int itemId;
-            String[] parts = entry.getValue().item_id.split("_");
-            if(parts[0].equals("23")) {
-                itemId = Integer.parseInt(parts[0] + "0" + parts[1]);
-            } else {
-                itemId = Integer.parseInt(entry.getValue().item_id.replace("_", ""));
-            }
-
-            this.byteArray.writeInt(itemId);
+            this.byteArray.writeInt(Integer.parseInt(entry.getValue().item_id.replace("_", "")));
             this.byteArray.writeInt(entry.getValue().promotion_end_date - Utils.getUnixTime());
         }
     }

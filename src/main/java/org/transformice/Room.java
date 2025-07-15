@@ -1405,6 +1405,14 @@ public final class Room {
             return new MapDetails(-1, 801, "_Atelier 801", Server.specialMapXmlList.get(801), 0, 0);
         }
 
+        if(this.isTutorial) {
+            return new MapDetails(900);
+        }
+
+        if(this.isTotem) {
+            return new MapDetails(444);
+        }
+
         if(this.isTribeHouse) {
             String tribeHouse = this.roomName.substring(this.roomName.indexOf(0x03) + 1);
             var myTribe = this.server.getTribeByName(tribeHouse);

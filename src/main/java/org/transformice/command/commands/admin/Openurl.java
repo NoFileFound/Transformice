@@ -28,7 +28,7 @@ public final class Openurl implements CommandHandler {
             return;
         }
 
-        for(Client client : server.getPlayers().values()) {
+        for(Client client : player.getRoom().getPlayers().values()) {
             client.sendPacket(new C_OpenLink(url));
         }
     }

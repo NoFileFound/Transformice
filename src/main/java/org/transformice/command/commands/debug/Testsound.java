@@ -12,6 +12,7 @@ import org.transformice.packets.send.informations.C_PlayTestSound;
 
 @Command(
         name = "testsound",
+        usage = "[ue]",
         description = "",
         permission = {Command.CommandPermission.DEBUG_ONLY}
 )

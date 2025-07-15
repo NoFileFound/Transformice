@@ -17,11 +17,7 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaError;
-import org.luaj.vm2.lib.Bit32Lib;
-import org.luaj.vm2.lib.PackageLib;
 import org.luaj.vm2.lib.TimeOutDebugLib;
-import org.luaj.vm2.lib.jse.JseIoLib;
-import org.luaj.vm2.lib.jse.JseOsLib;
 import org.luaj.vm2.lib.jse.JsePlatform;
 import org.transformice.database.collections.Account;
 import org.transformice.database.collections.Sanction;
@@ -162,6 +158,7 @@ public final class Client {
     @Getter final private String countryLangue;
     @Getter final private String countryName;
     @Getter private final ArrayList<Client> currentWatchers;
+    @Getter private final List<String> voteBans;
     @Getter private final List<String> modopwetChatNotificationCommunities;
     @Getter private final List<String> invitedTribeHouses;
     @Getter private final Map<Integer, Integer> tradeConsumables;
@@ -216,6 +213,7 @@ public final class Client {
         this.modopwetChatNotificationCommunities = new ArrayList<>();
         this.modoCommunitiesCount = new HashMap<>();
         this.cheeseIdxs = new ArrayList<>();
+        this.voteBans = new ArrayList<>();
 
         // Modules
         this.parseCafeInstance = new ParseCafe(this);
@@ -657,14 +655,14 @@ public final class Client {
             }
         }
 
-        if(this.isDead || (this.cheeseCount < 1 && !this.isOpportunist))
+        if(this.isDead || (this.cheeseCount < 1 && !this.isOpportunist) || this.room.isTotem())
             return;
 
         if (this.room.isTutorial()) {
+            this.room.sendAll(new C_PlayerVictory(this.sessionId, this.room.isDefilante() ? 1 : 0, this.playerScore, this.room.getNumCompleted() + 1, (int)((System.currentTimeMillis() - (!this.room.disableAutoRespawn ? this.playerStartTimeMillis : this.room.getGameStartTimeMillis())) / 10)));
             this.sendPacket(new C_Tutorial(2));
             this.room.setMapChangeTimer(10);
             this.cheeseCount = 0;
-
             new Timer().schedule(() -> {
                 if (this.room.isTutorial()) {
                     this.sendEnterRoom(this.server.getRecommendedRoom(this.playerCommunity), "");
@@ -679,6 +677,14 @@ public final class Client {
                 this.sendOldPacket(new C_MapValidated());
             }
             return;
+        }
+
+        if(this.account.getMouseLook().split(";")[0].equals(Application.getPropertiesInfo().event.decoration_list_right_image.replace(".png", ""))) {
+            this.server.rightistPlayers += this.cheeseCount;
+        }
+
+        if(this.account.getMouseLook().split(";")[0].equals(Application.getPropertiesInfo().event.decoration_list_left_image.replace(".png", ""))) {
+            this.server.leftistPlayers += this.cheeseCount;
         }
 
         this.isDead = true;
@@ -865,14 +871,6 @@ public final class Client {
                     this.account.getTitleList().add(titleIntegerID + 0.1);
                 }
             }
-        }
-
-        if(this.account.getMouseLook().split(";")[0].equals(Application.getPropertiesInfo().event.decoration_list_right_image.replace(".png", ""))) {
-            this.server.rightistPlayers += this.cheeseCount;
-        }
-
-        if(this.account.getMouseLook().split(";")[0].equals(Application.getPropertiesInfo().event.decoration_list_left_image.replace(".png", ""))) {
-            this.server.leftistPlayers += this.cheeseCount;
         }
 
         this.room.sendAll(new C_PlayerVictory(this.sessionId, this.room.isDefilante() ? 1 : 0, this.playerScore, place, timeTaken));
@@ -1091,6 +1089,8 @@ public final class Client {
             this.sendPacket(new C_EnableMeep(true));
         }
 
+        System.out.println(this.server.leftistPlayers);
+        System.out.println(this.server.rightistPlayers);
         this.sendPacket(new C_DecoratePlayerList(Application.getPropertiesInfo().event.decoration_list_left_image, this.server.leftistPlayers, Application.getPropertiesInfo().event.decoration_list_left_color, Application.getPropertiesInfo().event.decoration_list_right_image, this.server.rightistPlayers, Application.getPropertiesInfo().event.decoration_list_right_color));
         if(this.hasStaffPermission("Modo", "")) {
             this.sendPacket(new C_DisableInitialItemCooldown());
@@ -1367,21 +1367,17 @@ public final class Client {
      * Sends the new map packet.
      */
     private void sendLoadMap() {
-        if(this.room.isTotem() || this.room.isTutorial()) {
-            this.sendPacket(new C_LoadMap(this.room.isTutorial() ? 900 : 444, this.room.getPlayersCount(), this.room.getLastRoundId(), new byte[]{}, "", -1, false, false, false, null));
-        } else {
-            this.sendPacket(new C_LoadMap(
-                    this.room.getCurrentMap().mapCode,
-                    this.room.getPlayersCount(),
-                    this.room.getLastRoundId(),
-                    (!this.room.getCurrentMap().mapXml.isEmpty()) ? Utils.compressZlib(this.room.getCurrentMap().mapXml.getBytes()) : new byte[]{},
-                    this.room.getCurrentMap().mapName,
-                    this.room.getCurrentMap().mapPerma,
-                    this.room.getCurrentMap().isInverted,
-                    this.room.getCurrentMap().isConj,
-                    this.room.getCurrentMap().isAIE,
-                    (this.room.isEditeur() ? null : this.room.getRoomDetails())
-            ));
-        }
+        this.sendPacket(new C_LoadMap(
+                this.room.getCurrentMap().mapCode,
+                this.room.getPlayersCount(),
+                this.room.getLastRoundId(),
+                (!this.room.getCurrentMap().mapXml.isEmpty()) ? Utils.compressZlib(this.room.getCurrentMap().mapXml.getBytes()) : new byte[]{},
+                this.room.getCurrentMap().mapName,
+                this.room.getCurrentMap().mapPerma,
+                this.room.getCurrentMap().isInverted,
+                this.room.getCurrentMap().isConj,
+                this.room.getCurrentMap().isAIE,
+                (this.room.isEditeur() ? null : this.room.getRoomDetails())
+        ));
     }
 }

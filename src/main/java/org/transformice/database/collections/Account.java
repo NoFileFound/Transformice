@@ -142,7 +142,7 @@ public final class Account {
         this.cheeseCount = Application.getPropertiesInfo().constants.default_cheeses;
         this.firstCount = Application.getPropertiesInfo().constants.default_firsts;
         this.bootcampCount = Application.getPropertiesInfo().constants.default_bootcamps;
-        this.shamanLevel = 0;
+        this.shamanLevel = 1;
         this.shamanLevelXp = 0;
         this.shamanLevelNextXp = 32;
         this.shopClothes = new ArrayList<>();

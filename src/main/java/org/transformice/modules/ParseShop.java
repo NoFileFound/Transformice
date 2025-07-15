@@ -7,6 +7,7 @@ import java.util.Map;
 import org.transformice.Application;
 import org.transformice.Client;
 import org.transformice.Server;
+import org.transformice.command.commands.mapcrew.Sy;
 import org.transformice.database.DBManager;
 import org.transformice.database.collections.Account;
 import org.transformice.libraries.Pair;
@@ -271,7 +272,7 @@ public final class ParseShop {
             newCustoms[i] = String.format("%06X", 0xFFFFFF & customs.get(i));
         }
 
-        this.client.getAccount().getShopItems().put(item_id, item_id + "_" + String.join("+", newCustoms));
+        this.client.getAccount().getShopItems().put(item_id, shopInfo.getSecond() + "_" + String.join("+", newCustoms));
         this.equipItem(item_id);
     }
 
@@ -321,42 +322,49 @@ public final class ParseShop {
         if(category == -1) return;
 
         if(category == 23) {
-            // special for furs
             String mouseLook = this.client.getAccount().getMouseLook();
-            String furId = String.valueOf(this.getShopItemInfo(item_id).getSecond());
-            if(mouseLook.startsWith(furId)) {
-                mouseLook = mouseLook.replace(furId, "1");
-                this.client.getAccount().setMouseColor(7886906);
-            } else {
-                mouseLook = mouseLook.replaceFirst("^\\d+", furId);
-                switch (furId) {
-                    case "0":
-                        this.client.getAccount().setMouseColor(12423271);
-                        break;
-                    case "1":
-                        this.client.getAccount().setMouseColor(5846552);
-                        break;
-                    case "2":
-                        this.client.getAccount().setMouseColor(9209983);
-                        break;
-                    case "3":
-                        this.client.getAccount().setMouseColor(14670030);
-                        break;
-                    case "4":
-                        this.client.getAccount().setMouseColor(5129274);
-                        break;
-                    case "5":
-                        this.client.getAccount().setMouseColor(14925950);
-                        break;
-                    case "6":
-                        this.client.getAccount().setMouseColor(2564640);
-                        break;
-                    case "7":
-                        this.client.getAccount().setMouseColor(7886906);
-                        break;
-                    default:
-                        this.client.getAccount().setMouseColor(7886906);
+            int furId = this.getShopItemInfo(item_id).getSecond();
+            if(item_id >= 2100 && item_id <= 2106) {
+                int item_id2 = (this.client.getAccount().getMouseColor() == 12423271 ? 2100 : this.client.getAccount().getMouseColor() == 5846552 ? 2101 : this.client.getAccount().getMouseColor() == 9209983 ? 2102 : this.client.getAccount().getMouseColor() == 14670030 ? 2103 : this.client.getAccount().getMouseColor() == 5129274 ? 2104 : this.client.getAccount().getMouseColor() == 14925950 ? 2105 : 2106);
+                if(item_id == item_id2) {
+                    this.client.getAccount().setMouseColor(7886906);
+                } else {
+                    switch (item_id) {
+                        case 2100:
+                            this.client.getAccount().setMouseColor(12423271);
+                            break;
+                        case 2101:
+                            this.client.getAccount().setMouseColor(5846552);
+                            break;
+                        case 2102:
+                            this.client.getAccount().setMouseColor(9209983);
+                            break;
+                        case 2103:
+                            this.client.getAccount().setMouseColor(14670030);
+                            break;
+                        case 2104:
+                            this.client.getAccount().setMouseColor(5129274);
+                            break;
+                        case 2105:
+                            this.client.getAccount().setMouseColor(14925950);
+                            break;
+                        case 2106:
+                            this.client.getAccount().setMouseColor(2564640);
+                            break;
+                    }
                 }
+
+                this.client.getAccount().setMouseLook(mouseLook.replaceFirst("^\\d+;", "1;"));
+                this.sendOpenShop(false);
+                this.sendShopLookChange();
+                return;
+            }
+
+            this.client.getAccount().setMouseColor(7886906);
+            if(mouseLook.startsWith(furId + ";")) {
+                mouseLook = mouseLook.replaceFirst(String.valueOf(furId), "1");
+            } else {
+                mouseLook = mouseLook.replaceFirst("^\\d+", String.valueOf(furId));
             }
 
             this.client.getAccount().setMouseLook(mouseLook);
