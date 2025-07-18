@@ -28,7 +28,7 @@ public final class Sy implements CommandHandler {
             return;
         }
         player.getRoom().setCurrentSync(info);
-        player.sendOldPacket(new C_PlayerSync(info.getSessionId(), (player.getRoom().isEditeur() && !player.getRoom().isMapEditorMapValidating)));
+        player.sendOldPacket(new C_PlayerSync(info.getSessionId(), true));
         CommandHandler.sendTranslatedMessage(player, "", "$NouveauSync [" + player.getRoom().getCurrentSync().getPlayerName() + "]", new String[]{});
     }
 }

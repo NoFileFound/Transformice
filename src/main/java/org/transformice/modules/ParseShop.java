@@ -7,7 +7,6 @@ import java.util.Map;
 import org.transformice.Application;
 import org.transformice.Client;
 import org.transformice.Server;
-import org.transformice.command.commands.mapcrew.Sy;
 import org.transformice.database.DBManager;
 import org.transformice.database.collections.Account;
 import org.transformice.libraries.Pair;
@@ -171,8 +170,8 @@ public final class ParseShop {
         }
 
         this.client.getAccount().getShopItems().put(item_id, "");
-        this.sendBuyResult(item_id, 1);
         this.client.sendPacket(new C_PurchaseItem(item_id));
+        this.sendBuyResult(item_id, 1);
         this.sendOpenShop(false);
     }
 

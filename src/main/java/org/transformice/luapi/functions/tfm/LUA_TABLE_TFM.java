@@ -230,6 +230,7 @@ public class LUA_TABLE_TFM extends TwoArgFunction {
         table.get("tfm").get("exec").set("respawnPlayer", new TFM_respawnPlayer(this.room));
         table.get("tfm").get("exec").set("setAieMode", new TFM_setAieMode(this.room));
         table.get("tfm").get("exec").set("setAutoMapFlipMode", new TFM_setAutoMapFlipMode(this.room));
+        table.get("tfm").get("exec").set("setGameMode", new TFM_setGameMode(this.room));
         table.get("tfm").get("exec").set("setGameTime", new TFM_setGameTime(this.room));
         table.get("tfm").get("exec").set("setMonsterSpeed", new TFM_setMonsterSpeed(this.room));
         table.get("tfm").get("exec").set("setNameColor", new TFM_setNameColor(this.room));

@@ -32,7 +32,7 @@ public final class TFM_setPlayerSync extends VarArgFunction {
                 if (this.room.getPlayers().containsKey(playerName)) {
                     this.room.setCurrentSync(this.room.getPlayers().get(playerName));
                     for(Client player : this.room.getPlayers().values()) {
-                        player.sendPacket(new C_PlayerSync(this.room.getPlayers().get(playerName).getSessionId(), false));
+                        player.sendOldPacket(new C_PlayerSync(this.room.getPlayers().get(playerName).getSessionId(), true));
                     }
                 }
             }

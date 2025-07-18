@@ -10,14 +10,14 @@ import org.transformice.Application;
 import org.transformice.packets.SendPacket;
 import org.transformice.properties.configs.shop.*;
 
-public class C_ShopOpen implements SendPacket {
+public final class C_ShopOpen implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
     public C_ShopOpen(int shopCheeses, int shopStrawberries, String look, String shamanLook, boolean sendShopItems, List<String> purchasedClothes, Map<Integer, String> purchasedShamanItems, List<Integer> purchasedEmojis, Map<Integer, String> purchasedItems, List<Integer> favoritedItems) {
         Map<String, ShopItemConfig.ShopItem> shopItems = sendShopItems ? Application.getShopItemInfo() : new HashMap<>();
         Map<Integer, ShopOutfitsConfig.ShopOutfit> shopOutfits = sendShopItems ? Application.getShopOutfitsInfo() : new HashMap<>();
         Map<Integer, ShopShamanItemConfig.ShopShamanItem> shopShamanItems = sendShopItems ? Application.getShopShamanItemInfo() : new HashMap<>();
-        Map<Integer, ShopEmojisConfig.ShopEmoji> shopEmojis = sendShopItems ? Application.getShopEmojiInfo() : new HashMap<>();
+        Map<Integer, ShopEmojisConfig.ShopEmoji> shopEmojis = Application.getShopEmojiInfo();
 
         this.byteArray.writeInt(shopCheeses);
         this.byteArray.writeInt(shopStrawberries);

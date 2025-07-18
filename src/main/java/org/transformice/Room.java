@@ -513,12 +513,12 @@ public final class Room {
         for (Client player : this.players.values()) {
             if(player.getAccount().getPetType() != -1) {
                 long time = getUnixTime();
-                if(time < player.getAccount().getLastPetTime()) {
+                if(getUnixTime() >= player.getAccount().getLastPetTime()) {
                     player.getAccount().setPetType(-1);
                     player.getAccount().setLastPetTime(time);
+                } else {
+                    this.sendAll(new C_SpawnPet(player.getSessionId(), player.getAccount().getPetType()));
                 }
-            } else {
-                this.sendAll(new C_SpawnPet(player.getSessionId(), player.getAccount().getPetType()));
             }
         }
 
@@ -874,6 +874,16 @@ public final class Room {
                 this.sendAll(new C_ShamanRespawn(player.getSessionId(), player.getAccount().getShamanType(), player.getParseSkillsInstance().getShamanBadge(), player.getAccount().getPlayerSkills().size(), player.getAccount().isShamanNoSkills()));
             }
 
+            if(player.getAccount().getPetType() != -1) {
+                long time = getUnixTime();
+                if(getUnixTime() >= player.getAccount().getLastPetTime()) {
+                    player.getAccount().setPetType(-1);
+                    player.getAccount().setLastPetTime(time);
+                } else {
+                    this.sendAll(new C_SpawnPet(player.getSessionId(), player.getAccount().getPetType()));
+                }
+            }
+
             if (player.getRoom().luaMinigame != null) {
                 player.getRoom().luaApi.callEvent("eventPlayerRespawn", player.getPlayerName());
             }
@@ -1017,6 +1027,33 @@ public final class Room {
         this.server.lastMonsterId++;
         if(!monsterType.equals("chat")) {
             this.sendAll(new C_SetMonsterSpeed(this.server.lastMonsterId, -2));
+        }
+    }
+
+    /**
+     * Changes the gamemode of the current room.
+     * @param gameMode The game mode to change.
+     */
+    public void setGameMode(String gameMode) {
+        switch (gameMode) {
+            case "racing":
+                this.isRacing = true;
+                break;
+            case "vanilla":
+                this.isVanilla = true;
+                break;
+            case "survivor":
+                this.isSurvivor = true;
+                break;
+            case "bootcamp":
+                this.isBootcamp = true;
+                break;
+            case "defilante":
+                this.isDefilante = true;
+                break;
+            default:
+                this.isNormal = true;
+                break;
         }
     }
 
@@ -1570,7 +1607,7 @@ public final class Room {
             this.isAIE = false;
             this.isNoShaman = Server.vanillaNoShamMapList.contains(mapCode);
             this.isDualShaman = (mapCode >= 44 && mapCode <= 53) || (mapCode >= 138 && mapCode <= 143) || mapCode == 223 || mapCode == 227;
-            this.isCatchTheCheese = (mapCode >= 108 && mapCode <= 113) || mapCode == 144 || mapCode == 170 || mapCode == 171 || mapCode == 214 || mapCode == 215;
+            this.isCatchTheCheese = (mapCode >= 108 && mapCode <= 113) || mapCode == 144 || mapCode == 170 || mapCode == 171 || mapCode == 214 || mapCode == 215 || mapCode == 239 || mapCode == 240;
             this.isTransform = (mapCode >= 200 && mapCode <= 210);
             this.isInverted = false;
             this.mapXml = Server.vanillaMapXmlList.getOrDefault(mapCode, "");

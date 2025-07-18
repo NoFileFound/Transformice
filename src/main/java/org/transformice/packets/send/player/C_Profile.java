@@ -6,7 +6,7 @@ import org.bytearray.ByteArray;
 import org.transformice.database.collections.Account;
 import org.transformice.packets.SendPacket;
 
-public class C_Profile implements SendPacket {
+public final class C_Profile implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
     public C_Profile(Account account, boolean isOnline) {
@@ -38,7 +38,8 @@ public class C_Profile implements SendPacket {
         }
         this.byteArray.writeString(account.getMouseLook());
         this.byteArray.writeShort(account.getShamanLevel().shortValue());
-        this.byteArray.writeUnsignedShort(account.getShopBadges().size());
+
+        this.byteArray.writeUnsignedShort(account.getShopBadges().size() * 2);
         for (var badge : account.getShopBadges().entrySet()) {
             this.byteArray.writeUnsignedShort(badge.getKey());
             this.byteArray.writeUnsignedShort(badge.getValue());

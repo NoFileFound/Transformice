@@ -255,14 +255,74 @@ public final class DBUtils {
                 case "firstcount" -> acc.getFirstCount();
                 case "shamancheesecount" -> acc.getNormalSaves();
                 case "bootcampcount" -> acc.getBootcampCount();
-                case "racing" -> acc.getRacingStats()[0];
-                case "survivor" -> acc.getSurvivorStats()[0];
-                case "defilante" -> acc.getDefilanteStats()[0];
+                case "racing" -> acc.getRacingStats()[2];
+                case "survivor" -> acc.getSurvivorStats()[3];
+                case "defilante" -> acc.getDefilanteStats()[2];
                 default -> throw new IllegalArgumentException("Unknown criteria: " + criteria);
             };
             top10List.add(new Pair<>(acc, score));
         }
 
         return top10List;
+    }
+
+    /**
+     * Searches for the given player in the leaderboard.
+     * @param playerName The given player.
+     * @param criteria The given criteria.
+     * @return Player's place and his score.
+     */
+    public static Pair<Integer, Integer> findLeaderboardPlayer(String playerName, String criteria) {
+        String lowerCounter = criteria.toLowerCase();
+
+        boolean requiresManualSort = switch (lowerCounter) {
+            case "racing", "survivor", "defilante" -> true;
+            default -> false;
+        };
+
+        List<Account> accounts;
+        if (requiresManualSort) {
+            accounts = DBManager.getDataStore().find(Account.class).iterator().toList();
+            accounts.sort(Comparator.comparingInt((Account acc) -> {
+                return switch (lowerCounter) {
+                    case "racing" -> acc.getRacingStats()[2];
+                    case "survivor" -> acc.getSurvivorStats()[3];
+                    case "defilante" -> acc.getDefilanteStats()[2];
+                    default -> 0;
+                };
+            }).reversed());
+        } else {
+            String fieldName = switch (lowerCounter) {
+                case "cheesecount" -> "cheeseCount";
+                case "firstcount" -> "firstCount";
+                case "shamancheesecount" -> "normalSaves";
+                case "bootcampcount" -> "bootcampCount";
+                default -> throw new IllegalArgumentException("Unknown criteria: " + criteria);
+            };
+
+            accounts = DBManager.getDataStore()
+                    .find(Account.class)
+                    .iterator(new FindOptions().sort(Sort.descending(fieldName)))
+                    .toList();
+        }
+
+        for (int i = 0; i < accounts.size(); i++) {
+            Account acc = accounts.get(i);
+            if (acc.getPlayerName().equals(playerName)) {
+                int score = switch (lowerCounter) {
+                    case "cheesecount" -> acc.getCheeseCount();
+                    case "firstcount" -> acc.getFirstCount();
+                    case "shamancheesecount" -> acc.getNormalSaves();
+                    case "bootcampcount" -> acc.getBootcampCount();
+                    case "racing" -> acc.getRacingStats()[2];
+                    case "survivor" -> acc.getSurvivorStats()[3];
+                    case "defilante" -> acc.getDefilanteStats()[2];
+                    default -> 0;
+                };
+                return new Pair<>(i + 1, score);
+            }
+        }
+
+        return null;
     }
 }

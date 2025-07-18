@@ -10,7 +10,7 @@ import org.transformice.database.DBManager;
 @Entity(value = "mapeditor", useDiscriminator = false)
 @Getter
 public final class MapEditor {
-    @Id private long id; //default;
+    @Id private final int id; // default
     private final int mapCode;
     @Setter private Integer mapCategory;
     private final String mapAuthor;
@@ -25,7 +25,8 @@ public final class MapEditor {
      * @param isTribeHouse Is exported as a tribe house.
      */
     public MapEditor(String mapXML, String mapAuthor, boolean isTribeHouse) {
-        this.mapCode = (int)DBManager.getCounterValue("lastMapCode");
+        this.id = (int)DBManager.getCounterValue("lastMapCode");
+        this.mapCode = this.id;
         this.mapAuthor = mapAuthor;
         this.mapXML = mapXML;
         this.mapCategory = (isTribeHouse ? 22 : 0);

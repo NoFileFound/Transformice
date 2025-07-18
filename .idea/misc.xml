@@ -2,6 +2,7 @@
 <project version="4">
   <component name="EntryPointsManager">
     <writeAnnotations>
+      <writeAnnotation name="dev.morphia.annotations.Id" />
       <writeAnnotation name="lombok.Getter" />
     </writeAnnotations>
   </component>

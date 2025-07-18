@@ -2,7 +2,7 @@
 	"database_url": "mongodb://localhost:27017",
 	"collection_name": "transformice3",
 	"is_debug": true,
-	"twitchStreaming": true,
+	"twitchStreaming": false,
 	"flyerName": "flyer_2024_06_20.jpg",
 	"allow_email": true,
 	"beta_login": false,

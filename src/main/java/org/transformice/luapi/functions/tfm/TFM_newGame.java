@@ -9,7 +9,7 @@ import org.transformice.database.DBUtils;
 // Packets
 import org.transformice.packets.send.lua.C_LuaMessage;
 
-public class TFM_newGame extends VarArgFunction {
+public final class TFM_newGame extends VarArgFunction {
     private final Room room;
 
     public TFM_newGame(Room room) {
@@ -41,7 +41,7 @@ public class TFM_newGame extends VarArgFunction {
         else if(mapCode.startsWith("#")) {
             var info = DBUtils.findMapByCategory(Integer.parseInt(mapCode.substring(1)));
             if(info != null) {
-                this.room.forceNextMap = String.valueOf(info.getMapCode());
+                this.room.forceNextMap = "@" + info.getMapCode();
             }
         }
 

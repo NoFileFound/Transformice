@@ -7,9 +7,9 @@ import org.transformice.packets.SendPacket;
 public final class C_PlayerSync implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
-    public C_PlayerSync(int sessionId, boolean disable) {
+    public C_PlayerSync(int sessionId, boolean spawn_initial_objects) {
         this.byteArray.writeString(String.valueOf(sessionId), false);
-        if(disable) {
+        if(spawn_initial_objects) {
             this.byteArray.writeByte(1);
             this.byteArray.writeString("", false);
         }

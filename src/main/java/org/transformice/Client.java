@@ -31,7 +31,6 @@ import org.transformice.luapi.LuaApiLib;
 import org.transformice.modules.*;
 import org.transformice.packets.SendPacket;
 import org.transformice.packets.TribullePacket;
-import org.transformice.packets.send.newpackets.C_DecoratePlayerList;
 import org.transformice.utils.Utils;
 
 // Packets
@@ -55,8 +54,8 @@ import org.transformice.packets.send.login.C_LoginSouris;
 import org.transformice.packets.send.login.C_PlayerIdentity;
 import org.transformice.packets.send.lua.C_InitializeLuaScripting;
 import org.transformice.packets.send.lua.C_LuaMessage;
-import org.transformice.packets.send.lua.C_SetNicknameColor;
 import org.transformice.packets.send.modopwet.C_ModopwetRoomPasswordMsg;
+import org.transformice.packets.send.newpackets.C_DecoratePlayerList;
 import org.transformice.packets.send.newpackets.C_DisableInitialItemCooldown;
 import org.transformice.packets.send.newpackets.C_PlayerGetCheese;
 import org.transformice.packets.send.newpackets.C_PurchasedEmojis;
@@ -882,7 +881,7 @@ public final class Client {
 
         if (this.room.luaMinigame != null) {
             this.room.updatePlayerList(this);
-            this.room.luaApi.callEvent("eventPlayerWon", System.currentTimeMillis() - this.getRoom().getGameStartTimeMillis(), System.currentTimeMillis() - this.getPlayerStartTimeMillis());
+            this.room.luaApi.callEvent("eventPlayerWon", this.playerName, System.currentTimeMillis() - this.getRoom().getGameStartTimeMillis(), System.currentTimeMillis() - this.getPlayerStartTimeMillis());
         }
     }
 
@@ -1061,7 +1060,7 @@ public final class Client {
         }
 
         this.sendPacket(new C_RoomPlayerList(this.room.getPlayerList()));
-        this.sendOldPacket(new C_PlayerSync(this.room.getSyncCode(), (this.room.isEditeur() && !this.room.isMapEditorMapValidating)));
+        this.sendOldPacket(new C_PlayerSync(this.room.getSyncCode(), (this.room.getCurrentMap().mapCode != -1 || this.room.EMapCode != 0)));
         this.sendPacket(new C_SetRoundTime(this.room.getRoundTime() + (int)(((this.room.getGameStartTimeMillis() / 1000) - Utils.getUnixTime())) + this.room.addTime));
         if(this.room.getCurrentMap().isCatchTheCheese) {
             this.sendOldPacket(new C_CatchTheCheeseMap(shamans[0].getSessionId()));
@@ -1070,7 +1069,6 @@ public final class Client {
                 this.sendPacket(new C_PlayerShamanInfo(shamans[0], null));
             }
         } else {
-            this.room.sendAll(new C_SetNicknameColor(this.getSessionId(), this.account.getShamanColor()));
             this.sendPacket(new C_PlayerShamanInfo(shamans[0], shamans[1]));
         }
 
@@ -1089,8 +1087,6 @@ public final class Client {
             this.sendPacket(new C_EnableMeep(true));
         }
 
-        System.out.println(this.server.leftistPlayers);
-        System.out.println(this.server.rightistPlayers);
         this.sendPacket(new C_DecoratePlayerList(Application.getPropertiesInfo().event.decoration_list_left_image, this.server.leftistPlayers, Application.getPropertiesInfo().event.decoration_list_left_color, Application.getPropertiesInfo().event.decoration_list_right_image, this.server.rightistPlayers, Application.getPropertiesInfo().event.decoration_list_right_color));
         if(this.hasStaffPermission("Modo", "")) {
             this.sendPacket(new C_DisableInitialItemCooldown());

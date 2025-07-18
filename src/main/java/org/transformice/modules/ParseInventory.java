@@ -10,18 +10,17 @@ import org.transformice.Application;
 import org.transformice.Client;
 import org.transformice.Server;
 import org.transformice.libraries.SrcRandom;
-import org.transformice.packets.send.login.C_MoneyEarned;
-import org.transformice.packets.send.newpackets.C_SaveWallpaper;
-import org.transformice.packets.send.player.C_GiveCurrency;
-import org.transformice.packets.send.transformice.C_NewConsumable;
 import org.transformice.properties.configs.InventoryConfig;
 
 // Packets
 import org.transformice.packets.send.informations.C_TranslationMessage;
 import org.transformice.packets.send.inventory.*;
+import org.transformice.packets.send.newpackets.C_SaveWallpaper;
+import org.transformice.packets.send.player.C_GiveCurrency;
 import org.transformice.packets.send.player.C_PlayerAction;
 import org.transformice.packets.send.player.C_PlayerRaiseItem;
 import org.transformice.packets.send.room.C_BonfireSkill;
+import org.transformice.packets.send.transformice.C_NewConsumable;
 import org.transformice.packets.send.transformice.C_LaunchHotAirBalloon;
 import org.transformice.packets.send.transformice.C_SpawnPet;
 import org.transformice.packets.send.transformice.C_VisualConsumableInfo;
@@ -58,7 +57,7 @@ public final class ParseInventory {
         this.client.sendPacket(new C_NewConsumable(consumableId, quantity));
         this.client.sendPacket(new C_UpdateInventoryPacket(consumableId, quantity));
         if(raise) {
-            this.client.getRoom().sendAll(new C_PlayerRaiseItem(9, this.client.getSessionId(), new Object[]{consumableId}));
+            this.client.getRoom().sendAll(new C_PlayerRaiseItem(4, this.client.getSessionId(), new Object[]{consumableId}));
         }
     }
 
@@ -197,6 +196,7 @@ public final class ParseInventory {
      * @param playerName The player name.
      */
     public void startTrade(String playerName) {
+        playerName = playerName.substring(0, 1).toUpperCase() + playerName.substring(1);
         Client player = this.server.getPlayers().get(playerName);
         if(player == null) {
             this.client.sendPacket(new C_TradeResult(playerName, 6));
@@ -337,10 +337,14 @@ public final class ParseInventory {
             case 2625:
             case 2628:
             case 2633:
-                int itemId = (consumableId == 31) ? 2 : (consumableId == 34) ? 3 : (consumableId == 2240) ? 4 : (consumableId == 2247) ? 5 : (consumableId == 2262) ? 6 : (consumableId == 2332) ? 7 : (consumableId == 2340) ? 8 : (consumableId == 2437) ? 9 : (consumableId == 2444) ? 10 : (consumableId == 2520) ? 12 : (consumableId == 2532) ? 13 : (consumableId == 2539) ? 14 : (consumableId == 2545) ? 15 : (consumableId == 2548) ? 16 : (consumableId == 2551) ? 17 : (consumableId == 2553) ? 18 : (consumableId == 2554) ? 19 : (consumableId == 2556) ? 20 : (consumableId == 2575) ? 21 : (consumableId == 2580) ? 22 : (consumableId == 2586) ? 23 : (consumableId == 2590) ? 24 : (consumableId == 2602) ? 25 : (consumableId == 2606) ? 26 : (consumableId == 2618) ? 27 : (consumableId == 2622) ? 28 : (consumableId == 2625) ? 29 : (consumableId == 2628) ? 30 : 31;
-                this.client.getAccount().setPetType(itemId);
-                this.client.getAccount().setLastPetTime(getUnixTime() + 3600);
-                this.client.getRoom().sendAll(new C_SpawnPet(this.client.getSessionId(), itemId));
+                if(this.client.getAccount().getPetType() == -1) {
+                    int itemId = (consumableId == 31) ? 2 : (consumableId == 34) ? 3 : (consumableId == 2240) ? 4 : (consumableId == 2247) ? 5 : (consumableId == 2262) ? 6 : (consumableId == 2332) ? 7 : (consumableId == 2340) ? 8 : (consumableId == 2437) ? 9 : (consumableId == 2444) ? 10 : (consumableId == 2520) ? 12 : (consumableId == 2532) ? 13 : (consumableId == 2539) ? 14 : (consumableId == 2545) ? 15 : (consumableId == 2548) ? 16 : (consumableId == 2551) ? 17 : (consumableId == 2553) ? 18 : (consumableId == 2554) ? 19 : (consumableId == 2556) ? 20 : (consumableId == 2575) ? 21 : (consumableId == 2580) ? 22 : (consumableId == 2586) ? 23 : (consumableId == 2590) ? 24 : (consumableId == 2602) ? 25 : (consumableId == 2606) ? 26 : (consumableId == 2618) ? 27 : (consumableId == 2622) ? 28 : (consumableId == 2625) ? 29 : (consumableId == 2628) ? 30 : 31;
+                    this.client.getAccount().setPetType(itemId);
+                    this.client.getAccount().setLastPetTime(getUnixTime() + 3600);
+                    this.client.getRoom().sendAll(new C_SpawnPet(this.client.getSessionId(), itemId));
+                } else {
+                    removeConsumable = false;
+                }
                 break;
             case 32:
                 this.client.getRoom().sendAll(new C_PlayerRaiseItem(4, this.client.getSessionId(), new Object[]{this.getAstrologicalCheeseId(this.client.getAccount().getRegDate())}));

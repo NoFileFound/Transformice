@@ -243,7 +243,7 @@ public final class ByteArray {
      * Writes an unsigned byte to the bytearray.
      */
     public ByteArray writeUnsignedByte(int value) {
-        this.writeByte((byte)value);
+        this.writeByte(value & 0xFF);
         return this;
     }
 
@@ -251,7 +251,8 @@ public final class ByteArray {
      * Writes an unsigned short to the bytearray.
      */
     public ByteArray writeUnsignedShort(int value) {
-        this.writeShort((short) value);
+        this.writeByte((value >> 8) & 0xFF);
+        this.writeByte(value & 0xFF);
         return this;
     }
 
@@ -259,7 +260,10 @@ public final class ByteArray {
      * Writes an unsigned integer to the bytearray.
      */
     public ByteArray writeUnsignedInt(long value) {
-        this.writeInt((int)value);
+        this.writeByte((int) ((value >> 24) & 0xFF));
+        this.writeByte((int) ((value >> 16) & 0xFF));
+        this.writeByte((int) ((value >> 8) & 0xFF));
+        this.writeByte((int) (value & 0xFF));
         return this;
     }
 
@@ -274,7 +278,7 @@ public final class ByteArray {
         while (hasMore) {
             hasMore = (remaining != end) || ((remaining & 1) != ((arg1 >> 6) & 1));
             int byteToWrite = (arg1 & 0x7F) | (hasMore ? 0x80 : 0);
-            writeByte(byteToWrite);
+            this.writeByte(byteToWrite);
             arg1 = remaining;
             remaining >>= 7;
         }

@@ -33,6 +33,7 @@ public final class S_NPCFunctions implements RecvPacket {
                         return;
                     }
 
+                    client.getParseInventoryInstance().removeConsumable(itemInfo.cost_id, itemInfo.cost_quantity);
                     switch(itemInfo.type) {
                         case 1:
                             client.getAccount().getShopBadges().putIfAbsent(itemInfo.item_id, 1);
@@ -44,7 +45,7 @@ public final class S_NPCFunctions implements RecvPacket {
                             break;
                         case 3:
                             client.getAccount().getTitleList().add(itemInfo.item_id + 0.1);
-                            client.getRoom().sendAll(new C_PlayerUnlockTitle(client.getSessionId(), itemInfo.item_id, 1));
+                            client.getRoom().sendAllOld(new C_PlayerUnlockTitle(client.getSessionId(), itemInfo.item_id, 1));
                             break;
                         case 4:
                             client.getParseInventoryInstance().addConsumable(String.valueOf(itemInfo.item_id), itemInfo.quantity, true);
