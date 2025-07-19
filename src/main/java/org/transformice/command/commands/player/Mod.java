@@ -25,7 +25,7 @@ public final class Mod implements CommandHandler {
     public void execute(Client player, Server server, List<String> args) {
         Map<String, List<String>> staffMembers = new HashMap<>();
         for(Client client : server.getPlayers().values()) {
-            if(!client.isGuest() && client.getAccount().getPrivLevel() >= 10) {
+            if(!client.isGuest() && client.getAccount().getStaffRoles().contains("PublicModo")) {
                 staffMembers.computeIfAbsent(client.playerCommunity, k -> new ArrayList<>()).add(client.getPlayerName());
             }
         }

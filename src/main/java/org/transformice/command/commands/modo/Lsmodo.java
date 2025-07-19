@@ -14,7 +14,7 @@ import org.transformice.packets.send.level.C_OnlineStaffTeam;
 @Command(
         name = "lsmodo",
         description = "Lists connected moderators and administrators and their channels.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR}
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR}
 )
 @SuppressWarnings("unused")
 public final class Lsmodo implements CommandHandler {
@@ -22,7 +22,7 @@ public final class Lsmodo implements CommandHandler {
     public void execute(Client player, Server server, List<String> args) {
         List<String> staffInfo = new ArrayList<>();
         for(Client client : server.getPlayers().values()) {
-            if(!client.isGuest() && client.getAccount().getPrivLevel() >= 9) {
+            if(!client.isGuest() && client.hasStaffPermission("Modo", "")) {
                 staffInfo.add(client.playerCommunity + "_" + client.getPlayerName() + "_" + client.getRoomName());
             }
         }

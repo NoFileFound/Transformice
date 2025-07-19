@@ -14,7 +14,7 @@ import org.transformice.database.collections.Stafflog;
         name = "unban",
         usage = "[playerName] [reason]",
         description = "Removes a player's ban.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1,
         aliases = {"desban", "deban"}
 )

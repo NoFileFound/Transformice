@@ -61,6 +61,8 @@ public @interface Command {
         LUADEV,
         FASHIONSQUAD,
         MAPCREW,
+        ARBITRE,
+        TRIALMODO,
         MODERATOR,
         ADMINISTRATOR,
         DEBUG_ONLY

@@ -59,7 +59,7 @@ public final class ParseModopwet {
             this.client.sendOldPacket(new C_ReportAnswer(playerName));
             this.server.getGameReports().put(playerName, new Report(playerClient, this.client.getPlayerName(), type, reason, playerKarma));
             for(Client player : this.server.getPlayers().values()) {
-                if(player.hasStaffPermission("Modo", "Modopwet")) {
+                if(player.hasStaffPermission("Modo", "Modopwet") || client.hasStaffPermission("TrialModo", "Modopwet")) {
                     if(player.isSubscribedModoNotifications && player.getModopwetChatNotificationCommunities().contains(playerClient.playerCommunity)) {
                         player.sendPacket(new C_ServerMessage(true, String.format("<ROSE>[Modopwet] [%s]</ROSE> <BV>%s</BV> has been reported for %s in room [<N>%s</N>] %s", playerClient.playerCommunity, playerClient.getPlayerName(), this.getReportType(type), playerClient.getRoom().getRoomName(), playerClient.getRoom().getRoomName().equals(this.client.getRoom().getRoomName()) ? "" : String.format(" (<CEP><a href='event:join;%s'>Watch</a></CEP> - <CEP><a href='event:follow;%s'>Follow</a></CEP>)", playerClient.getPlayerName(), playerClient.getPlayerName()))));
                     } else if(player.getAccount().getModoCommunities().contains(playerClient.playerCommunity)) {
@@ -336,7 +336,7 @@ public final class ParseModopwet {
     private List<String> getRoomModerators(String roomName) {
         List<String> roomMods = new ArrayList<>();
         for(Client player : this.server.getRooms().get(roomName).getPlayers().values()) {
-            if(player.getAccount().getPrivLevel() >= 9) roomMods.add(player.getPlayerName());
+            if(player.hasStaffPermission("Modo", "Modopwet") || client.hasStaffPermission("TrialModo", "Modopwet")) roomMods.add(player.getPlayerName());
         }
         return roomMods;
     }

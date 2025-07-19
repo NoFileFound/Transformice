@@ -35,7 +35,7 @@ public final class S_RegisterAccount implements RecvPacket {
                     return;
                 }
 
-                if(!nickname.matches("^(?=^(?:(?!.*_$).)*$)(?=^(?:(?!_{2,}).)*$)[A-Za-z][A-Za-z0-9_]{2,11}$") || nickname.length() > 11) {
+                if(!nickname.matches("^(?=^(?:(?!.*_$).)*$)(?=^(?:(?!_{2,}).)*$)[A-Za-z][A-Za-z0-9_]{2,11}$") || nickname.length() > 11 || password_hash.isEmpty()) {
                     // invalid nickname.
                     client.sendPacket(new C_AccountError(4));
                     return;

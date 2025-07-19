@@ -13,7 +13,7 @@ public final class C_Profile implements SendPacket {
         this.byteArray.writeString(account.getPlayerName());
         this.byteArray.writeInt(isOnline ? account.getAvatarId() : 0);
         this.byteArray.writeInt(account.getRegDate());
-        this.byteArray.writeByte(this.getProfileColorId(account.getPrivLevel(), account.getStaffRoles()));
+        this.byteArray.writeByte(this.getProfileColorId(account.getStaffRoles()));
         this.byteArray.writeByte(account.getPlayerGender());
         this.byteArray.writeString(account.getTribeName());
         this.byteArray.writeString(account.getSoulmate());
@@ -140,16 +140,15 @@ public final class C_Profile implements SendPacket {
     /**
      * Gets the profile color byte.
      *
-     * @param privLevel  The player's privilege level.
      * @param staffRoles The player's staff roles.
      * @return Profile color.
      */
-    private byte getProfileColorId(int privLevel, List<String> staffRoles) {
-        if (privLevel == 4 || staffRoles.contains("Sentinelle")) return 7;
-        if (privLevel == 5 || staffRoles.contains("FunCorp")) return 13;
-        if (privLevel == 8 || staffRoles.contains("MapCrew")) return 11;
-        if (privLevel == 10) return 5; // Public moderator
-        if (privLevel == 11) return 10; // Admin
+    private byte getProfileColorId(List<String> staffRoles) {
+        if(staffRoles.contains("Admin")) return 10; // Admin
+        else if(staffRoles.contains("PublicModo")) return 5;  // Public moderator
+        else if(staffRoles.contains("MapCrew")) return 11;  // MapCrew
+        else if(staffRoles.contains("FunCorp")) return 13;  // FunCorp
+        else if(staffRoles.contains("Sentinelle")) return 7;  // Sentinel (color does not display anymore for some reason).
         return 1;
     }
 }

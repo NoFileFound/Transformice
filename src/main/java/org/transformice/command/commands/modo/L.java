@@ -16,7 +16,7 @@ import org.transformice.utils.IPHex;
         name = "l",
         usage = "[playerName/IP]",
         description = "Lists the 200 previous connections of the requested nickname or IP address.",
-        permission = {Command.CommandPermission.SENTINEL, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         aliases = {"loginlog"},
         requiredArgs = 1
 )

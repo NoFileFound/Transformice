@@ -22,7 +22,7 @@ public final class Lsmc implements CommandHandler {
     public void execute(Client player, Server server, List<String> args) {
         List<String> staffInfo = new ArrayList<>();
         for(Client client : server.getPlayers().values()) {
-            if(!client.isGuest() && client.getAccount().getPrivLevel() == 8 || client.getAccount().getStaffRoles().contains("MapCrew")) {
+            if(!client.isGuest() && client.getAccount().getStaffRoles().contains("MapCrew")) {
                 staffInfo.add(client.playerCommunity + "_" + client.getPlayerName() + "_" + client.getRoomName());
             }
         }

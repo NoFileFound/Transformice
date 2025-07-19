@@ -11,7 +11,7 @@ import org.transformice.command.CommandHandler;
         name = "banhack",
         usage = "[playerName]",
         description = "Special banning order for cheaters.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

@@ -16,7 +16,7 @@ import org.transformice.packets.send.informations.C_TranslationMessage;
         name = "npp",
         usage = "[mapCode]",
         description = "Changes the current map",
-        permission = {Command.CommandPermission.TRIBE, Command.CommandPermission.MAPCREW, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIBE, Command.CommandPermission.MAPCREW, Command.CommandPermission.ARBITRE, Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

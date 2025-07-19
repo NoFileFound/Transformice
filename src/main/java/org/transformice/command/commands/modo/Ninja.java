@@ -11,7 +11,7 @@ import org.transformice.command.CommandHandler;
         name = "ninja",
         usage = "[playerName]",
         description = "Performs the same functionality as Watch in modopwet.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

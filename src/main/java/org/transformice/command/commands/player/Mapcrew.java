@@ -25,7 +25,7 @@ public final class Mapcrew implements CommandHandler {
     public void execute(Client player, Server server, List<String> args) {
         Map<String, List<String>> staffMembers = new HashMap<>();
         for(Client client : server.getPlayers().values()) {
-            if(!client.isGuest() && (client.getAccount().getPrivLevel() == 8 || client.getAccount().getStaffRoles().contains("MapCrew"))) {
+            if(!client.isGuest() && client.getAccount().getStaffRoles().contains("MapCrew")) {
                 staffMembers.computeIfAbsent(client.playerCommunity, k -> new ArrayList<>()).add(client.getPlayerName());
             }
         }

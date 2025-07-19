@@ -453,6 +453,7 @@ public final class Room {
                     count += 1;
                 }
 
+                this.currentShaman.getParseDailyQuestsInstance().sendMissionIncrease(3, count);
                 for (Client player : this.players.values()) {
                     if (!player.isDead && !player.isShaman) {
                         player.getAccount().setShopCheeses(player.getAccount().getShopCheeses() + 1);

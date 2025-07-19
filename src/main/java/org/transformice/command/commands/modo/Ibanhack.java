@@ -11,7 +11,7 @@ import org.transformice.command.CommandHandler;
         name = "ibanhack",
         usage = "[playerName]",
         description = "Special banning order for cheaters, message is not sent in the room.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

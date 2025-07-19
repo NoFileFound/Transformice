@@ -15,7 +15,7 @@ public final class S_AddOutfit implements RecvPacket {
             return;
         }
 
-        if(client.getAccount().getPrivLevel() == 7 || client.getAccount().getPrivLevel() == 11 || !client.getAccount().getStaffRoles().contains("FashionSquad")) {
+        if(client.hasStaffPermission("FashionSquad", "Outfits")) {
             client.getParseShopInstance().sendAddOutfit(data.readString(), data.readShort(), data.readString(), data.readString());
         }
     }

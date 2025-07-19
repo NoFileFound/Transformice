@@ -13,7 +13,7 @@ import org.transformice.database.collections.Stafflog;
         name = "prison",
         usage = "[playerName]",
         description = "Brings and traps the selected player in your room, however they cannot move unless they log out and come back.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

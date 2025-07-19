@@ -737,6 +737,7 @@ public final class Client {
             if(this.room.isRacing()) {
                 canEarnXP = true;
                 this.parseInventoryInstance.addConsumable("2254", 1, false);
+                this.parseDailyQuestsInstance.sendMissionIncrease(4, 1);
             }
 
             if(this.room.isBootcamp()) {
@@ -758,84 +759,88 @@ public final class Client {
 
             if(this.room.isDefilante()) {
                 this.parseInventoryInstance.addConsumable("2504", 1, false);
+                this.parseDailyQuestsInstance.sendMissionIncrease(5, 1);
             }
 
             if (this.room.getCurrentShaman() == this || this.room.getCurrentSecondShaman() == this) {
-                this.parseDailyQuestsInstance.sendMissionIncrease(7);
+                this.parseDailyQuestsInstance.sendMissionIncrease(7, 1);
                 this.account.setShamanCheeseCount(this.account.getShamanCheeseCount() + 1);
                 canEarnXP = true;
 
-                if(!this.account.isShamanNoSkills()) {
-                    /// Normal saves
-                    this.account.setNormalSaves(this.account.getNormalSaves() + this.room.getNumCompleted());
-                    for (Map.Entry<Integer, Double> entry : this.server.shamanTitleList.entrySet()) {
-                        int needResources = entry.getKey();
-                        int titleIntegerID = entry.getValue().intValue();
-                        if (this.account.getNormalSaves() >= needResources && !this.account.getTitleList().contains(titleIntegerID + 0.1)) {
-                            this.room.sendAllOld(new C_PlayerUnlockTitle(this.getSessionId(), titleIntegerID, 1));
-                            this.account.getTitleList().add(titleIntegerID + 0.1);
-                        }
-                    }
-
-                    /// Hard mode saves
-                    if(this.account.getShamanType() == 1) {
-                        this.account.setHardSaves(this.account.getHardSaves() + this.room.getNumCompleted());
-                        for (Map.Entry<Integer, Double> entry : this.server.hardModeTitleList.entrySet()) {
+                if(this.room.getNumCompleted() > 0) {
+                    this.parseDailyQuestsInstance.sendMissionIncrease(2, this.room.getNumCompleted());
+                    if(!this.account.isShamanNoSkills()) {
+                        /// Normal saves
+                        this.account.setNormalSaves(this.account.getNormalSaves() + this.room.getNumCompleted());
+                        for (Map.Entry<Integer, Double> entry : this.server.shamanTitleList.entrySet()) {
                             int needResources = entry.getKey();
                             int titleIntegerID = entry.getValue().intValue();
-                            if (this.account.getHardSaves() >= needResources && !this.account.getTitleList().contains(titleIntegerID + 0.1)) {
+                            if (this.account.getNormalSaves() >= needResources && !this.account.getTitleList().contains(titleIntegerID + 0.1)) {
                                 this.room.sendAllOld(new C_PlayerUnlockTitle(this.getSessionId(), titleIntegerID, 1));
                                 this.account.getTitleList().add(titleIntegerID + 0.1);
                             }
                         }
-                    }
 
-                    /// Divine saves
-                    else if(this.account.getShamanType() == 2) {
-                        this.account.setDivineSaves(this.account.getDivineSaves() + this.room.getNumCompleted());
-                        for (Map.Entry<Integer, Double> entry : this.server.divineModeTitleList.entrySet()) {
+                        /// Hard mode saves
+                        if(this.account.getShamanType() == 1) {
+                            this.account.setHardSaves(this.account.getHardSaves() + this.room.getNumCompleted());
+                            for (Map.Entry<Integer, Double> entry : this.server.hardModeTitleList.entrySet()) {
+                                int needResources = entry.getKey();
+                                int titleIntegerID = entry.getValue().intValue();
+                                if (this.account.getHardSaves() >= needResources && !this.account.getTitleList().contains(titleIntegerID + 0.1)) {
+                                    this.room.sendAllOld(new C_PlayerUnlockTitle(this.getSessionId(), titleIntegerID, 1));
+                                    this.account.getTitleList().add(titleIntegerID + 0.1);
+                                }
+                            }
+                        }
+
+                        /// Divine saves
+                        else if(this.account.getShamanType() == 2) {
+                            this.account.setDivineSaves(this.account.getDivineSaves() + this.room.getNumCompleted());
+                            for (Map.Entry<Integer, Double> entry : this.server.divineModeTitleList.entrySet()) {
+                                int needResources = entry.getKey();
+                                int titleIntegerID = entry.getValue().intValue();
+                                if (this.account.getDivineSaves() >= needResources && !this.account.getTitleList().contains(titleIntegerID + 0.1)) {
+                                    this.room.sendAllOld(new C_PlayerUnlockTitle(this.getSessionId(), titleIntegerID, 1));
+                                    this.account.getTitleList().add(titleIntegerID + 0.1);
+                                }
+                            }
+                        }
+                    } else {
+                        /// Normal saves
+                        this.account.setNormalSavesNoSkills(this.account.getNormalSavesNoSkills() + this.room.getNumCompleted());
+                        for (Map.Entry<Integer, Double> entry : this.server.shamanTitleListNoSkills.entrySet()) {
                             int needResources = entry.getKey();
                             int titleIntegerID = entry.getValue().intValue();
-                            if (this.account.getDivineSaves() >= needResources && !this.account.getTitleList().contains(titleIntegerID + 0.1)) {
+                            if (this.account.getNormalSavesNoSkills() >= needResources && !this.account.getTitleList().contains(titleIntegerID + 0.1)) {
                                 this.room.sendAllOld(new C_PlayerUnlockTitle(this.getSessionId(), titleIntegerID, 1));
                                 this.account.getTitleList().add(titleIntegerID + 0.1);
                             }
                         }
-                    }
-                } else {
-                    /// Normal saves
-                    this.account.setNormalSavesNoSkills(this.account.getNormalSavesNoSkills() + this.room.getNumCompleted());
-                    for (Map.Entry<Integer, Double> entry : this.server.shamanTitleListNoSkills.entrySet()) {
-                        int needResources = entry.getKey();
-                        int titleIntegerID = entry.getValue().intValue();
-                        if (this.account.getNormalSavesNoSkills() >= needResources && !this.account.getTitleList().contains(titleIntegerID + 0.1)) {
-                            this.room.sendAllOld(new C_PlayerUnlockTitle(this.getSessionId(), titleIntegerID, 1));
-                            this.account.getTitleList().add(titleIntegerID + 0.1);
-                        }
-                    }
 
-                    /// Hard mode saves
-                    if(this.account.getShamanType() == 1) {
-                        this.account.setHardSavesNoSkill(this.account.getHardSavesNoSkill() + this.room.getNumCompleted());
-                        for (Map.Entry<Integer, Double> entry : this.server.hardModeTitleListNoSkills.entrySet()) {
-                            int needResources = entry.getKey();
-                            int titleIntegerID = entry.getValue().intValue();
-                            if (this.account.getHardSavesNoSkill() >= needResources && !this.account.getTitleList().contains(titleIntegerID + 0.1)) {
-                                this.room.sendAllOld(new C_PlayerUnlockTitle(this.getSessionId(), titleIntegerID, 1));
-                                this.account.getTitleList().add(titleIntegerID + 0.1);
+                        /// Hard mode saves
+                        if(this.account.getShamanType() == 1) {
+                            this.account.setHardSavesNoSkill(this.account.getHardSavesNoSkill() + this.room.getNumCompleted());
+                            for (Map.Entry<Integer, Double> entry : this.server.hardModeTitleListNoSkills.entrySet()) {
+                                int needResources = entry.getKey();
+                                int titleIntegerID = entry.getValue().intValue();
+                                if (this.account.getHardSavesNoSkill() >= needResources && !this.account.getTitleList().contains(titleIntegerID + 0.1)) {
+                                    this.room.sendAllOld(new C_PlayerUnlockTitle(this.getSessionId(), titleIntegerID, 1));
+                                    this.account.getTitleList().add(titleIntegerID + 0.1);
+                                }
                             }
                         }
-                    }
 
-                    /// Divine saves
-                    else if(this.account.getShamanType() == 2) {
-                        this.account.setDivineSavesNoSkill(this.account.getDivineSavesNoSkill() + this.room.getNumCompleted());
-                        for (Map.Entry<Integer, Double> entry : this.server.divineModeTitleListNoSkills.entrySet()) {
-                            int needResources = entry.getKey();
-                            int titleIntegerID = entry.getValue().intValue();
-                            if (this.account.getDivineSavesNoSkill() >= needResources && !this.account.getTitleList().contains(titleIntegerID + 0.1)) {
-                                this.room.sendAllOld(new C_PlayerUnlockTitle(this.getSessionId(), titleIntegerID, 1));
-                                this.account.getTitleList().add(titleIntegerID + 0.1);
+                        /// Divine saves
+                        else if(this.account.getShamanType() == 2) {
+                            this.account.setDivineSavesNoSkill(this.account.getDivineSavesNoSkill() + this.room.getNumCompleted());
+                            for (Map.Entry<Integer, Double> entry : this.server.divineModeTitleListNoSkills.entrySet()) {
+                                int needResources = entry.getKey();
+                                int titleIntegerID = entry.getValue().intValue();
+                                if (this.account.getDivineSavesNoSkill() >= needResources && !this.account.getTitleList().contains(titleIntegerID + 0.1)) {
+                                    this.room.sendAllOld(new C_PlayerUnlockTitle(this.getSessionId(), titleIntegerID, 1));
+                                    this.account.getTitleList().add(titleIntegerID + 0.1);
+                                }
                             }
                         }
                     }
@@ -861,7 +866,7 @@ public final class Client {
             }
 
             this.account.setCheeseCount(this.account.getCheeseCount() + 1);
-            this.parseDailyQuestsInstance.sendMissionIncrease(1);
+            this.parseDailyQuestsInstance.sendMissionIncrease(1, 1);
             for (Map.Entry<Integer, Double> entry : this.server.cheeseTitleList.entrySet()) {
                 int needResources = entry.getKey();
                 int titleIntegerID = entry.getValue().intValue();
@@ -915,7 +920,7 @@ public final class Client {
         if(!roomName.startsWith("*")) {
             if(!(roomName.length() > 3 && roomName.charAt(2) == '-')) {
                 roomName = this.playerCommunity + "-" + roomName;
-            } else if(this.account.getPrivLevel() <= 9) {
+            } else if(this.hasStaffPermission("MapCrew", "JoinCommunityRooms")) {
                 roomName = this.playerCommunity + roomName.substring(2);
             }
         }
@@ -1235,55 +1240,37 @@ public final class Client {
         }
 
         ArrayList<Integer> privileges = new ArrayList<>();
-        if(this.account.getPrivLevel() == 4 || this.account.getPrivLevel() == 11) {
+        if(this.hasStaffPermission("Sentinelle", "")) {
             privileges.add(7);
         }
 
-        if(this.account.getPrivLevel() == 5 || this.account.getPrivLevel() == 11) {
+        if(this.hasStaffPermission("FunCorp", "")) {
             privileges.add(13);
         }
 
-        if(this.account.getPrivLevel() == 6 || this.account.getPrivLevel() == 11) {
+        if(this.hasStaffPermission("LuaCrew", "")) {
             privileges.add(12);
         }
 
-        if(this.account.getPrivLevel() == 7 || this.account.getPrivLevel() == 11) {
+        if(this.hasStaffPermission("FashionSquad", "")) {
             privileges.add(15);
         }
 
-        if(this.account.getPrivLevel() == 8 || this.account.getPrivLevel() == 11) {
+        if(this.hasStaffPermission("MapCrew", "")) {
             privileges.add(11);
         }
 
-        if(this.account.getPrivLevel() >= 9) {
+        if(this.hasStaffPermission("Arbitre", "")) {
+            privileges.add(3);
+        }
+
+        if(this.hasStaffPermission("Modo", "") || this.hasStaffPermission("TrialModo", "")) {
             privileges.add(3);
             privileges.add(5);
         }
 
-        if(this.account.getPrivLevel() == 11) {
+        if(this.hasStaffPermission("Admin", "")) {
             privileges.add(10);
-        }
-
-        for(String staffRole : this.account.getStaffRoles()) {
-            if(staffRole.equals("Sentinelle")) {
-                privileges.add(7);
-            }
-
-            if(staffRole.equals("FunCorp")) {
-                privileges.add(13);
-            }
-
-            if(staffRole.equals("LuaDev")) {
-                privileges.add(12);
-            }
-
-            if(staffRole.equals("FashionSquad")) {
-                privileges.add(15);
-            }
-
-            if(staffRole.equals("MapCrew")) {
-                privileges.add(11);
-            }
         }
 
         return new ArrayList<>(new HashSet<>(privileges));
@@ -1298,17 +1285,18 @@ public final class Client {
     public boolean hasStaffPermission(String position, String permissionType) {
         if(this.isGuest) return false;
 
-        if(this.account.getPrivLevel() == 11) return true;
+        if(this.account.getStaffRoles().contains("Admin")) return true;
         if(this.account.getHasPublicAuthorization() && permissionType.equals("StaffChannel")) return true;
 
         return switch (position) {
-            case "Sentinelle" -> this.account.getPrivLevel() == 4 || this.account.getStaffRoles().contains("Sentinelle");
-            case "FunCorp" -> this.account.getPrivLevel() == 5 || this.account.getStaffRoles().contains("FunCorp");
-            case "LuaDev" -> this.account.getPrivLevel() == 6 || this.account.getStaffRoles().contains("LuaDev");
-            case "FashionSquad" -> this.account.getPrivLevel() == 7 || this.account.getStaffRoles().contains("FashionSquad");
-            case "MapCrew" -> this.account.getPrivLevel() == 8 || this.account.getStaffRoles().contains("MapCrew");
-            case "Modo" -> this.account.getPrivLevel() >= 9;
-            case "Admin" -> this.account.getPrivLevel() == 11;
+            case "Sentinelle" -> this.account.getStaffRoles().contains("Sentinelle");
+            case "FunCorp" -> this.account.getStaffRoles().contains("FunCorp");
+            case "LuaDev" -> this.account.getStaffRoles().contains("LuaDev");
+            case "FashionSquad" -> this.account.getStaffRoles().contains("FashionSquad");
+            case "MapCrew" -> this.account.getStaffRoles().contains("MapCrew");
+            case "Arbitre" -> this.account.getStaffRoles().contains("Arbitre");
+            case "TrialModo" -> this.account.getStaffRoles().contains("TrialModo");
+            case "Modo" -> this.account.getStaffRoles().contains("PrivateModo") || this.account.getStaffRoles().contains("PublicModo");
             default -> false;
         };
     }

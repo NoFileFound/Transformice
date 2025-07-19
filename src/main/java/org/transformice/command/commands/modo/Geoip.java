@@ -12,7 +12,7 @@ import org.transformice.command.CommandHandler;
         name = "geoip",
         usage = "[IP]",
         description = "Gives country information for an IP.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

@@ -536,7 +536,7 @@ public final class ParseTribulle {
      * @param chatName The chat name.
      */
     private void sendCreateNewGlobalChannel(final long tribulleId, final String chatName) {
-        if(!chatName.matches("^[a-zA-Z0-9_.-]*$") || (chatName.equals("vip") && !this.client.isVip() && this.client.getAccount().getPrivLevel() < 5)) {
+        if(!chatName.matches("^[a-zA-Z0-9_.-]*$") || (chatName.equals("vip") && !this.client.isVip() && this.client.getAccount().getStaffRoles().isEmpty())) {
             // invalid chat name, or person is not vip to access #vip
             this.sendTribullePacket(TribulleNew.Send.ET_ResultatRejoindreCanalPublique, new ByteArray().writeInt(tribulleId).writeByte(8));
             return;
@@ -764,7 +764,7 @@ public final class ParseTribulle {
      * @param message The message to send.
      */
     private void sendGlobalChannelMessage(final long tribulleId, final String chatName, final String message) {
-        if(chatName.equals("vip") && (!this.client.isVip() && this.client.getAccount().getPrivLevel() < 5)) return;
+        if(chatName.equals("vip") && (!this.client.isVip() && this.client.getAccount().getStaffRoles().isEmpty())) return;
 
         if(this.client.getAccount().getPlayedTime() / 3600 < 4) {
             this.sendTribullePacket(TribulleNew.Send.ET_ResultatEnvoiMessageChat, new ByteArray().writeInt(tribulleId).writeByte(28));
@@ -1025,12 +1025,12 @@ public final class ParseTribulle {
         }
 
         Client playerClient = this.server.getPlayers().get(playerName);
-        if(this.client.getAccount().getPlayedTime() / 3600 < 5 && !playerClient.getAccount().getFriendList().contains(this.client.getPlayerName()) && this.client.getAccount().getPrivLevel() < 5) {
+        if(this.client.getAccount().getPlayedTime() / 3600 < 5 && !playerClient.getAccount().getFriendList().contains(this.client.getPlayerName()) && this.client.getAccount().getStaffRoles().isEmpty()) {
             this.sendTribullePacket(TribulleNew.Send.ET_ResultatEnvoiMessagePrive, new ByteArray().writeInt(tribulleId).writeByte(28).writeString(""));
             return;
         }
 
-        if(this.client.getAccount().getPrivLevel() < 5 && !playerName.equals(this.client.getPlayerName()) && (playerClient.silenceType == 2 || ((playerClient.silenceType == 1 && !playerClient.getAccount().getFriendList().contains(this.client.getPlayerName()))))) {
+        if(this.client.getAccount().getStaffRoles().isEmpty() && !playerName.equals(this.client.getPlayerName()) && (playerClient.silenceType == 2 || ((playerClient.silenceType == 1 && !playerClient.getAccount().getFriendList().contains(this.client.getPlayerName()))))) {
             this.sendTribullePacket(TribulleNew.Send.ET_ResultatEnvoiMessagePrive, new ByteArray().writeInt(tribulleId).writeByte(25).writeString(playerClient.silenceMessage));
             return;
         }

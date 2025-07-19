@@ -11,7 +11,7 @@ import org.transformice.command.CommandHandler;
         name = "join",
         usage = "[playerName]",
         description = "Joins the room of a specific player.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1,
         aliases = {"follow"}
 )

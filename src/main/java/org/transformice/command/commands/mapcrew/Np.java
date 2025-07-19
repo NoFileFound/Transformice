@@ -16,7 +16,7 @@ import org.transformice.packets.send.informations.C_TranslationMessage;
         name = "np",
         usage = "(mapCode)",
         description = "Changes the current map",
-        permission = {Command.CommandPermission.TRIBE, Command.CommandPermission.MAPCREW, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR}
+        permission = {Command.CommandPermission.TRIBE, Command.CommandPermission.MAPCREW, Command.CommandPermission.ARBITRE, Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR}
 )
 @SuppressWarnings("unused")
 public final class Np implements CommandHandler {

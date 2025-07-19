@@ -15,7 +15,7 @@ public final class S_RemoteOutfit implements RecvPacket {
             return;
         }
 
-        if(client.getAccount().getPrivLevel() == 7 || client.getAccount().getPrivLevel() == 11 || !client.getAccount().getStaffRoles().contains("FashionSquad")) {
+        if(client.hasStaffPermission("FashionSquad", "Outfits")) {
             client.getParseShopInstance().sendRemoveOutfit(data.readInt());
         }
     }

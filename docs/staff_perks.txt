@@ -1,0 +1,10 @@
+Sentinelle
+FunCorp
+LuaDev
+FashionSquad
+MapCrew
+Arbitre
+TrialModo
+PrivateModo
+PublicModo
+Admin

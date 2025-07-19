@@ -18,7 +18,7 @@ import org.transformice.utils.IPHex;
         name = "ipnom",
         usage = "[IP]",
         description = "Gives the accounts a specific IP has connected to.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

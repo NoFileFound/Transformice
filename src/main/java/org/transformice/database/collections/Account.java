@@ -25,7 +25,6 @@ public final class Account {
     @Setter private String emailAddress;
     @Setter private String password;
     @Setter private long avatarId;
-    @Setter private Integer privLevel;
     private final List<String> staffRoles;
     private final String betaInviter;
     @Setter private Long playedTime;
@@ -105,7 +104,6 @@ public final class Account {
         this.emailAddress = emailAddress;
         this.password = password;
         this.avatarId = 0;
-        this.privLevel = 1;
         this.staffRoles = new ArrayList<>();
         this.betaInviter = betaInviter;
         this.playedTime = 0L;

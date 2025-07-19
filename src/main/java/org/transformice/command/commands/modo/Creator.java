@@ -13,7 +13,7 @@ import org.transformice.utils.Utils;
         name = "creator",
         usage = "(roomName)",
         description = "Returns the first mouse to join the given room.",
-        permission = { Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR}
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR}
 )
 @SuppressWarnings("unused")
 public final class Creator implements CommandHandler {

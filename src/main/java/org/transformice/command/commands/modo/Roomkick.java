@@ -13,7 +13,7 @@ import org.transformice.database.collections.Stafflog;
         name = "roomkick",
         usage = "[playerName]",
         description = "Kicks a player from a room.",
-        permission = {Command.CommandPermission.FUNCORP, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.FUNCORP, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1,
         isFunCorpOnlyCommand = true
 )

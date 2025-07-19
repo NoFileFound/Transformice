@@ -57,7 +57,7 @@ public final class ParseDailyQuests {
      * Increases the progress of the given mission.
      * @param missionId The mission id.
      */
-    public void sendMissionIncrease(int missionId) {
+    public void sendMissionIncrease(int missionId, int amount) {
         Quest myQuest = null;
         for(Quest mission : this.client.getAccount().getPlayerMissions()) {
             if(mission.getId() == missionId) {
@@ -67,7 +67,7 @@ public final class ParseDailyQuests {
         }
 
         if(myQuest != null) {
-            myQuest.setMissionCollected(myQuest.getMissionCollected() + 1);
+            myQuest.setMissionCollected(myQuest.getMissionCollected() + amount);
             this.client.sendPacket(new C_PlayerCompleteMission(myQuest));
             if(myQuest.getMissionCollected() >= myQuest.getMissionTotal()) {
                 if(missionId == 60801) {
@@ -75,7 +75,7 @@ public final class ParseDailyQuests {
                     this.client.getAccount().getPlayerMissions().add(new Quest(60801, 4, 0, 20, 20));
                 } else {
                     this.client.getAccount().setShopCheeses(this.client.getAccount().getShopCheeses() + myQuest.getMissionPrize());
-                    this.sendMissionIncrease(60801); // strawberry mission.
+                    this.sendMissionIncrease(60801, 1); // strawberry mission.
                     this.sendChangeMission((int)myQuest.getId(), false);
                 }
             }

@@ -22,7 +22,7 @@ public final class Lsfc implements CommandHandler {
     public void execute(Client player, Server server, List<String> args) {
         List<String> staffInfo = new ArrayList<>();
         for(Client client : server.getPlayers().values()) {
-            if(!client.isGuest() && client.getAccount().getPrivLevel() == 5 || client.getAccount().getStaffRoles().contains("FunCorp")) {
+            if(!client.isGuest() && client.getAccount().getStaffRoles().contains("FunCorp")) {
                 staffInfo.add(client.playerCommunity + "_" + client.getPlayerName() + "_" + client.getRoomName());
             }
         }

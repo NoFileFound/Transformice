@@ -25,13 +25,17 @@ public final class S_StaffChatMessage implements RecvPacket {
                 perm = client.hasStaffPermission("Modo", "StaffChannel");
                 break;
             case 2: // #Arbitre
+                perm = client.hasStaffPermission("Arbitre", "StaffChannel") || client.hasStaffPermission("Modo", "StaffChannel") || client.hasStaffPermission("TrialModo", "StaffChannel");
+                break;
             case 3: // #Modo
-                perm = client.hasStaffPermission("Modo", "StaffChannel");
+                perm = client.hasStaffPermission("Modo", "StaffChannel") || client.hasStaffPermission("TrialModo", "StaffChannel");
                 isInternational = false;
                 break;
             case 4: // #Modo (ALL)
-            case 5: // #Arbutre (ALL)
-                perm = client.hasStaffPermission("Modo", "StaffChannel");
+                perm = client.hasStaffPermission("Modo", "StaffChannel") || client.hasStaffPermission("TrialModo", "StaffChannel");
+                break;
+            case 5: // #Arbitre (ALL)
+                perm = client.hasStaffPermission("Arbitre", "StaffChannel") || client.hasStaffPermission("Modo", "StaffChannel") || client.hasStaffPermission("TrialModo", "StaffChannel");
                 break;
             case 6: // /mssc
                 perm = client.hasStaffPermission("Admin", "StaffChannel");
@@ -42,8 +46,8 @@ public final class S_StaffChatMessage implements RecvPacket {
             case 8: // #MapCrew
                 perm = client.hasStaffPermission("MapCrew", "StaffChannel");
                 break;
-            case 11: // msfc
             case 9: // #FunCorp
+            case 11: // msfc
                 perm = client.hasStaffPermission("FunCorp", "StaffChannel");
                 break;
             case 10: // #FashionSquad

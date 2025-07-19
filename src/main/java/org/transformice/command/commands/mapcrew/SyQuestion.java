@@ -10,7 +10,7 @@ import org.transformice.command.CommandHandler;
 @Command(
         name = "sy?",
         description = "Gets the current room's synchronizer.",
-        permission = {Command.CommandPermission.TRIBE, Command.CommandPermission.MAPCREW, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR}
+        permission = {Command.CommandPermission.TRIBE, Command.CommandPermission.MAPCREW, Command.CommandPermission.ARBITRE, Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR}
 )
 @SuppressWarnings("unused")
 public final class SyQuestion implements CommandHandler {

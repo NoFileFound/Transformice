@@ -37,7 +37,7 @@ public final class Ban implements CommandHandler {
             return;
         }
 
-        if(!player.hasStaffPermission("Modo", "Ban")) {
+        if(!player.hasStaffPermission("Arbitre", "Ban") && !player.hasStaffPermission("TrialModo", "Ban") && !player.hasStaffPermission("Modo", "Ban")) {
             /// VOTEBAN support.
             var client = player.getRoom().getPlayers().get(playerName);
             if(client == null) {

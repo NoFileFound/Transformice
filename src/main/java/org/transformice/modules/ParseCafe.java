@@ -43,7 +43,7 @@ public final class ParseCafe {
      */
     public void initCafeProperties() {
         this.canUseCafe = !this.client.isGuest() && this.client.getAccount().getCafeBadReputation() < 20;
-        this.canModerateCafe = this.client.hasStaffPermission("Modo", "ModerateCafe");
+        this.canModerateCafe = this.client.hasStaffPermission("Modo", "ModerateCafe") || this.client.hasStaffPermission("TrialModo", "ModerateCafe");
     }
 
     /**

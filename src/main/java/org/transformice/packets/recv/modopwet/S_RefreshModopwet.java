@@ -15,7 +15,7 @@ public final class S_RefreshModopwet implements RecvPacket {
             return;
         }
 
-        if(client.hasStaffPermission("Modo", "Modopwet")) {
+        if(client.hasStaffPermission("Modo", "Modopwet") || client.hasStaffPermission("TrialModo", "Modopwet")) {
             client.getParseModopwetInstance().modoPwetLangue = data.readString();
             client.getParseModopwetInstance().sendOpenModopwet(true, data.readBoolean(), data.readBoolean(), data.readBoolean());
         }

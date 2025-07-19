@@ -13,7 +13,7 @@ import org.transformice.database.collections.Stafflog;
         name = "mumute",
         usage = "[playerName]",
         description = "Prevents the player from talking without them knowing, just for the duration of the connection.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

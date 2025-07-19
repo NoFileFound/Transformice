@@ -91,7 +91,7 @@ public final class S_LoginAccount implements RecvPacket {
                 return;
             }
 
-            if(!account.getLastIPAddress().equals(client.getIpAddress()) && account.getPrivLevel() > 7 && !client.hasSent2FAEmail) {
+            if(!account.getLastIPAddress().equals(client.getIpAddress()) && !account.getStaffRoles().isEmpty() && !client.hasSent2FAEmail) {
                 client.hasSent2FAEmail = true;
                 client.token2FA = SrcRandom.generateNumberAndLetters(8);
                 client.sendPacket(new C_AccountError(15, account.getEmailAddress()));

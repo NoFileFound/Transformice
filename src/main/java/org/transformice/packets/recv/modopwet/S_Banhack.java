@@ -15,7 +15,7 @@ public final class S_Banhack implements RecvPacket {
             return;
         }
 
-        if(client.hasStaffPermission("Modo", "Modopwet")) {
+        if(client.hasStaffPermission("Modo", "Modopwet") || client.hasStaffPermission("TrialModo", "Modopwet")) {
             client.getParseModopwetInstance().sendBanHack(data.readString(), data.readBoolean());
         }
     }

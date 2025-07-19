@@ -19,7 +19,7 @@ import org.transformice.packets.send.informations.C_TranslationMessage;
         name = "mute",
         usage = "[playerName] [hours] [reason]",
         description = "Prevents the player from speaking for the set duration.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 3
 )
 @SuppressWarnings("unused")

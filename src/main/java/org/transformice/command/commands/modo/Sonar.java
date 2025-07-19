@@ -18,7 +18,7 @@ import org.transformice.packets.send.newpackets.sonar.C_StopSonar;
         name = "sonar",
         usage = "[playerName]",
         description = "Send results about their movement.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

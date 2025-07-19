@@ -16,7 +16,7 @@ import org.transformice.utils.IPHex;
         name = "ip",
         usage = "[playerName]",
         description = "Gives the IP and country of a connected player.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

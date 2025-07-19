@@ -24,7 +24,7 @@ public final class Lsmap implements CommandHandler {
     @Override
     public void execute(Client player, Server server, List<String> args) {
         String playerName = (!args.isEmpty()) ? args.getFirst() : player.getPlayerName();
-        if(!args.isEmpty() && !player.hasStaffPermission("MapCrew", "lsmap") && !player.hasStaffPermission("Modo", "lsmap")) return;
+        if(!args.isEmpty() && !player.hasStaffPermission("MapCrew", "lsmap") && !player.hasStaffPermission("Modo", "lsmap") && !player.hasStaffPermission("Arbitre", "lsmap") && !player.hasStaffPermission("TrialModo", "lsmap")) return;
 
         List<MapEditor> maps = DBUtils.findMapByCreator(playerName);
         if (maps.isEmpty()) {

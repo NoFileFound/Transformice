@@ -46,7 +46,7 @@ public final class Funcorp implements CommandHandler {
             player.getRoom().isFunCorp = true;
             for(Client client : player.getRoom().getPlayers().values()) {
                 client.sendPacket(new C_TranslationMessage("", "<FC>$FunCorpActive</FC>"));
-                if(!client.isGuest() && (client.getAccount().getPrivLevel() == 5 || client.getAccount().getPrivLevel() == 11 || client.getAccount().getStaffRoles().contains("FunCorp"))) {
+                if(!client.isGuest() && (client.getAccount().getStaffRoles().contains("FunCorp"))) {
                     player.getRoom().getFuncorpMembers().add(client.getPlayerName());
                 }
             }

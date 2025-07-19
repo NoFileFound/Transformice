@@ -1,10 +1,9 @@
 package org.transformice.properties.configs;
 
+// Imports
 import com.google.gson.reflect.TypeToken;
 import org.transformice.libraries.JsonLoader;
 import org.transformice.properties.Property;
-
-// Imports
 import java.util.List;
 
 public final class BadStringsConfig implements Property {

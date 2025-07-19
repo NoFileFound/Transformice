@@ -17,7 +17,7 @@ import org.transformice.utils.IPHex;
         name = "nomip",
         usage = "[playerName]",
         description = "Gives the IPs connecting to an account since the last reboot.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

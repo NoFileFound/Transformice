@@ -12,7 +12,7 @@ import org.transformice.command.CommandHandler;
         name = "chatfilter",
         usage = "(list|del) [text]",
         description = "Sends the list of filtered words, adds a word or deletes a word from the chat filter.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

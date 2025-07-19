@@ -17,7 +17,7 @@ import org.transformice.utils.IPHex;
         name = "relation",
         usage = "[playerName]",
         description = "Gives list of related accounts since the last reboot.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

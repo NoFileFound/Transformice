@@ -15,7 +15,7 @@ public final class S_DeleteReport implements RecvPacket {
             return;
         }
 
-        if(client.hasStaffPermission("Modo", "Modopwet")) {
+        if(client.hasStaffPermission("Modo", "Modopwet") || client.hasStaffPermission("TrialModo", "Modopwet")) {
             client.getParseModopwetInstance().sendDeleteReport(data.readString(), data.readBoolean());
         }
     }

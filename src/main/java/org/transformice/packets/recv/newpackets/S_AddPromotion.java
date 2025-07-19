@@ -15,7 +15,7 @@ public final class S_AddPromotion implements RecvPacket {
             return;
         }
 
-        if(client.getAccount().getPrivLevel() == 7 || client.getAccount().getPrivLevel() == 11 || !client.getAccount().getStaffRoles().contains("FashionSquad")) {
+        if(client.hasStaffPermission("FashionSquad", "Promotions")) {
             client.getParseShopInstance().sendAddPromotion(data.readString(), data.readString(), data.readString(), data.readByte());
         }
     }

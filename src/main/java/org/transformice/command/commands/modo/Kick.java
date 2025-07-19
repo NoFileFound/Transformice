@@ -13,7 +13,7 @@ import org.transformice.database.collections.Stafflog;
         name = "kick",
         usage = "[playerName]",
         description = "Disconnects the player from the game.",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

@@ -501,7 +501,7 @@ public final class Server {
      */
     public void sendServerMessage(String message, boolean isTab, Client other) {
         for (Client client : this.players.values()) {
-            if (client.getAccount().getPrivLevel() >= 9) {
+            if (client.hasStaffPermission("Arbitre", "ServerMsg")) {
                 if (other != null) {
                     if (client != other) {
                         client.sendPacket(new C_ServerMessage(isTab, message));
@@ -540,7 +540,7 @@ public final class Server {
      */
     public void sendStaffChannelMessage(int channelId, String rawMessage, boolean isInt, String clientName, String clientLangue) {
         for (Client client : this.players.values()) {
-            if (channelId > 1 && channelId < 6 && client.hasStaffPermission("Modo", "StaffChannel")) {
+            if (channelId > 1 && channelId < 6 && client.hasStaffPermission("Modo", "StaffChannel") || client.hasStaffPermission("TrialModo", "StaffChannel")) {
                 if (isInt) {
                     client.sendPacket(new C_StaffChannelMessage(channelId, clientName, rawMessage));
                 } else if (client.playerCommunity.equals(clientLangue)) {
@@ -554,6 +554,8 @@ public final class Server {
                 client.sendPacket(new C_StaffChannelMessage(channelId, clientName, rawMessage));
             } else if (channelId == 10 && client.hasStaffPermission("FashionSquad", "StaffChannel")) {
                 client.sendPacket(new C_StaffChannelMessage(channelId, clientName, rawMessage));
+            } else if (channelId == 2 || channelId == 5 && client.hasStaffPermission("Arbitre", "StaffChannel")) {
+                client.sendPacket(new C_StaffChannelMessage(channelId, clientName, rawMessage));
             }
         }
     }
@@ -564,20 +566,56 @@ public final class Server {
      * @param author The staff client.
      */
     public void sendStaffLoginMessage(String message, Client author) {
-        int privLevel = author.getAccount().getPrivLevel();
-        if(author.getAccount().getPrivLevel() < 5) return;
+        if (author.getAccount().getStaffRoles().isEmpty()) return;
 
         List<String> staffInfo = new ArrayList<>();
-        int channelId = (privLevel == 5 ? 9 : (privLevel == 6) ? 7 : (privLevel == 7) ? 10 : (privLevel == 8) ? 8 : 4);
+
+        String staffTeam = "";
+        int channelId = -1;
+        if(author.hasStaffPermission("Modo", "StaffChannel")) {
+            staffTeam = "Modo";
+            channelId = 4;
+        } else if (author.hasStaffPermission("TrialModo", "StaffChannel")) {
+            staffTeam = "TrialModo";
+            channelId = 4;
+        } else if(author.hasStaffPermission("Arbitre", "StaffChannel")) {
+            staffTeam = "Arbitre";
+            channelId = 2;
+        } else if (author.hasStaffPermission("MapCrew", "StaffChannel")) {
+            staffTeam = "MapCrew";
+            channelId = 8;
+        } else if (author.hasStaffPermission("FashionSquad", "StaffChannel")) {
+            staffTeam = "FashionSquad";
+            channelId = 10;
+        } else if (author.hasStaffPermission("LuaDev", "StaffChannel")) {
+            staffTeam = "LuaDev";
+            channelId = 7;
+        } else if (author.hasStaffPermission("FunCorp", "StaffChannel")) {
+            staffTeam = "FunCorp";
+            channelId = 9;
+        }
+
         for (Client client : this.players.values()) {
-            if((client.getAccount().getPrivLevel() == privLevel)) {
-                client.sendPacket(new C_StaffChannelMessage(channelId, message, author.playerCommunity, author.getPlayerName()));
-                staffInfo.add(client.playerCommunity + "_" + client.getPlayerName() + "_" + client.playerCommunity + '-' + client.getRoomName());
+            if (client.hasStaffPermission(staffTeam, "StaffChannel") && channelId != -1) {
+                client.sendPacket(new C_StaffChannelMessage(
+                        channelId,
+                        message,
+                        author.playerCommunity,
+                        author.getPlayerName()
+                ));
+
+                staffInfo.add(
+                        client.playerCommunity + "_" +
+                                client.getPlayerName() + "_" +
+                                client.playerCommunity + "-" +
+                                client.getRoomName()
+                );
             }
         }
 
-        if(message.equals("$Connexion_Ami"))
+        if (message.equals("$Connexion_Ami")) {
             author.sendPacket(new C_OnlineStaffTeam(channelId, staffInfo));
+        }
     }
 
     /**

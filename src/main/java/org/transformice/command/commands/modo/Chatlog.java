@@ -11,7 +11,7 @@ import org.transformice.command.CommandHandler;
         name = "chatlog",
         usage = "[playerName]",
         description = "Gets the chat and whispers messages on given player.",
-        permission = { Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR},
         requiredArgs = 1
 )
 @SuppressWarnings("unused")

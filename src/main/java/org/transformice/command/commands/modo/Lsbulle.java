@@ -10,7 +10,7 @@ import org.transformice.command.CommandHandler;
 @Command(
         name = "lsbulle",
         description = "Gives info about the satellite servers (which host the rooms).",
-        permission = {Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR}
+        permission = {Command.CommandPermission.TRIALMODO, Command.CommandPermission.MODERATOR, Command.CommandPermission.ADMINISTRATOR}
 )
 @SuppressWarnings("unused")
 public final class Lsbulle implements CommandHandler {

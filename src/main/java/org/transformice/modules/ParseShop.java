@@ -778,7 +778,7 @@ public final class ParseShop {
      * @param item_type The shop item type.
      */
     private void sendBuyResult(int item_id, int item_type) {
-        this.client.getParseDailyQuestsInstance().sendMissionIncrease(6);
+        this.client.getParseDailyQuestsInstance().sendMissionIncrease(6, 1);
         if(!this.client.isGuest() && item_type != 2) {
             for (Map.Entry<Integer, Double> entry : this.server.shopTitleList.entrySet()) {
                 int needResources = entry.getKey();

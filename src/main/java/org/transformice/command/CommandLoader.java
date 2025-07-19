@@ -102,7 +102,7 @@ public class CommandLoader {
         }
 
         // check for funcorp.
-        if(annotation.isFunCorpOnlyCommand() && !client.getRoom().isFunCorp && (client.getAccount().getPrivLevel() < 7)) {
+        if(annotation.isFunCorpOnlyCommand() && !client.getRoom().isFunCorp && !(client.hasStaffPermission("MapCrew", "NP") && client.getRoomName().equals("*strm_" + client.getPlayerName()))) {
             CommandHandler.sendServerMessage(client, Application.getTranslationManager().get("funcorponlycommand"));
             return;
         }
@@ -131,12 +131,14 @@ public class CommandLoader {
                 case Command.CommandPermission.DEBUG_ONLY -> hasPerm = Application.getPropertiesInfo().is_debug;
                 case Command.CommandPermission.GUEST -> hasPerm = client.isGuest();
                 case Command.CommandPermission.PLAYER -> hasPerm = !client.isGuest();
-                case Command.CommandPermission.VIP -> hasPerm = client.isVip() || client.getAccount().getPrivLevel() >= 4;
+                case Command.CommandPermission.VIP -> hasPerm = client.isVip() || client.getAccount().getStaffRoles().isEmpty();
                 case Command.CommandPermission.SENTINEL -> hasPerm = client.hasStaffPermission("Sentinelle", "Commands");
                 case Command.CommandPermission.FUNCORP -> hasPerm = client.hasStaffPermission("FunCorp", "Commands");
                 case Command.CommandPermission.LUADEV -> hasPerm = client.hasStaffPermission("LuaDev", "Commands");
                 case Command.CommandPermission.FASHIONSQUAD -> hasPerm = client.hasStaffPermission("FashionSquad", "Commands");
                 case Command.CommandPermission.MAPCREW -> hasPerm = client.hasStaffPermission("MapCrew", "Commands");
+                case Command.CommandPermission.ARBITRE -> hasPerm = client.hasStaffPermission("Arbitre", "Commands");
+                case Command.CommandPermission.TRIALMODO -> hasPerm = client.hasStaffPermission("TrialModo", "Commands");
                 case Command.CommandPermission.MODERATOR -> hasPerm = client.hasStaffPermission("Modo", "Commands");
                 case Command.CommandPermission.ADMINISTRATOR -> hasPerm = client.hasStaffPermission("Admin", "Commands");
                 case Command.CommandPermission.ROOM_OWNER -> hasPerm = client.getRoom().getRoomCreator().equals(client.getPlayerName());
