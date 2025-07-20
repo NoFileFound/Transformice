@@ -6,13 +6,13 @@ import org.transformice.Client;
 import org.transformice.packets.RecvPacket;
 
 // Packets
-import org.transformice.packets.send.informations.C_CanSendGift;
+import org.transformice.packets.send.informations.C_CodeValidatedEmailAddress;
 
 @SuppressWarnings("unused")
 public final class S_CanSendGift implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
-        client.sendPacket(new C_CanSendGift(!client.isGuest()));
+        client.sendPacket(new C_CodeValidatedEmailAddress(!client.isGuest()));
     }
 
     @Override

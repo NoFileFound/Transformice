@@ -406,6 +406,7 @@ public final class Server {
      * Initializes the server.
      */
     public void startServer() {
+        long time = System.currentTimeMillis();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if (!this.isClosed) {
                 this.closeServer();
@@ -435,6 +436,7 @@ public final class Server {
             for (Integer port : Application.getSwfInfo().ports) {
                 this.channels.add(bootstrap.bind(new InetSocketAddress(port)));
             }
+            Application.getLogger().info(Application.getTranslationManager().get("startdone", System.currentTimeMillis() - time));
         } else {
             Application.getLogger().error(Application.getTranslationManager().get("startfailure"));
         }

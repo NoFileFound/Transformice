@@ -193,7 +193,7 @@ public final class Client {
      * @param channel The channel where player is connected.
      */
     public Client(Server server, Channel channel) {
-        Country country = GeoIP.getCountry(this.ipAddress);
+        Country country = GeoIP.getCountry(((InetSocketAddress) channel.getRemoteAddress()).getAddress().getHostAddress());
 
         this.server = server;
         this.channel = channel;
