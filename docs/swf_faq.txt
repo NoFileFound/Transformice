@@ -1,0 +1,69 @@
+# How to decompress the swf?
+- You need to download RABCDasm and run the following commands:
+abcexport swf_name.swf
+rabcdasm swf_name-0.abc
+
+# How to compress the swf?
+rabcasm swf_name-0/swf_name-0.main.asasm
+abcreplace swf_name.swf 0 swf_name-0/swf_name-0.main.abc
+
+# How to decrypt (dump) the swf?
+- Use this python tool: https://github.com/Lucaselut/swfparser/tree/main
+
+# How to find the packet structure in the swf?
+- Download AS3 Sorcerer and use it in the fresh swf file to decompile all code in a single file. The you need to search for == 176 or 176 ==
+
+# How to find the serverbound packets in the swf?
+- Download AS3 Sorcerer and use it in the fresh swf file to decompile all code in a single file. The you need to search super\s*\(\s*[^,]+?\s*,\s*[^)]+?\s*\) (regex)
+Search until you find something like this:
+
+package 
+{
+    public class _SafeStr_18252 extends Serverbound 
+    {
+
+        public function _SafeStr_18252(_arg_1:int)
+        {
+            super(xx, yy);
+            this.byteArray.writeInt(_arg_1);
+        }
+    }
+}
+
+The serverbound packet class is Serverbound in this case.
+To find all serverbound packets search for everything that ends in extends Serverbound.
+
+# How to find the login keys in the game?
+- Download AS3 Sorcerer and use it in the fresh swf file to decompile all code in a single file. The you need to search for ^ until you find something like this:
+
+        public function _SafeStr_225():*
+        {
+            var _local_1:int = this._SafeStr_57;
+            _local_1 = (_local_1 ^ _SafeStr_18046._SafeStr_9459());
+            _local_1 = (_local_1 ^ (8192));
+            _local_1 = (_local_1 ^ 9433827);
+            _local_1 = (_local_1 ^ 998244);
+            _local_1 = (_local_1 ^ (1 << 20));
+            _local_1 = (_local_1 ^ 268435456);
+            _local_1 = (_local_1 ^ (1 << 20));
+            _local_1 = (_local_1 ^ _SafeStr_18049._SafeStr_11578());
+            _local_1 = (_local_1 ^ 2097152);
+            _local_1 = (_local_1 ^ 8603355);
+            _local_1 = (_local_1 ^ 262144));
+            return (_local_1 ^ _SafeStr_17861._SafeStr_13036());
+        }
+You see some are raw some are functions. don't worry just search for the function name, you will see its math expression.
+
+# How to find the auth key in the game?
+- It's any.
+
+# How to find the server ip address?
+- Search this regex: \b(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\b until you find something like this:
+
+xxxxxxxxxx:11801-12801-13801-14801
+
+# How to find the server ports?
+- Search for the server ip and look after the ip.
+
+# How to find the game connection key?
+- Search for the handshake serverbound packet (28, 1) the fourth parameter is the connection key.

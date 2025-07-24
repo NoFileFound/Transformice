@@ -1,0 +1,65 @@
+# How many languages are there in the source?
+- The source has exactly 71 communities available to play.
+
+# How i can add custom community?
+- Open the config file: config/server/language.json in any editor and add this:
+community_id : 2 letters
+community_country_name: any length letters
+community_country_code: 2 letters
+is_left_to_right: true or false
+is_using_special_letters: true or false (A special letter is a letter you don't see in the english keyboard)
+font_name: any length letters
+
+
+  "community_id": [
+    "community_country_name",
+    "community_country_code",
+    is_left_to_right,
+    is_using_special_letters,
+    font_name
+  ],
+  
+# Where i can find the crossdomain.xml file?
+- Download it at here: http://transformice.com/crossdomain.xml
+If you can't download it, here is it:
+<cross-domain-policy>
+	<site-control permitted-cross-domain-policies="all"/>
+	<allow-access-from domain="*" secure="false"/>
+	<allow-http-request-headers-from domain="*" headers="*" secure="false"/>
+</cross-domain-policy>
+
+# How I can download a langue from the game?
+- To download a langue (language) from the game you go to at : http://transformice.com/langues/tfm-langue_code.gz (new variant) or http://transformice.com/langues/tfz_language_code (old variant)
+
+# What is the difference between new variant and other variant of the game language?
+- The new variant appears to be after the game version: 1.614. The old is before that version.
+
+# How I can find the languages for old game version?
+- Download them from here: https://github.com/paranormalactivity22/SWF-Database-and-Tools/tree/main/Tools/Languages
+
+# Is there a raw version of the game languages?
+- Yes but it is only for the old variant: you can download it here -> http://transformice.com/langues/tfm_language_code
+
+# Is it possible to modify the game language? (Old variant)
+- Yes it is possible you need to first understand how TFZ is working and its ZLIB compression. That's right, just make your own zlib decompressor or download this from here: https://github.com/paranormalactivity22/SWF-Database-and-Tools/blob/main/Tools/SWF%20Tools/Executable%20Tools/TFZ%20Decompress.7z
+
+# Is it possible to modify the game language? (New variant)
+- Yes it is possible, it's the same as old variant.
+
+# How i can add a new title?
+- You need to decompress the game language then go to at last ¤ character and then make T_xxx, where xxx is the title number you want to have. and then add the title meaning for example:
+T_123=I am batman¤
+
+and don't forget the ¤ at the end. this is a seperator between every translation string.
+
+# Is it possible to modify already exist translation string?
+- Yeah locate the string and replace the content into it.
+
+# Is it possible to remove a translation string?
+- Yeah just remove it, don't be surprised you will see nothing.
+
+# How i can make a colored title?
+T_123=<font color='#hex_color'>I am batman</font>¤
+
+# Some of the translation strings are not in transformice.com, where are they?
+- They are in https://data.atelier801.com/trad/

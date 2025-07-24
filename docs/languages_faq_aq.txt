@@ -1,0 +1,14 @@
++ How many languages are there in the source?
++ How i can add custom community?
++ Where i can find the crossdomain.xml file?
++ How I can download a langue from the game?
++ What is the difference between new variant and other variant of the game language?
++ How I can find the languages for old game version?
++ Is there a raw version of the game languages?
++ Is it possible to modify the game language? (Old variant)
++ Is it possible to modify the game language? (New variant)
++ How i can add a new title?
++ Is it possible to modify already exist translation string?
++ Is it possible to remove a translation string?
++ How i can make a colored title?
++ Some of the translation strings are not in transformice.com, where are they?

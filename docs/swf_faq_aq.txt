@@ -1,0 +1,10 @@
++ How to decompress the swf?
++ How to compress the swf?
++ How to decrypt (dump) the swf?
++ How to find the packet structure in the swf?
++ How to find the serverbound packets in the swf?
++ How to find the login keys in the game?
++ How to find the auth key in the game?
++ How to find the server ip address?
++ How to find the server ports?
++ How to find the game connection key?

@@ -1,0 +1,8 @@
++ How i can add a shop item?
++ How i can add a shop fur that does not exist in Transformice?
++ How i can add a custom shaman badge (cartouche)?
++ How i can add a custom shaman item in the shop that does not exist in Transformice?
++ How i can add a shop shaman item?
++ How i can make a promotion item?
++ How i can make a collector item?
++ How i can add a shop emoji?

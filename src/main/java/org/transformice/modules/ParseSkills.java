@@ -86,6 +86,7 @@ public final class ParseSkills {
      * @param exp Total xp to gain.
      */
     public void earnExp(boolean isShaman, int exp) {
+        /// TODO: Find the actual formula for calculate the xp.
         int gainExp = exp * (isShaman ? this.client.getAccount().getShamanType() == 0 ? this.client.getAccount().getShamanLevel() < 30 ? 3 : this.client.getAccount().getShamanLevel() < 60 ? 5 : 10 : this.client.getAccount().getShamanLevel() < 30 ? 5 : this.client.getAccount().getShamanLevel() < 60 ? 10 : 20 : 1);
         this.client.getAccount().setShamanLevelXp(this.client.getAccount().getShamanLevelXp() + gainExp);
         if (this.client.getAccount().getShamanLevelXp() > this.client.getAccount().getShamanLevelNextXp()) {
