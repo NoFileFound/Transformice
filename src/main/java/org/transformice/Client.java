@@ -120,6 +120,7 @@ public final class Client {
     public boolean isNewPlayer;
     public boolean isVampire;
     public boolean isJumping;
+    public boolean isDebugCoords;
     public boolean isDebugTeleport;
     public byte silenceType;
     public String playerCommunity;

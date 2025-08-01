@@ -12,16 +12,16 @@ import org.transformice.packets.send.chat.C_ServerMessage;
 import org.transformice.packets.send.lua.C_BindMouseDown;
 
 @Command(
-        name = "tphack",
-        description = "Manages you to teleport anywhere in the map.",
+        name = "coordshack",
+        description = "Manages you to get the coordinate of every click.",
         permission = {Command.CommandPermission.DEBUG_ONLY}
 )
 @SuppressWarnings("unused")
-public final class Tphack implements CommandHandler {
+public final class Coordshack implements CommandHandler {
     @Override
     public void execute(Client player, Server server, List<String> args) {
-        player.isDebugTeleport = !player.isDebugTeleport;
-        player.sendPacket(new C_BindMouseDown(player.isDebugTeleport));
-        player.sendPacket(new C_ServerMessage(true, (player.isDebugTeleport) ? "Teleportation is enabled" : "Teleportation is disabled"));
+        player.isDebugCoords = !player.isDebugCoords;
+        player.sendPacket(new C_BindMouseDown(player.isDebugCoords));
+        player.sendPacket(new C_ServerMessage(true, (player.isDebugCoords) ? "Coords is enabled" : "Coords is disabled"));
     }
 }

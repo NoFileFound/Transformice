@@ -22,7 +22,7 @@ public final class Lstrial implements CommandHandler {
     public void execute(Client player, Server server, List<String> args) {
         List<String> staffInfo = new ArrayList<>();
         for(Client client : server.getPlayers().values()) {
-            if(!client.isGuest() && client.hasStaffPermission("TrialModo", "")) {
+            if(!client.isGuest() && client.getAccount().getStaffRoles().contains("TrialModo")) {
                 staffInfo.add(client.playerCommunity + "_" + client.getPlayerName() + "_" + client.getRoomName());
             }
         }

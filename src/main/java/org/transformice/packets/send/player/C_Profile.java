@@ -36,7 +36,7 @@ public final class C_Profile implements SendPacket {
             this.byteArray.writeShort(titleNumber);
             this.byteArray.writeByte(titleStars);
         }
-        this.byteArray.writeString(account.getMouseLook());
+        this.byteArray.writeString(account.getMouseLook() + ";" + Integer.toHexString(account.getMouseColor()));
         this.byteArray.writeShort(account.getShamanLevel().shortValue());
 
         this.byteArray.writeUnsignedShort(account.getShopBadges().size() * 2);

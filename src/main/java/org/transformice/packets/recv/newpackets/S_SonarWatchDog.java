@@ -24,6 +24,10 @@ public final class S_SonarWatchDog implements RecvPacket {
                 client.getServer().getSonarPlayerMovement().computeIfAbsent(client.getPlayerName(), k -> new ArrayList<>()).add("<BL>" + chars.getOrDefault(key, "?") + "</BL><G> + <V>" + time + "</V> ms</G>");
                 break;
             }
+            case 2:
+                int jumpId = data.readByte();
+                client.getServer().getSonarPlayerMovement().computeIfAbsent(client.getPlayerName(), k -> new ArrayList<>()).add("<BL>" + jumpId + "</BL><G> + <V>(Jump)</V> ms</G>");
+                break;
             default:
                 Application.getLogger().warn(Application.getTranslationManager().get("invalidsonarcode", code));
         }

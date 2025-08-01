@@ -32,6 +32,10 @@ public final class TFM_playEmote extends VarArgFunction {
                 String playerName = args.tojstring(1);
                 int emoteId = args.toint(2);
                 String emoteArg = args.tojstring(3);
+                if(emoteArg.matches(".*(?:\\.{2,}|^/|/\\.\\.|\\.\\./).*")) {
+                    return NIL;
+                }
+
                 if(this.room.getPlayers().get(playerName) != null) {
                     this.room.sendAll(new C_PlayerAction(this.room.getPlayers().get(playerName).getSessionId(), emoteId, emoteArg, true));
                 }

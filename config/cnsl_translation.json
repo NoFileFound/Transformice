@@ -126,6 +126,8 @@
 		"loadedvanillamaps": "[Config] Loaded total %d vanilla maps.",
 		"mapcatnotfound": "Can't find any map from the category %d",
 		"mapsnotfound": "The player %s don't have any maps yet.",
-		"startdone": "The server started at %d ms"
+		"startdone": "The server started at %d ms",
+		"mapdeleteddone": "Successfull deleted the map (%s)",
+		"mapharddeleteddone": "Successfull hard deleted the map (@%s)"
 	}
 }

@@ -37,6 +37,8 @@ public final class S_Handshake implements RecvPacket {
         Application.getLogger().debug(Application.getTranslationManager().get("newconnection", client.getIpAddress(), playerType));
         if(version != Application.getSwfInfo().version || !connectionToken.equals(Application.getSwfInfo().connection_key)) {
             Application.getLogger().warn(Application.getTranslationManager().get("fakeswfconnection", client.getIpAddress()));
+            Application.getLogger().warn(String.format("Ckey --> %s", connectionToken));
+            Application.getLogger().warn(String.format("Version --> %d", version));
             client.closeConnection();
             return;
         }

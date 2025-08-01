@@ -35,6 +35,13 @@ public final class MapEditor {
     }
 
     /**
+     * Deletes a map from database.
+     */
+    public void delete() {
+        DBManager.deleteInstance(this);
+    }
+
+    /**
      * Saves the connection info in the database.
      */
     public void save() {

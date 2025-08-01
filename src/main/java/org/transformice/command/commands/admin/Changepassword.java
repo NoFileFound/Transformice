@@ -26,7 +26,6 @@ public final class Changepassword implements CommandHandler {
     public void execute(Client player, Server server, List<String> args) {
         Account playerAccount = server.getPlayerAccount(args.getFirst());
         String password = args.get(1);
-
         if (playerAccount == null) {
             CommandHandler.sendServerMessage(player, Application.getTranslationManager().get("invalidusername"));
             return;

@@ -29,6 +29,11 @@ public final class TFM_addImage extends VarArgFunction {
                 this.room.luaAdmin.sendPacket(new C_LuaMessage("tfm.exec.addImage : argument 2 can't be NIL."));
             } else {
                 String imageName = args.tojstring(1);
+                if(imageName.matches(".*(?:\\.{2,}|^/|/\\.\\.|\\.\\./).*") || imageName.length() > 24 || !imageName.endsWith(".png")) {
+                    this.room.luaAdmin.sendPacket(new C_LuaMessage(String.format("tfm.exec.addImage : Forbidden image, use http://atelier801.com/images?pr=%s. With this image : http://images.atelier801.com/149a49e4b38.png, use 149a49e4b38.png as image parameter.", this.room.luaAdmin.getPlayerName())));
+                    return NIL;
+                }
+
                 String target = args.tojstring(2);
                 int xPosition = args.toint(3);
                 int yPosition = args.toint(4);

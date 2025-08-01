@@ -324,7 +324,7 @@ public final class ParseShop {
             String mouseLook = this.client.getAccount().getMouseLook();
             int furId = this.getShopItemInfo(item_id).getSecond();
             if(item_id >= 2100 && item_id <= 2106) {
-                int item_id2 = (this.client.getAccount().getMouseColor() == 12423271 ? 2100 : this.client.getAccount().getMouseColor() == 5846552 ? 2101 : this.client.getAccount().getMouseColor() == 9209983 ? 2102 : this.client.getAccount().getMouseColor() == 14670030 ? 2103 : this.client.getAccount().getMouseColor() == 5129274 ? 2104 : this.client.getAccount().getMouseColor() == 14925950 ? 2105 : 2106);
+                int item_id2 = (this.client.getAccount().getMouseColor() == 12423271 ? 2100 : this.client.getAccount().getMouseColor() == 5846552 ? 2101 : this.client.getAccount().getMouseColor() == 9209983 ? 2102 : this.client.getAccount().getMouseColor() == 14670030 ? 2103 : this.client.getAccount().getMouseColor() == 5129274 ? 2104 : this.client.getAccount().getMouseColor() == 14925950 ? 2105 : this.client.getAccount().getMouseColor() == 2564640 ? 2106 : -1);
                 if(item_id == item_id2) {
                     this.client.getAccount().setMouseColor(7886906);
                 } else {

@@ -324,7 +324,29 @@ public final class Room {
      * @param targetPlayer The target player to show the image.
      */
     public void addImage(String imageName, String target, int xPosition, int yPosition, int xScale, int yScale, int rotation, int alpha, int anchorX, int anchorY, boolean fadeIn, String targetPlayer) {
-        int imgInfo = target.startsWith("#") ? 1 : target.startsWith("$") ? 2 : target.startsWith("%") ? 3 : target.startsWith("?") ? 4 : target.startsWith("_") ? 5 : target.startsWith("!") ? 6 : target.startsWith("&") ? 7 : target.startsWith(":") ? 8 : target.startsWith("~") ? 9 : target.startsWith("+") ? 10 : 0;
+        int imgInfo = 0;
+        if (target.startsWith("#")) {
+            imgInfo = 1;
+        } else if (target.startsWith("$")) {
+            imgInfo = 2;
+        } else if (target.startsWith("%")) {
+            imgInfo = 3;
+        } else if (target.startsWith("?")) {
+            imgInfo = 4;
+        } else if (target.startsWith("_")) {
+            imgInfo = 5;
+        } else if (target.startsWith("!")) {
+            imgInfo = 6;
+        } else if (target.startsWith("&")) {
+            imgInfo = 7;
+        } else if (target.startsWith(":")) {
+            imgInfo = 8;
+        } else if (target.startsWith("~")) {
+            imgInfo = 9;
+        } else if (target.startsWith("+")) {
+            imgInfo = 10;
+        }
+
         target = target.substring(1);
         int targetSession = (this.players.get(target) != null) ? this.players.get(target).getSessionId() : -1;
         try {
