@@ -98,6 +98,7 @@ public final class PropertiesConfig implements Property {
 
         public static class EventAdventureTasks {
             public int task_consumable_id;
+            public int task_consumable_count;
             public int task_finish_points;
             public int task_progess_type;
             public int task_progess_type2_minimum;

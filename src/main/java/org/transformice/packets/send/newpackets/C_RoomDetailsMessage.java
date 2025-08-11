@@ -18,8 +18,8 @@ public final class C_RoomDetailsMessage implements SendPacket {
         this.byteArray.writeInt(roomDetails.miceWeight);
         this.byteArray.writeShort(roomDetails.maximumPlayers);
         this.byteArray.writeUnsignedByte(roomDetails.mapRotation.size());
-        for(int info : roomDetails.mapRotation) {
-            this.byteArray.writeUnsignedByte(info);
+        for (int i = roomDetails.mapRotation.size() - 1; i >= 0; i--) {
+            this.byteArray.writeUnsignedByte(roomDetails.mapRotation.get(i));
         }
     }
 

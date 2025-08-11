@@ -31,6 +31,7 @@
 		"adventure_tasks": [
 			{
 				"task_consumable_id": 2227,
+				"task_consumable_count": 10,
 				"task_finish_points": 20,
 				"task_progess_type": 1,
 				"task_progess_type2_minimum": 50,
@@ -38,6 +39,7 @@
 			},
 			{
 				"task_consumable_id": 2227,
+				"task_consumable_count": 0,
 				"task_finish_points": 40,
 				"task_progess_type": 1,
 				"task_progess_type2_minimum": 100,

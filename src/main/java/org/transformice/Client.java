@@ -17,6 +17,7 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaError;
+import org.luaj.vm2.lib.DebugLib;
 import org.luaj.vm2.lib.TimeOutDebugLib;
 import org.luaj.vm2.lib.jse.JsePlatform;
 import org.transformice.database.collections.Account;
@@ -31,6 +32,7 @@ import org.transformice.luapi.LuaApiLib;
 import org.transformice.modules.*;
 import org.transformice.packets.SendPacket;
 import org.transformice.packets.TribullePacket;
+import org.transformice.packets.send.lua.C_BindKeyboard;
 import org.transformice.utils.Utils;
 
 // Packets
@@ -84,6 +86,7 @@ public final class Client {
     public int cheeseCount;
     public int iceCount;
     public int lastPingResponse;
+    public double lastJumpPower = 1.0;
     public int loginAttempts;
     public int verCode;
     public int currentGameMode;
@@ -589,6 +592,7 @@ public final class Client {
         this.room.luaAdmin = this;
         this.room.isFinishedLuaScript = false;
         this.room.setMaximumPlayers(50);
+        this.room.changeMap();
         this.luaThread = new Thread(() -> {
             long startTime = System.currentTimeMillis();
             long endTime;
@@ -596,7 +600,7 @@ public final class Client {
             try {
                 this.room.luaDebugLib.setTimeOut(4000, true);
                 luaGlobal.load(script).call();
-                endTime = (int) (System.currentTimeMillis() - startTime);
+                endTime = System.currentTimeMillis() - startTime;
 
                 Globals global = (this.isLuaAdmin ? JsePlatform.debugGlobals() : JsePlatform.standardGlobals());
                 global.load(this.room.luaDebugLib = new TimeOutDebugLib());
@@ -609,22 +613,36 @@ public final class Client {
                 this.room.isFinishedLuaScript = true;
                 this.room.luaApi.callPendentEvents();
             } catch (LuaError error) {
-                Object[] errorInfo = error.getError();
-                endTime = (int) (System.currentTimeMillis() - startTime);
+                endTime = System.currentTimeMillis() - startTime;
                 this.room.stopLuaScript(true);
-                if (error.getMessage().contains("RuntimeException")) {
-                    this.sendPacket(new C_LuaMessage("<V>[" + this.room.getRoomName() + "]</V> Init Error : " + this.playerName + ".lua:" + ((int) errorInfo[0] == -1 ? "" : (errorInfo[0] + ":")) + " Lua destroyed : Runtime too long!"));
+
+                String message = error.getMessage();
+                int lineNumber = -1;
+                if (message != null) {
+                    String[] parts = message.split(":");
+                    if (parts.length >= 2) {
+                        try {
+                            lineNumber = Integer.parseInt(parts[1].trim());
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                }
+
+                if (message != null && message.contains("RuntimeException")) {
+                    this.sendPacket(new C_LuaMessage("<V>[" + this.room.getRoomName() + "]</V> Init Error : " + this.playerName + ".lua:" + (lineNumber == -1 ? "" : (lineNumber + ":")) + " Lua destroyed : Runtime too long!"));
                 } else {
-                    this.sendPacket(new C_LuaMessage("<V>[" + this.room.getRoomName() + "]</V> Init Error : " + this.playerName + ".lua:" + ((int) errorInfo[0] == -1 ? "" : (errorInfo[0] + ":")) + " " + errorInfo[1]));
+                    this.sendPacket(new C_LuaMessage("<V>[" + this.room.getRoomName() + "]</V> Init Error : " + this.playerName + ".lua:" + (lineNumber == -1 ? "" : (lineNumber + ":")) + " " + message));
                 }
 
             } catch (Exception error) {
-                endTime = (int) (System.currentTimeMillis() - startTime);
+                endTime = System.currentTimeMillis() - startTime;
                 this.room.stopLuaScript(true);
                 this.sendPacket(new C_LuaMessage("<V>[" + this.room.getRoomName() + "]</V> Init Error : " + this.playerName + ".lua :" + error.getMessage()));
             }
+
             this.sendPacket(new C_LuaMessage("<V>[" + this.room.getRoomName() + "]</V> [" + this.playerName + "] Lua script loaded in " + endTime + " ms (4000 max)"));
         });
+
         this.luaThread.start();
     }
 
@@ -663,6 +681,7 @@ public final class Client {
             this.sendPacket(new C_Tutorial(2));
             this.room.setMapChangeTimer(10);
             this.cheeseCount = 0;
+            this.cheeseIdxs.clear();
             new Timer().schedule(() -> {
                 if (this.room.isTutorial()) {
                     this.sendEnterRoom(this.server.getRecommendedRoom(this.playerCommunity), "");
@@ -689,6 +708,7 @@ public final class Client {
 
         this.isDead = true;
         this.cheeseCount = 0;
+        this.cheeseIdxs.clear();
         this.isEnteredInHole = true;
         this.isOpportunist = false;
         int place = this.room.getNumCompleted() + 1;
@@ -1097,6 +1117,10 @@ public final class Client {
         if(this.hasStaffPermission("Modo", "")) {
             this.sendPacket(new C_DisableInitialItemCooldown());
         }
+
+        if(this.room.isBootcamp()) {
+            this.sendPacket(new C_BindKeyboard(71, true, true));
+        }
     }
 
     /**
@@ -1134,6 +1158,7 @@ public final class Client {
         if (!this.room.disableAutoScore) this.playerScore++;
         this.isDead = true;
         this.cheeseCount = 0;
+        this.cheeseIdxs.clear();
         this.room.sendAllOld(new C_PlayerDied(this.sessionId, this.playerScore));
         if (this.room.getAliveCount() < 0 || this.isAfk || this.room.getCurrentMap().isDualShaman) {
             this.canShamanRespawn = false;

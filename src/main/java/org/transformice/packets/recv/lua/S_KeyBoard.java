@@ -11,6 +11,13 @@ public final class S_KeyBoard implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
         data.decryptPacket(Application.getSwfInfo().packet_keys, fingerPrint);
+
+        if(client.getRoom().isBootcamp() && data.readInt128() == 71) {
+            if(!client.isDead) {
+                client.sendPlayerDeath();
+            }
+        }
+
         if (client.getRoom().luaMinigame != null) {
             client.getRoom().luaApi.callEvent("eventKeyboard", client.getPlayerName(), data.readInt128(), data.readBoolean(), data.readInt128(), data.readInt128(), data.readInt128() * 10, data.readInt128() * 10);
         }

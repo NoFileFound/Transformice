@@ -6,6 +6,7 @@ import org.transformice.Client;
 import org.transformice.packets.RecvPacket;
 
 // Packets
+import org.transformice.packets.send.chat.C_ServerMessage;
 import org.transformice.packets.send.player.C_MovePlayer;
 
 @SuppressWarnings("unused")
@@ -17,6 +18,10 @@ public final class S_MouseClick implements RecvPacket {
 
         if(client.isDebugTeleport) {
             client.sendPacket(new C_MovePlayer(posX, posY, false, 0, 0, false));
+        }
+
+        if(client.isDebugCoords) {
+            client.sendPacket(new C_ServerMessage(true, String.format("PosX: %d, PosY: %d", posX, posY)));
         }
 
         if (client.getRoom().luaMinigame != null) {

@@ -1113,11 +1113,11 @@ public final class Room {
             this.luaLoopTimer = new Timer();
         }
 
-        this.luaLoopTimer.schedule(() -> {
-            if (this.luaMinigame != null) {
+        this.luaLoopTimer.scheduleAtFixedRate(() -> {
+            if (luaMinigame != null) {
                 this.luaApi.callEvent("eventLoop", System.currentTimeMillis() - this.gameStartTimeMillis, ((!this.isChanged20secTimer ? this.roundTime + this.addTime : 20) * 1000L) + (this.gameStartTimeMillis - System.currentTimeMillis()));
             }
-        }, 500, TimeUnit.MILLISECONDS);
+        }, 500, 500, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -1225,7 +1225,8 @@ public final class Room {
                 this.luaDebugLib.setTimeOut(-1, false);
 
                 StringBuilder sb = new StringBuilder();
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         sb.append(line).append('\n');
@@ -1235,8 +1236,24 @@ public final class Room {
                 luaGlobal.load(sb.toString()).call();
                 this.isFinishedLuaScript = true;
                 this.luaApi.callPendentEvents();
+
             } catch (LuaError error) {
-                Object[] errorInfo = error.getError();
+                Object[] errorInfo = new Object[2];
+                int lineNumber = -1;
+                String message = error.getMessage();
+
+                if (message != null) {
+                    String[] parts = message.split(":");
+                    if (parts.length >= 2) {
+                        try {
+                            lineNumber = Integer.parseInt(parts[1].trim());
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                }
+                errorInfo[0] = lineNumber;
+                errorInfo[1] = message != null ? message : "";
+
                 this.stopLuaScript(true);
                 Application.getLogger().error("Minigame #{}: Init Error : {} {}", this.minigameName, (int) errorInfo[0] == -1 ? "" : (errorInfo[0] + ":"), errorInfo[1]);
 

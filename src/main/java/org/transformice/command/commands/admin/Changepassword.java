@@ -15,6 +15,7 @@ import org.transformice.database.collections.Stafflog;
 
 @Command(
         name = "changepassword",
+        aliases = {"changepass", "changepw"},
         usage = "[playerName] [password]",
         description = "Changes the password of specific player.",
         permission = Command.CommandPermission.ADMINISTRATOR,

@@ -12,6 +12,8 @@ public final class S_MapInfo implements RecvPacket {
     public void handle(Client client, int fingerPrint, ByteArray data) {
         int cheeseLen = data.readByte() / 2;
         for (int i = 0; i < cheeseLen; i++) {
+            if(i > 30) continue;
+
             short cheeseX = data.readShort();
             short cheeseY = data.readShort();
             client.getRoom().getCheesesList().add(new Pair<>((int)cheeseX, (int)cheeseY));
@@ -19,6 +21,7 @@ public final class S_MapInfo implements RecvPacket {
 
         int holeLen = data.readByte() / 3;
         for(int i = 0; i < holeLen; i++) {
+            if(i > 30) continue;
             short holeType = data.readShort();
             short holeX = data.readShort();
             short holeY = data.readShort();

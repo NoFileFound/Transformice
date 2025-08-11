@@ -120,28 +120,38 @@ public final class LuaApiLib extends TwoArgFunction  {
         if (this.room.luaMinigame != null && event != null) {
             new Thread(() -> {
                 LuaValue[] luaArgs = Arrays.stream(args).map(arg -> arg instanceof Integer ? LuaValue.valueOf((Integer) arg) : arg instanceof String ? LuaValue.valueOf((String) arg) : arg instanceof Boolean ? LuaValue.valueOf((Boolean) arg) : arg instanceof Long ? LuaInteger.valueOf((Long) arg) : arg).toArray(LuaValue[]::new);
-
                 long startTime = System.currentTimeMillis();
                 long endTime;
                 try {
                     this.room.luaDebugLib.setTimeOut(!this.room.isLuaMinigame() ? 4000 : -1, false);
                     event.invoke(luaArgs);
-                    endTime = (int) (System.currentTimeMillis() - startTime);
+                    endTime = System.currentTimeMillis() - startTime;
 
                 } catch (LuaError error) {
-                    Object[] errorInfo = error.getError();
-                    if (this.room.luaAdmin != null) {
-                        if (error.getMessage().contains("RuntimeException")) {
-                            this.room.luaAdmin.sendPacket(new C_LuaMessage("<V>[" + this.room.getRoomName() + "]</V> Runtime Error : " + this.room.luaAdmin.getPlayerName() + ".functions:" + ((int) errorInfo[0] == -1 ? "" : (errorInfo[0] + ":")) + " Lua destroyed : Runtime can't exceed 40 ms in 4 seconds."));
-                        } else {
-                            this.room.luaAdmin.sendPacket(new C_LuaMessage("<V>[" + this.room.getRoomName() + "]</V> Runtime Error : " + this.room.luaAdmin.getPlayerName() + ".functions:" + ((int) errorInfo[0] == -1 ? "" : (errorInfo[0] + ":")) + " " + errorInfo[1]));
+                    Object[] errorInfo = new Object[2];
+                    int lineNumber = -1;
+                    String message = error.getMessage();
+                    if (message != null) {
+                        String[] parts = message.split(":");
+                        if (parts.length >= 2) {
+                            try {
+                                lineNumber = Integer.parseInt(parts[1].trim());
+                            } catch (NumberFormatException ignored) {}
                         }
-
-                    } else {
-                        if (error.getMessage().contains("RuntimeException")) {
-                            Application.getLogger().error("Minigame #{}: Runtime Error : {} Lua destroyed : Runtime can't exceed 40 ms in 4 seconds.", this.room.getMinigameName(), (int) errorInfo[0] == -1 ? "" : (errorInfo[0] + ":"));
+                    }
+                    errorInfo[0] = lineNumber;
+                    errorInfo[1] = message != null ? message : "";
+                    if (this.room.luaAdmin != null) {
+                        if (message != null && message.contains("RuntimeException")) {
+                            this.room.luaAdmin.sendPacket(new C_LuaMessage("<V>[" + this.room.getRoomName() + "]</V> Runtime Error : " + this.room.luaAdmin.getPlayerName() + ".functions:" + (lineNumber == -1 ? "" : (lineNumber + ":")) + " Lua destroyed : Runtime can't exceed 40 ms in 4 seconds."));
                         } else {
-                            Application.getLogger().error("Minigame #{}: Runtime Error : {} {}", this.room.getMinigameName(), (int) errorInfo[0] == -1 ? "" : (errorInfo[0] + ":"), errorInfo[1]);
+                            this.room.luaAdmin.sendPacket(new C_LuaMessage("<V>[" + this.room.getRoomName() + "]</V> Runtime Error : " + this.room.luaAdmin.getPlayerName() + ".functions:" + (lineNumber == -1 ? "" : (lineNumber + ":")) + " " + errorInfo[1]));
+                        }
+                    } else {
+                        if (message != null && message.contains("RuntimeException")) {
+                            Application.getLogger().error("Minigame #{}: Runtime Error : {} Lua destroyed : Runtime can't exceed 40 ms in 4 seconds.", this.room.getMinigameName(), lineNumber == -1 ? "" : (lineNumber + ":"));
+                        } else {
+                            Application.getLogger().error("Minigame #{}: Runtime Error : {} {}", this.room.getMinigameName(), lineNumber == -1 ? "" : (lineNumber + ":"), errorInfo[1]);
                         }
                     }
 

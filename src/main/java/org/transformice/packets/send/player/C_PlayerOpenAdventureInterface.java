@@ -10,9 +10,9 @@ import org.transformice.packets.SendPacket;
 public final class C_PlayerOpenAdventureInterface implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
-    public C_PlayerOpenAdventureInterface(List<Adventure> adventureList, String playerName, String playerLook, int adventurePoints, int unlockedTitles, int unlockedBadges) {
+    public C_PlayerOpenAdventureInterface(List<Adventure> adventureList, String playerName, String playerLook, int mouseColor, int adventurePoints, int unlockedTitles, int unlockedBadges) {
         this.byteArray.writeString(playerName);
-        this.byteArray.writeString(playerLook);
+        this.byteArray.writeString(playerLook + ";" + Integer.toHexString(mouseColor));
         this.byteArray.writeInt(adventurePoints);
         this.byteArray.writeShort((short) unlockedTitles);
         this.byteArray.writeShort((short) unlockedBadges);
@@ -28,9 +28,14 @@ public final class C_PlayerOpenAdventureInterface implements SendPacket {
 
             int i = 0;
             for(var task : Application.getPropertiesInfo().event.adventure_tasks) {
-                this.byteArray.writeByte(1);
-                this.byteArray.writeBoolean(false);
-                this.byteArray.writeShort((short)task.task_consumable_id);
+                this.byteArray.writeByte((task.task_consumable_count > 0) ? 4 : 1);
+                this.byteArray.writeBoolean(task.task_consumable_count > 0);
+                if(task.task_consumable_count > 0) {
+                    this.byteArray.writeString(task.task_consumable_id + "|" + task.task_consumable_count);
+                }
+                else {
+                    this.byteArray.writeShort((short) task.task_consumable_id);
+                }
                 this.byteArray.writeInt(task.task_finish_points);
                 this.byteArray.writeBoolean(adventure.getAdventureTasks().get(i).isFinished());
                 this.byteArray.writeUnsignedByte(task.task_progess_type);

@@ -83,10 +83,8 @@
         </dependency>
         <dependency>
             <groupId>org.luaj</groupId>
-            <artifactId>LuaJ</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/LuaJ.jar</systemPath>
+            <artifactId>luaj-jse</artifactId>
+            <version>3.0.1</version>
         </dependency>
     </dependencies>
 </project>
