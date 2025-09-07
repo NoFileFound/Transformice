@@ -30,15 +30,17 @@ public final class PropertiesConfig implements Property {
         public String database_url = "mongodb://localhost:27017";
         public String collection_name = "transformice";
         public boolean is_debug = true;
-        public boolean twitchStreaming;
+        public boolean twitchStreaming = false;
         public String flyerName;
         public boolean allow_email = true;
         public boolean beta_login = false;
         public boolean use_tag_system = true;
         public int login_attempts;
         public String yt_key;
+        public String userAgentUrl = "http://51.158.113.197/info.php";
         public int map_editor_cheese_amount = 40;
         public int max_players = -1;
+		public boolean enable_staff_2FA_verification = false;
         public ArrayList<Integer> shop_sprites = new ArrayList<>();
         public ArrayList<Integer> shaman_sprites = new ArrayList<>();
         public EventInfo event;

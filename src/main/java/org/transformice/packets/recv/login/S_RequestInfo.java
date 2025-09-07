@@ -2,6 +2,7 @@ package org.transformice.packets.recv.login;
 
 // Imports
 import org.bytearray.ByteArray;
+import org.transformice.Application;
 import org.transformice.Client;
 import org.transformice.packets.RecvPacket;
 
@@ -12,7 +13,7 @@ import org.transformice.packets.send.informations.C_RequestInfo;
 public final class S_RequestInfo implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
-        client.sendPacket(new C_RequestInfo());
+        client.sendPacket(new C_RequestInfo(Application.getPropertiesInfo().userAgentUrl));
     }
 
     @Override

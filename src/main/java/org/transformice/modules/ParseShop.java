@@ -817,6 +817,15 @@ public final class ParseShop {
         this.client.sendPacket(new C_ShopShamanLook(this.client.getAccount().getShamanLook()));
     }
 
+    public int getFullItemID(int category, int itemID) {
+        if (itemID >= 100) {
+            return itemID + 10000 + 1000 * category;
+        } else {
+            return itemID + 100 * category;
+        }
+    }
+
+
     /**
      * Sends the shop outfit virtualization for pruchase.
      * @param outfitId The outfit id.
@@ -826,8 +835,6 @@ public final class ParseShop {
         if(outfitInfo == null) return;
 
         String[] outfitLook = outfitInfo.outfit_look.split(";");
-        int clothPrice = (this.client.getAccount().getShopClothes().size() > 2) ? 100 : (this.client.getAccount().getShopClothes().size() == 1 ? 50 : 5);
-        int outfitFur = Integer.parseInt(outfitLook[0]);
         int i = 0;
         List<Object[]> infos = new ArrayList<>();
         for(String visualItem : outfitLook[1].split(",")) {
@@ -843,13 +850,12 @@ public final class ParseShop {
                     itemCustom = "";
                 }
 
-                int fullItemId = Integer.parseInt(i + String.valueOf(itemId));
+                int fullItemId = getFullItemID(i, itemId);
                 infos.add(new Object[]{itemId, itemCustom, fullItemId, this.client.getAccount().getShopItems().containsKey(fullItemId), false, Application.getShopItemInfo().get(i + "_" + itemId).strawberry_price, this.getPromotionPrice(fullItemId, false, Application.getShopItemInfo().get(i + "_" + itemId).strawberry_price)});
             }
-
             i++;
         }
 
-        this.client.sendPacket(new C_VisualizeShopOutfit(outfitId, outfitInfo.outfit_look, clothPrice, outfitFur, infos));
+        this.client.sendPacket(new C_VisualizeShopOutfit(outfitId, outfitInfo.outfit_look, infos));
     }
 }

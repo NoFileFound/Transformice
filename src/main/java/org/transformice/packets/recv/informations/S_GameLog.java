@@ -31,8 +31,11 @@ public final class S_GameLog implements RecvPacket {
             Application.getLogger().warn(String.format("[Packet][%d, %d] %s", C, CC, error));
         }
 
-        client.sendOldPacket(new C_OldExceptionNotify(client.getPlayerName(), String.format("[Packet][%d, %d] %s", C, CC, error)));
-        if(!Application.getPropertiesInfo().is_debug) client.closeConnection(); // tfm moment
+        if(Application.getPropertiesInfo().is_debug) {
+            client.sendOldPacket(new C_OldExceptionNotify(client.getPlayerName(), String.format("[Packet][%d, %d] %s", C, CC, error)));
+        } else {
+            client.closeConnection(); // tfm moment
+        }
     }
 
     @Override

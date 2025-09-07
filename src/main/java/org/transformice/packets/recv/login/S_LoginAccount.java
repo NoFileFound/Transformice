@@ -91,21 +91,23 @@ public final class S_LoginAccount implements RecvPacket {
                 return;
             }
 
-            if(!account.getLastIPAddress().equals(client.getIpAddress()) && !account.getStaffRoles().isEmpty() && !client.hasSent2FAEmail) {
-                client.hasSent2FAEmail = true;
-                client.token2FA = SrcRandom.generateNumberAndLetters(8);
-                client.sendPacket(new C_AccountError(15, account.getEmailAddress()));
-                JakartaMail.sendMessage(account.getEmailAddress(), "Device verification", String.format("Code: %s | IP Address: %s", client.token2FA, client.getIpAddress()));
-                return;
-            }
-
-            if(client.hasSent2FAEmail && !twoFactorAuth.equals(client.token2FA)) {
-                client.loginAttempts++;
-                client.sendPacket(new C_AccountError(2));
-                if(client.loginAttempts > 5) {
-                    client.hasSent2FAEmail = false;
+            if(Application.getPropertiesInfo().enable_staff_2FA_verification) {
+                if(!account.getLastIPAddress().equals(client.getIpAddress()) && !account.getStaffRoles().isEmpty() && !client.hasSent2FAEmail) {
+                    client.hasSent2FAEmail = true;
+                    client.token2FA = SrcRandom.generateNumberAndLetters(8);
+                    client.sendPacket(new C_AccountError(15, account.getEmailAddress()));
+                    JakartaMail.sendMessage(account.getEmailAddress(), "Device verification", String.format("Code: %s | IP Address: %s", client.token2FA, client.getIpAddress()));
+                    return;
                 }
-                return;
+
+                if(client.hasSent2FAEmail && !twoFactorAuth.equals(client.token2FA)) {
+                    client.loginAttempts++;
+                    client.sendPacket(new C_AccountError(2));
+                    if(client.loginAttempts > 5) {
+                        client.hasSent2FAEmail = false;
+                    }
+                    return;
+                }
             }
 
             if(Application.getPropertiesInfo().beta_login) {

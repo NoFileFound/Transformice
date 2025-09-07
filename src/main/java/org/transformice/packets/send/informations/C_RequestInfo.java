@@ -7,8 +7,8 @@ import org.transformice.packets.SendPacket;
 public final class C_RequestInfo implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
-    public C_RequestInfo() {
-        this.byteArray.writeString("http://51.158.113.197/info.php");
+    public C_RequestInfo(String userAgentUrl) {
+        this.byteArray.writeString(userAgentUrl);
     }
 
     @Override
