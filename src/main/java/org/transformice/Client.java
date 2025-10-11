@@ -762,6 +762,7 @@ public final class Client {
             }
 
             if(this.room.isBootcamp()) {
+				this.account.setBootcampCount(this.account.getBootcampCount() + 1);
                 this.parseInventoryInstance.addConsumable("2261", 1, false);
                 for (Map.Entry<Integer, Double> entry : this.server.bootcampTitleList.entrySet()) {
                     int needResources = entry.getKey();

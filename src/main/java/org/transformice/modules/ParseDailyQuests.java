@@ -72,10 +72,18 @@ public final class ParseDailyQuests {
             if(myQuest.getMissionCollected() >= myQuest.getMissionTotal()) {
                 if(missionId == 60801) {
                     this.client.getAccount().setShopStrawberries(this.client.getAccount().getShopStrawberries() + myQuest.getMissionPrize());
-                    this.client.getAccount().getPlayerMissions().add(new Quest(60801, 4, 0, 20, 20));
+                    boolean hasActiveStrawberry = this.client.getAccount().getPlayerMissions().stream().anyMatch(q -> q.getId() == 60801 && q.getMissionCollected() < q.getMissionTotal());
+                    if(!hasActiveStrawberry) {
+                        this.client.getAccount().getPlayerMissions().add(new Quest(60801, 4, 0, 20, 20));
+                    }
                 } else {
                     this.client.getAccount().setShopCheeses(this.client.getAccount().getShopCheeses() + myQuest.getMissionPrize());
-                    this.sendMissionIncrease(60801, 1); // strawberry mission.
+                    Quest strawberryQuest = this.client.getAccount().getPlayerMissions().stream().filter(q -> q.getId() == 60801 && q.getMissionCollected() < q.getMissionTotal()).findFirst().orElse(null);
+                    if(strawberryQuest != null) {
+                        strawberryQuest.setMissionCollected(strawberryQuest.getMissionCollected() + 1);
+                        this.client.sendPacket(new C_PlayerCompleteMission(strawberryQuest));
+                    }
+
                     this.sendChangeMission((int)myQuest.getId(), false);
                 }
             }

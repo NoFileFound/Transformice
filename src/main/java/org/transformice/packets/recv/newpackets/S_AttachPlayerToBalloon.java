@@ -12,7 +12,7 @@ import org.transformice.packets.send.newpackets.C_AttachPlayerToBalloon;
 public final class S_AttachPlayerToBalloon implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
-        client.getRoom().sendAll(new C_AttachPlayerToBalloon(client.getSessionId(), client.getRoom().getLastObjectID() + 1, 1000));
+        client.getRoom().sendAll(new C_AttachPlayerToBalloon(data.readInt(), client.getRoom().getLastObjectID() + 1, 1000));
     }
 
     @Override
