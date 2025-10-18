@@ -725,7 +725,7 @@ public final class Client {
         }
 
         int timeTaken = (int)((System.currentTimeMillis() - (!this.room.disableAutoRespawn ? this.playerStartTimeMillis : this.room.getGameStartTimeMillis())) / 10);
-        boolean countStats = (this.room.getDistinctPlayersCount() > 11 || Application.getPropertiesInfo().is_debug);
+        boolean countStats = (this.room.getDistinctPlayersCount() > Application.getPropertiesInfo().min_players_to_count || Application.getPropertiesInfo().is_debug);
         this.currentPlace = place;
         if (this.room.isDefilante()) {
             this.playerScore += this.defilantePoints;

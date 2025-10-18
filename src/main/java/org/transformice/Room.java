@@ -295,8 +295,8 @@ public final class Room {
             roomNameFormatted = this.roomName;
         }
 
-        if (roomNameFormatted.matches("(\\*#|#)([a-z]+)(\\d+(([\\w\\s]+)|)|)")) {
-            Matcher m = Pattern.compile("(\\*#|#)([a-z]+)(\\d+(([\\w\\s]+)|)|)").matcher(roomNameFormatted);
+        if (roomNameFormatted.matches("^(\\*#|#)([A-Za-z]+)(\\d+(?:[\\w\\s#]+)?)?$")) {
+            Matcher m = Pattern.compile("^(\\*#|#)([A-Za-z]+)(\\d+(?:[\\w\\s#]+)?)?$").matcher(roomNameFormatted);
             if(m.find()) {
                 this.minigameName = m.group(2);
                 this.isMinigame = true;
@@ -657,7 +657,7 @@ public final class Room {
             } catch (LuaError _) {}
         }
 
-        this.canRunEvent = ((this.getDistinctPlayersCount() > Application.getPropertiesInfo().event.minimum_players && !this.isFunCorp) || Application.getPropertiesInfo().is_debug) && !this.getRoomDetails().withoutAdventureMaps;
+        this.canRunEvent = ((this.getDistinctPlayersCount() > Application.getPropertiesInfo().min_players_to_count && !this.isFunCorp) || Application.getPropertiesInfo().is_debug) && !this.getRoomDetails().withoutAdventureMaps;
         if(this.canRunEvent) {
             if(this.startEventTimer == null) {
                 this.startEventTimer = new Timer(true, Application.getPropertiesInfo().event.event_delay);
@@ -1611,7 +1611,7 @@ public final class Room {
     public static class RoomDetails {
         public String roomPassword = "";
         public boolean withoutShamanSkills;
-        public boolean withoutPhysicalConsumables;
+        public boolean withoutPhysicalConsumables = false;
         public boolean withoutAdventureMaps;
         public boolean withMiceCollisions;
         public boolean withFallDamage;
@@ -1664,7 +1664,7 @@ public final class Room {
             this.isDudoe = mapXml.contains("dodue");
             this.isConj = mapXml.contains("conju");
             this.isAIE = mapXml.contains("aie");
-            this.isNoShaman = !mapXml.contains("DC") && !mapXml.contains("DC2");
+            this.isNoShaman = !mapXml.contains("DC") && !mapXml.contains("DC2") && mapPerma != 4;
             this.isDualShaman = mapXml.contains("DC2");
             this.isCatchTheCheese = false;
             this.isTransform = false;

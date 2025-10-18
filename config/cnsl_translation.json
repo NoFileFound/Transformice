@@ -128,6 +128,8 @@
 		"mapsnotfound": "The player %s don't have any maps yet.",
 		"startdone": "The server started at %d ms",
 		"mapdeleteddone": "Successfull deleted the map (%s)",
-		"mapharddeleteddone": "Successfull hard deleted the map (@%s)"
+		"mapharddeleteddone": "Successfull hard deleted the map (@%s)",
+		"totalshopbanners": "[Shop] Loaded total shop banners: %d",
+		"shopbannernotofound": "[Shop] The banner id %d was not found in the shop config."
 	}
 }

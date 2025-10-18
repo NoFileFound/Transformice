@@ -69,6 +69,10 @@ public final class C_OpenNPCShop implements SendPacket {
             return client.getAccount().getPurchasedEmojis().contains(item_id);
         }
 
+        if(item_type == 8) {
+            return client.getAccount().getPurchasedBanners().contains(item_id);
+        }
+
         return false;
     }
 }

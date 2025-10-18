@@ -38,7 +38,6 @@ public final class C_Profile implements SendPacket {
         }
         this.byteArray.writeString(account.getMouseLook() + ";" + Integer.toHexString(account.getMouseColor()));
         this.byteArray.writeShort(account.getShamanLevel().shortValue());
-
         this.byteArray.writeUnsignedShort(account.getShopBadges().size() * 2);
         for (var badge : account.getShopBadges().entrySet()) {
             this.byteArray.writeUnsignedShort(badge.getKey());
@@ -120,6 +119,7 @@ public final class C_Profile implements SendPacket {
         }
         this.byteArray.writeBoolean(isOnline);
         this.byteArray.writeInt(isOnline ? account.getAdventurePoints() : 0);
+        this.byteArray.writeUnsignedShort(account.getCurrentBanner());
     }
 
     @Override

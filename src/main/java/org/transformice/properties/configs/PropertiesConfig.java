@@ -37,6 +37,7 @@ public final class PropertiesConfig implements Property {
         public boolean use_tag_system = true;
         public int login_attempts;
         public String yt_key;
+        public int min_players_to_count = 11;
         public String userAgentUrl = "http://51.158.113.197/info.php";
         public int map_editor_cheese_amount = 40;
         public int max_players = -1;
@@ -92,7 +93,6 @@ public final class PropertiesConfig implements Property {
             public String banner_bg_img_legacy;
             public String banner_fg_img_legacy;
             public int event_delay;
-            public int minimum_players;
             public int event_points;
             public ArrayList<EventAdventureTasks> adventure_tasks;
             public ArrayList<Integer> adventure_progress;

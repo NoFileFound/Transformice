@@ -89,8 +89,8 @@
     "is_sale": true,
     "is_regular_item": false
   },
-  "23": {
-    "item_id": "715",
+  "18": {
+    "item_id": "111",
     "promotion_start_date": 0,
     "promotion_end_date": 1753066752,
     "promotion_percentage": 30,
@@ -139,8 +139,8 @@
     "is_sale": true,
     "is_regular_item": false
   },
-  "18": {
-    "item_id": "111",
+  "23": {
+    "item_id": "715",
     "promotion_start_date": 0,
     "promotion_end_date": 1753066752,
     "promotion_percentage": 30,
@@ -149,8 +149,8 @@
     "is_sale": true,
     "is_regular_item": false
   },
-  "21": {
-    "item_id": "608",
+  "20": {
+    "item_id": "311",
     "promotion_start_date": 0,
     "promotion_end_date": 1753066752,
     "promotion_percentage": 30,
@@ -169,8 +169,8 @@
     "is_sale": true,
     "is_regular_item": false
   },
-  "20": {
-    "item_id": "311",
+  "21": {
+    "item_id": "608",
     "promotion_start_date": 0,
     "promotion_end_date": 1753066752,
     "promotion_percentage": 30,
@@ -189,16 +189,6 @@
     "is_sale": true,
     "is_regular_item": true
   },
-  "27": {
-    "item_id": "9_113",
-    "promotion_start_date": 0,
-    "promotion_end_date": 1752757120,
-    "promotion_percentage": 0,
-    "promotion_author": "Bloom#0001",
-    "is_perm": true,
-    "is_sale": false,
-    "is_regular_item": true
-  },
   "6": {
     "item_id": "1_293",
     "promotion_start_date": 0,
@@ -207,6 +197,16 @@
     "promotion_author": "Bloom#0001",
     "is_perm": true,
     "is_sale": true,
+    "is_regular_item": true
+  },
+  "27": {
+    "item_id": "9_113",
+    "promotion_start_date": 0,
+    "promotion_end_date": 1752757120,
+    "promotion_percentage": 0,
+    "promotion_author": "Bloom#0001",
+    "is_perm": true,
+    "is_sale": false,
     "is_regular_item": true
   },
   "15": {

@@ -2,6 +2,7 @@ package org.transformice.packets.recv.player;
 
 // Imports
 import org.bytearray.ByteArray;
+import org.reflections.vfs.SystemDir;
 import org.transformice.Client;
 import org.transformice.packets.RecvPacket;
 
@@ -10,7 +11,7 @@ public final class S_PlayerBuySkill implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
         int skill = data.readByte();
-        if (client.getAccount().getShamanLevel() - 1 > client.getAccount().getPlayerSkills().size()) {
+        if (client.getAccount().getShamanLevel() > client.getAccount().getPlayerSkills().size()) {
             if (client.getAccount().getPlayerSkills().containsKey(skill)) {
                 client.getAccount().getPlayerSkills().replace(skill, client.getAccount().getPlayerSkills().get(skill) + 1);
             } else {

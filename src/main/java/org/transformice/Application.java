@@ -33,6 +33,7 @@ public final class Application {
     @Getter private static Map<Integer, ShopShamanItemConfig.ShopShamanItem> shopShamanItemInfo;
     @Getter private static Map<String, ShopItemConfig.ShopItem> shopItemInfo;
     @Getter private static Map<String, JapanExpoConfig.Code> japanExpoInfo;
+    @Getter private static Map<Integer, ShopBannersConfig.ShopBanner> shopBannersInfo;
 
     @SuppressWarnings("unchecked")
     private static void loadConfigVariables() {
@@ -50,6 +51,7 @@ public final class Application {
         shopShamanItemInfo = (Map<Integer, ShopShamanItemConfig.ShopShamanItem>) ConfigLoader.getProperty(ShopShamanItemConfig.class).getInstance();
         shopItemInfo = (Map<String, ShopItemConfig.ShopItem>) ConfigLoader.getProperty(ShopItemConfig.class).getInstance();
         japanExpoInfo = (Map<String, JapanExpoConfig.Code>) ConfigLoader.getProperty(JapanExpoConfig.class).getInstance();
+        shopBannersInfo = (Map<Integer, ShopBannersConfig.ShopBanner>) ConfigLoader.getProperty(ShopBannersConfig.class).getInstance();
     }
 
     public static void main(String[] args) {

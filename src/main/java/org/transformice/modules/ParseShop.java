@@ -57,9 +57,10 @@ public final class ParseShop {
         List<Integer> purchasedEmojis = this.client.getAccount().getPurchasedEmojis();
         Map<Integer, String> purchasedShamanItems = this.client.getAccount().getShopShamanItems();
         Map<Integer, String> purchasedItems = this.client.getAccount().getShopItems();
-        List<Integer> favoritedItems = this.client.getAccount().getFavoritedItems();
+        List<Integer> favoriteItems = this.client.getAccount().getFavoritedItems();
+        List<Integer> purchasedBanners = this.client.getAccount().getPurchasedBanners();
 
-        this.client.sendPacket(new C_ShopOpen(cheeses, strawberries, playerLook, shamanLook, sendShopItems, purchasedClothes, purchasedShamanItems, purchasedEmojis, purchasedItems, favoritedItems));
+        this.client.sendPacket(new C_ShopOpen(cheeses, strawberries, playerLook, shamanLook, sendShopItems, purchasedClothes, purchasedShamanItems, purchasedEmojis, purchasedItems, favoriteItems, purchasedBanners, this.client.getAccount().getCurrentBanner()));
     }
 
     /**
@@ -105,6 +106,28 @@ public final class ParseShop {
         String info = String.format("%02d/1;0,0,0,0,0,0,0,0,0,0,0,0/%s/%s", clotheID, String.format("%06X", this.client.getAccount().getMouseColor() & 0xFFFFFF), String.format("%06X", this.client.getAccount().getShamanColor() & 0xFFFFFF));
         this.client.getAccount().getShopClothes().add(info);
         this.sendOpenShop(false);
+    }
+
+    /**
+     * Buys a banner from the shop.
+     * @param banner_id The emoji id.
+     */
+    public void buyShopBanner(int banner_id) {
+        if(!Application.getShopBannersInfo().containsKey(banner_id)) {
+            Application.getLogger().warn(Application.getTranslationManager().get("shopbannernotofound", banner_id));
+            return;
+        }
+
+        var info = Application.getShopBannersInfo().get(banner_id);
+        int shopCheeses = this.client.getAccount().getShopCheeses();
+        if(shopCheeses - info.cheese_price < 0) {
+            return;
+        }
+
+        this.client.getAccount().setShopCheeses(shopCheeses - info.cheese_price);
+        this.sendBuyResult(banner_id, 4);
+        this.client.getAccount().getPurchasedBanners().add(banner_id);
+        this.sendOpenShop(true);
     }
 
     /**
@@ -779,7 +802,7 @@ public final class ParseShop {
      */
     private void sendBuyResult(int item_id, int item_type) {
         this.client.getParseDailyQuestsInstance().sendMissionIncrease(6, 1);
-        if(!this.client.isGuest() && item_type != 2) {
+        if(!this.client.isGuest() && item_type == 1) {
             for (Map.Entry<Integer, Double> entry : this.server.shopTitleList.entrySet()) {
                 int needResources = entry.getKey();
                 double titleIntegerID = entry.getValue();
@@ -825,7 +848,6 @@ public final class ParseShop {
         }
     }
 
-
     /**
      * Sends the shop outfit virtualization for pruchase.
      * @param outfitId The outfit id.
@@ -857,5 +879,16 @@ public final class ParseShop {
         }
 
         this.client.sendPacket(new C_VisualizeShopOutfit(outfitId, outfitInfo.outfit_look, infos));
+    }
+
+    /**
+     * Wears the provided adventure banner from the shop.
+     * @param banner_id The banner id to wear.
+     */
+    public void wearBanner(int banner_id) {
+        if(!this.client.getAccount().getPurchasedBanners().contains(banner_id)) return;
+
+        this.client.getAccount().setCurrentBanner(banner_id);
+        this.sendOpenShop(false);
     }
 }

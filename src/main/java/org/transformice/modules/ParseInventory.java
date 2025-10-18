@@ -268,6 +268,7 @@ public final class ParseInventory {
             case 20:
             case 25:
             case 26:
+                if(this.client.getRoom().getRoomDetails().withoutPhysicalConsumables) return;
                 int objId = (consumableId == 1) ? 65 : (consumableId == 5) ? 6 : (consumableId == 8) ? 89 : (consumableId == 20) ? 33 : (consumableId == 25) ? 80 : 95;
                 this.client.getRoom().sendPlaceObject(this.client.getRoom().getLastObjectID() + 1, objId, this.client.isFacingRight ? this.client.getPosition().getFirst() + 28 : this.client.getPosition().getFirst() - 28, this.client.isFacingRight ? this.client.getPosition().getSecond() - 20 : this.client.getPosition().getSecond() + 20, 0, this.client.isFacingRight ? 10 : -10, -3, true, false, new byte[]{}, null, true);
                 break;
@@ -283,6 +284,7 @@ public final class ParseInventory {
                 }
                 break;
             case 11:
+                if(this.client.getRoom().getRoomDetails().withoutPhysicalConsumables) return;
                 this.client.sendPlayerDeath();
                 this.client.getRoom().sendPlaceObject(this.client.getRoom().getLastObjectID() + 1, 90, this.client.isFacingRight ? this.client.getPosition().getFirst() + 28 : this.client.getPosition().getFirst() - 28, this.client.isFacingRight ? this.client.getPosition().getSecond() - 20 : this.client.getPosition().getSecond() + 20, 0, this.client.isFacingRight ? 10 : -10, 0, true, false, new byte[]{}, null, true);
                 break;
@@ -290,6 +292,7 @@ public final class ParseInventory {
                 this.client.getRoom().sendAll(new C_PlayerAction(this.client.getSessionId(), 12, "", false));
                 break;
             case 24:
+                if(this.client.getRoom().getRoomDetails().withoutPhysicalConsumables) return;
                 this.client.getRoom().sendPlaceObject(this.client.getRoom().getLastObjectID() + 1, 63, this.client.isFacingRight ? this.client.getPosition().getFirst() + 28 : this.client.getPosition().getFirst() - 28, this.client.isFacingRight ? this.client.getPosition().getSecond() - 20 : this.client.getPosition().getSecond() + 20, 0, this.client.isFacingRight ? 10 : -10, 0, true, false, new byte[]{}, null, true);
                 break;
             case 28:
@@ -398,6 +401,7 @@ public final class ParseInventory {
                 this.client.getRoom().sendAll(new C_VisualConsumableInfo(1, this.client.getSessionId(), new Object[]{500, this.client.drawColor}));
                 break;
             case 2250:
+                if(this.client.getRoom().getRoomDetails().withoutPhysicalConsumables) return;
                 this.client.getRoom().sendPlaceObject(this.client.getRoom().getLastObjectID() + 1, 97, this.client.isFacingRight ? this.client.getPosition().getFirst() + 28 : this.client.getPosition().getFirst() - 28, this.client.isFacingRight ? this.client.getPosition().getSecond() - 20 : this.client.getPosition().getSecond() + 20, 0, this.client.isFacingRight ? 10 : -10, -3, true, false, new byte[]{}, null, true);
                 break;
             case 2255:
@@ -408,9 +412,11 @@ public final class ParseInventory {
                 this.client.getRoom().sendAll(new C_VisualConsumableInfo(5, this.client.getSessionId(), new Object[]{(int)(time / 86400), (int)((time / 3600) % 24)}));
                 break;
             case 2578:
+                if(this.client.getRoom().getRoomDetails().withoutPhysicalConsumables) return;
                 this.client.getRoom().sendPlaceObject(this.client.getRoom().getLastObjectID() + 1, 7, this.client.isFacingRight ? this.client.getPosition().getFirst() + 28 : this.client.getPosition().getFirst() - 28, this.client.isFacingRight ? this.client.getPosition().getSecond() - 20 : this.client.getPosition().getSecond() + 20, 0, this.client.isFacingRight ? 10 : -10, 0, true, false, new byte[]{}, null, true);
                 break;
             case 2579:
+                if(this.client.getRoom().getRoomDetails().withoutPhysicalConsumables) return;
                 this.client.getRoom().sendPlaceObject(this.client.getRoom().getLastObjectID() + 1, 2, this.client.isFacingRight ? this.client.getPosition().getFirst() + 28 : this.client.getPosition().getFirst() - 28, this.client.isFacingRight ? this.client.getPosition().getSecond() - 20 : this.client.getPosition().getSecond() + 20, 0, this.client.isFacingRight ? 10 : -10, 0, false, false, new byte[]{}, null, true);
                 break;
             case 2582:

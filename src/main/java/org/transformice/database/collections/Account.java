@@ -89,6 +89,8 @@ public final class Account {
     private final int[] defilanteStats;
     @Setter private int adventurePoints;
     private final List<Adventure> adventureList;
+    @Setter private int currentBanner;
+    private final List<Integer> purchasedBanners;
 
     /**
      * Creates a new player.
@@ -168,6 +170,8 @@ public final class Account {
         this.defilanteStats = new int[3];
         this.adventurePoints = 0;
         this.adventureList = new ArrayList<>();
+        this.currentBanner = 1;
+        this.purchasedBanners = new ArrayList<>(List.of(1));
     }
 
     /**

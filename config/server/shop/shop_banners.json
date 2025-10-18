@@ -1,0 +1,12 @@
+{
+	2 : {
+      "cheese_price": 1500,
+      "strawberry_price": 0,
+      "is_new": false
+	},
+	3 : {
+      "cheese_price": 1500,
+      "strawberry_price": 0,
+      "is_new": false
+	}
+}

@@ -9,9 +9,13 @@ public final class C_SetLanguage implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
     public C_SetLanguage(String lang) {
+        if(lang.contains("-")) {
+            lang = lang.substring(lang.indexOf('-') + 1);
+        }
+
         var language = Application.getLanguageInfo().get(lang.toLowerCase());
         if(language == null) {
-            Application.getLogger().warn(Application.getTranslationManager().get("langnotimplemented", lang));
+            Application.getLogger().warn(Application.getTranslationManager().get("langnotimplemented", lang.toLowerCase()));
             return;
         }
 

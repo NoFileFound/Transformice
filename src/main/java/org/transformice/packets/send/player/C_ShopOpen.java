@@ -13,11 +13,12 @@ import org.transformice.properties.configs.shop.*;
 public final class C_ShopOpen implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
-    public C_ShopOpen(int shopCheeses, int shopStrawberries, String look, String shamanLook, boolean sendShopItems, List<String> purchasedClothes, Map<Integer, String> purchasedShamanItems, List<Integer> purchasedEmojis, Map<Integer, String> purchasedItems, List<Integer> favoritedItems) {
+    public C_ShopOpen(int shopCheeses, int shopStrawberries, String look, String shamanLook, boolean sendShopItems, List<String> purchasedClothes, Map<Integer, String> purchasedShamanItems, List<Integer> purchasedEmojis, Map<Integer, String> purchasedItems, List<Integer> favoritedItems, List<Integer> purchasedBanners, int currentBanner) {
         Map<String, ShopItemConfig.ShopItem> shopItems = sendShopItems ? Application.getShopItemInfo() : new HashMap<>();
         Map<Integer, ShopOutfitsConfig.ShopOutfit> shopOutfits = sendShopItems ? Application.getShopOutfitsInfo() : new HashMap<>();
         Map<Integer, ShopShamanItemConfig.ShopShamanItem> shopShamanItems = sendShopItems ? Application.getShopShamanItemInfo() : new HashMap<>();
         Map<Integer, ShopEmojisConfig.ShopEmoji> shopEmojis = Application.getShopEmojiInfo();
+        Map<Integer, ShopBannersConfig.ShopBanner> shopBanners = Application.getShopBannersInfo();
 
         this.byteArray.writeInt(shopCheeses);
         this.byteArray.writeInt(shopStrawberries);
@@ -107,6 +108,21 @@ public final class C_ShopOpen implements SendPacket {
         for(var entry : purchasedEmojis) {
             this.byteArray.writeInt128(entry);
         }
+
+        this.byteArray.writeInt128(shopBanners.size());
+        for(var entry : shopBanners.entrySet()) {
+            this.byteArray.writeInt128(entry.getKey());
+            this.byteArray.writeInt128(entry.getValue().cheese_price);
+            this.byteArray.writeInt128(entry.getValue().strawberry_price);
+            this.byteArray.writeBoolean(entry.getValue().is_new);
+        }
+
+        this.byteArray.writeInt128(purchasedBanners.size());
+        for(var entry : purchasedBanners) {
+            this.byteArray.writeInt128(entry);
+        }
+
+        this.byteArray.writeInt128(currentBanner);
     }
 
     @Override
