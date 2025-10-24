@@ -20,7 +20,7 @@ public final class TFM_disablePhysicalConsumables extends VarArgFunction {
     @Override
     public Varargs invoke(Varargs args) {
         if (this.room.luaDebugLib != null && !this.room.luaDebugLib.checkTestCode()) {
-            this.room.getRoomDetails().withoutPhysicalConsumables = args.isnil(1) || args.toboolean(1);
+            this.room.disablePhysicalConsumablesLUA = args.isnil(1) || args.toboolean(1);
         }
         return NIL;
     }

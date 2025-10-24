@@ -17,7 +17,6 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaError;
-import org.luaj.vm2.lib.DebugLib;
 import org.luaj.vm2.lib.TimeOutDebugLib;
 import org.luaj.vm2.lib.jse.JsePlatform;
 import org.transformice.database.collections.Account;
@@ -99,6 +98,8 @@ public final class Client {
     public boolean canShamanRespawn;
     public boolean canMeep;
     public boolean canTransform;
+    public boolean canSaveFile = true;
+    public boolean canLoadFile = true;
     public boolean isAfk;
     public boolean isDead;
     public boolean isDisintegration;
@@ -190,6 +191,8 @@ public final class Client {
     public Timer chatMessageTimer;
     public Timer skipMusicTimer;
     public Timer redistributeTimer;
+    public Timer saveFileTimer;
+    public Timer loadFileTimer;
 
     /**
      * Creates a new player in the server.
@@ -234,6 +237,8 @@ public final class Client {
         this.chatMessageTimer = new Timer(Application.getPropertiesInfo().timers.chat_message.enable, Application.getPropertiesInfo().timers.chat_message.delay);
         this.skipMusicTimer = new Timer(Application.getPropertiesInfo().timers.skip_music.enable, Application.getPropertiesInfo().timers.skip_music.delay);
         this.redistributeTimer = new Timer(true, 5);
+        this.saveFileTimer = new Timer(true, 10);
+        this.loadFileTimer = new Timer(true, 10);
         if(!this.server.createAccountTimer.containsKey(this.ipAddress)) {
             this.server.createAccountTimer.put(this.ipAddress, new Timer(Application.getPropertiesInfo().timers.create_account.enable, Application.getPropertiesInfo().timers.create_account.delay));
         }
@@ -268,14 +273,14 @@ public final class Client {
         playerRoomData.writeShort(titleInfo.getFirst());
         playerRoomData.writeByte(titleInfo.getSecond());
         playerRoomData.writeByte(this.account.getPlayerGender());
-        playerRoomData.writeString(""); // avatar id; ???
+        playerRoomData.writeString(String.valueOf(this.account.getAvatarId()));
         playerRoomData.writeString(!this.tmpMouseLook.isEmpty() ? this.tmpMouseLook : (this.room.isBootcamp() ? "1;0,0,0,0,0,0,0,0,0,0,0,0" : this.account.getMouseLook()));
         playerRoomData.writeBoolean(false); // ???
         playerRoomData.writeInt(this.funCorpMousecolor != -1 ? this.funCorpMousecolor : (this.account.getMouseColor()));
         playerRoomData.writeInt(this.account.getShamanColor());
         playerRoomData.writeInt(0); // ???
         playerRoomData.writeInt(this.isShaman ? this.account.getShamanColor() : this.funCorpNickcolor);
-        playerRoomData.writeUnsignedByte(0); // ???
+        playerRoomData.writeUnsignedByte(18); // ???
         return playerRoomData;
     }
 
@@ -442,13 +447,13 @@ public final class Client {
             }
 
             if(!Application.getPropertiesInfo().event.event_name.isEmpty() && !this.account.containsAdventure(Application.getPropertiesInfo().event.adventure_id)) {
-                this.account.getAdventureList().add(new Adventure(Application.getPropertiesInfo().event.adventure_id, Application.getPropertiesInfo().event.banner_id, Utils.getUnixTime()));
+                this.account.getAdventureList().put(Application.getPropertiesInfo().event.adventure_id, new Adventure(Application.getPropertiesInfo().event.adventure_id, Application.getPropertiesInfo().event.banner_id, Utils.getUnixTime(), Application.getPropertiesInfo().event.event_points, Application.getPropertiesInfo().event.adventure_tasks, Application.getPropertiesInfo().event.adventure_progress));
                 for(var task : Application.getPropertiesInfo().event.adventure_tasks) {
-                    this.account.getAdventureList().getLast().getAdventureTasks().add(new Adventure.AdventureTask(task.task_consumable_id));
+                    this.account.getAdventureList().get(Application.getPropertiesInfo().event.adventure_id).getAdventureTasks().add(new Adventure.AdventureTask(task.task_consumable_id));
                 }
 
                 for(var _ : Application.getPropertiesInfo().event.adventure_progress) {
-                    this.account.getAdventureList().getLast().getAdventureProgress().add(0);
+                    this.account.getAdventureList().get(Application.getPropertiesInfo().event.adventure_id).getAdventureProgress().add(0);
                 }
             }
 
@@ -654,15 +659,14 @@ public final class Client {
      * @param holeDist The hole distance from begin the map.
      */
     public void sendEnterHole(int holeType, int holeX, int holeY, int holeDist) {
-/*
-        if(holeDist != -1) {
-            boolean foundCheat = this.room.getHolesList().stream().anyMatch(info -> Math.abs(info.getSecond().getFirst() - holeX) > 32 && Math.abs(info.getSecond().getSecond() - holeY) > 32);
-            if(foundCheat) {
+        if (holeDist != -1) {
+            boolean foundCheat = this.room.getHolesList().stream().noneMatch(info -> Math.abs(info.getSecond().getFirst() - holeX) <= 32 && Math.abs(info.getSecond().getSecond() - holeY) <= 32);
+            if (foundCheat) {
                 this.closeConnection();
                 return;
             }
         }
-*/
+
         if(this.isShaman) {
             if(this.room.getCurrentMap().isCatchTheCheese)
                 return;
@@ -903,7 +907,12 @@ public final class Client {
         if (this.room.getPlayersCount() >= 2 && this.room.checkIfTooFewRemaining() && !this.room.getCurrentMap().isDualShaman && this.room.getCurrentShaman() != null && this.room.getCurrentShaman().isOpportunist) {
             this.room.getCurrentShaman().sendEnterHole(0, -1, -1, -1);
         } else {
-            this.room.checkChangeMap();
+            if(this.room.checkIfTooFewRemaining()) {
+                this.room.send20SecRemainingTimer();
+            }
+            else {
+                this.room.checkChangeMap();
+            }
         }
 
         if (this.room.luaMinigame != null) {
@@ -1042,15 +1051,15 @@ public final class Client {
      * @param cheeseIdx The cheese id.
      */
     public void sendGiveCheese(int cheeseX, int cheeseY, int cheeseDist, int cheeseIdx) {
-/*
-        if(!this.room.getCurrentMap().isCatchTheCheese && cheeseDist != -1) {
-            boolean foundCheat = this.room.getCheesesList().stream().anyMatch(info -> Math.abs(info.getFirst() - cheeseX) > 32 && Math.abs(info.getSecond() - cheeseY) > 32) || (this.cheeseCount > 0 && !this.room.getCurrentMap().isDudoe) || (this.cheeseCount > 3);
-            if(foundCheat) {
+        if (!this.room.getCurrentMap().isCatchTheCheese && cheeseDist != -1) {
+            boolean foundCheat = this.room.getCheesesList().stream().noneMatch(info -> Math.abs(info.getFirst() - cheeseX) <= 32 && Math.abs(info.getSecond() - cheeseY) <= 32);
+            boolean tooManyCCs = (this.cheeseCount > 0 && !this.room.getCurrentMap().isDudoe) || (this.cheeseCount > 3);
+            if (foundCheat || tooManyCCs) {
                 this.closeConnection();
                 return;
             }
         }
-*/
+
         if(!this.cheeseIdxs.contains(cheeseIdx)) {
             this.cheeseIdxs.add(cheeseIdx);
             this.cheeseCount += 1;

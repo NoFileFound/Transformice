@@ -40,11 +40,11 @@ public final class SY_loadPlayerData extends VarArgFunction {
                 if (this.room.getPlayers().containsKey(playerName)) {
                     String fileName;
                     if(this.room.getMinigameName().isEmpty()) {
-                        fileName = "./data/" + this.room.luaAdmin.getPlayerName() + ".json";
+                        fileName = "data/" + this.room.luaAdmin.getPlayerName() + ".json";
                     } else {
-                        fileName = "./data/module_" + this.room.getMinigameName() + "/" + playerName + ".json";
+                        fileName = "data/module_" + this.room.getMinigameName() + "-" + playerName + ".json";
                     }
-                    File file = new File(fileName);
+                    File file = new File("config/lua/" + fileName);
                     if (file.exists()) {
                         try {
                             String content = Files.readString(Paths.get(file.toURI()), StandardCharsets.UTF_8);

@@ -3,7 +3,6 @@ package org.transformice;
 // Imports
 import static org.transformice.utils.Utils.getUnixTime;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -41,6 +40,7 @@ import org.transformice.packets.send.legacy.editor.C_MapVotePopup;
 import org.transformice.packets.send.legacy.player.C_PlayerDisconnect;
 import org.transformice.packets.send.legacy.player.C_PlayerShamanPerfomance;
 import org.transformice.packets.send.login.C_SetMonsterSpeed;
+import org.transformice.packets.send.login.C_SetPlayerHealth;
 import org.transformice.packets.send.login.C_SpawnMonster;
 import org.transformice.packets.send.lua.C_AddImage;
 import org.transformice.packets.send.lua.C_CleanupLuaScripting;
@@ -62,6 +62,7 @@ import org.transformice.packets.send.room.C_RoundsCount;
 import org.transformice.packets.send.room.C_SetRoundTime;
 import org.transformice.packets.send.room.C_SpawnObject;
 import org.transformice.packets.send.room.C_StartRoundCountdown;
+import org.transformice.packets.send.tribe.C_AdventureAction;
 
 public final class Room {
     public int addTime;
@@ -87,6 +88,8 @@ public final class Room {
     public boolean disableMinimalistMode = false;
     public boolean disableWatchCommand = false;
     public boolean disableEventLog = true;
+    public boolean disablePhysicalConsumablesLUA = false;
+    public boolean isRunningEvent = false;
     public boolean disableAllShamanSkills;
     public boolean isFunCorp;
     public boolean isFunCorpHighlighedRoom;
@@ -159,6 +162,7 @@ public final class Room {
     @Getter private final List<String> redTeam;
     @Getter private final List<String> blueTeam;
     @Getter private final Map<Integer, Integer> monsterLifes;
+    @Getter private final Map<Integer, Long> monsterLastChange;
     @Getter @Setter private Client currentSync;
     @Getter @Setter private Client forceNextShaman;
     @Getter @Setter private int maximumPlayers;
@@ -210,6 +214,7 @@ public final class Room {
         this.roomFunCorpPlayersNickColor = new HashMap<>();
         this.roomFunCorpPlayersMouseColor = new HashMap<>();
         this.monsterLifes = new HashMap<>();
+        this.monsterLastChange = new HashMap<>();
         this.disabledChatCommandsDisplay = new ArrayList<>();
         this.blueTeam = new ArrayList<>();
         this.redTeam = new ArrayList<>();
@@ -393,6 +398,11 @@ public final class Room {
      * Changes the current map.
      */
     public void changeMap() {
+        if(!this.monsterLifes.isEmpty()) {
+            this.monsterLifes.clear();
+            this.monsterLastChange.clear();
+        }
+
         for (Timer timer : new Timer[] {this.changeMapTimer, this.mapStartTimer, this.closeRoomRoundJoinTimer, this.killAfkTimer, this.voteCloseTimer, this.autoRespawnTimer}) {
             if (timer != null) {
                 timer.cancel();
@@ -580,52 +590,59 @@ public final class Room {
         }
 
         if(this.isEventTime) {
-            if(Application.getPropertiesInfo().event.event_name.equals("Hugging")) {
-                if(this.currentMap.mapCode == 2002) {
+            if(this.roomDetails.withoutAdventureMaps) this.isEventTime = false;
+        }
+
+        this.isRunningEvent = this.isEventTime;
+        if(this.isEventTime) {
+            switch(Application.getPropertiesInfo().event.event_name) {
+                case "Hugging" : {
+                    if(this.currentMap.mapCode == 2002) {
+                        List<Client> playerList = new ArrayList<>(this.players.values());
+                        for (int i = 0; i < playerList.size(); i++) {
+                            Client player = playerList.get(i);
+                            this.setNicknameColor(player.getPlayerName(), (i < playerList.size() / 2) ? 16751103 : 9820630);
+                        }
+                    } else {
+                        //// TODO: Add the npcs in the hugging event.
+                    }
+                    break;
+                }
+                case "Ninja" : {
                     for(Client player : this.players.values()) {
-                        if(player.isFacingLeft) {
-                            this.setNicknameColor(player.getPlayerName(), 16751103);
-                        } else {
-                            this.setNicknameColor(player.getPlayerName(), 9820630);
+                        player.sendPacket(new C_AddCollectible(18, this.server.lastCollectibleId, 26, 64, 105));
+                        player.sendPacket(new C_CreateNewNPC(this.server.lastNPCSessionId, "Mayonaka", 571, false, "291;46_80587C+1A1007,0,129_A3936B+80587C+A3936B+493457+493457+80587C+FFFFFF+DFDFDF+493457,0,78_EFF7F3+EFF7F3+A3936B+A3936B,63_241F1F+728A8F+493457+493457+493457,0,105,75_A7BCB2+728A8F+1A272E+728A8F+493457+80587C,0,0,0", 832, 575, -1, true, true, 10, ""));
+                        player.sendPacket(new C_CreateNewNPC(this.server.lastNPCSessionId - 1, "Indiana Mouse", 27, true, "45;0,0,0,0,0,0,0,0,0", 1244, 216, -1, true, true, 10, ""));
+                    }
+                    this.server.lastNPCSessionId -= 2;
+                    this.server.lastCollectibleId++;
+                    break;
+                }
+                case "Halloween" : {
+                    switch(this.currentMap.mapCode) {
+                        case 669: {
+                            for(Client player : this.players.values()) {
+                                player.playerHealth = 4;
+                            }
+                            this.sendAll(new C_SetPlayerHealth(4));
+                            this.sendAll(new C_SummonEventElement(4));
+                            this.sendSpawnMonster(700, 280, "chat");
+                            break;
+                        }
+                        case 816: {
+                            this.sendAll(new C_CreateNewNPC(this.server.lastNPCSessionId - 1, "Von Drekkemaus", 287, false, "212;0,0,0,0,0,0,0,0,0", 723, 362, -1, true, true, 10, ""));
+                            break;
+                        }
+
+                        case 926: {
+                            this.sendAll(new C_AdventureAction(Application.getPropertiesInfo().event.banner_id, 4, List.of("false", "1", "2")));
+                            break;
                         }
                     }
-                } else {
-                    //// TODO: Add the npcs in the hugging event.
+                    break;
                 }
-            }
-
-            if(Application.getPropertiesInfo().event.event_name.equals("Ninja")) {
-                for(Client player : this.players.values()) {
-                    player.sendPacket(new C_AddCollectible(18, this.server.lastCollectibleId, 26, 64, 105));
-                    player.sendPacket(new C_CreateNewNPC(this.server.lastNPCSessionId, "Mayonaka", 571, false, "291;46_80587C+1A1007,0,129_A3936B+80587C+A3936B+493457+493457+80587C+FFFFFF+DFDFDF+493457,0,78_EFF7F3+EFF7F3+A3936B+A3936B,63_241F1F+728A8F+493457+493457+493457,0,105,75_A7BCB2+728A8F+1A272E+728A8F+493457+80587C,0,0,0", 832, 575, -1, true, true, 10, ""));
-                    player.sendPacket(new C_CreateNewNPC(this.server.lastNPCSessionId - 1, "Indiana Mouse", 27, true, "45;0,0,0,0,0,0,0,0,0", 1244, 216, -1, true, true, 10, ""));
-                }
-                this.server.lastNPCSessionId -= 2;
-                this.server.lastCollectibleId++;
-            }
-
-            if(Application.getPropertiesInfo().event.event_name.equals("Halloween")) {
-                switch(this.currentMap.mapCode) {
-                    case 5001: {
-                        for(Client player : this.players.values()) {
-                            player.playerHealth = 4;
-                        }
-                        this.sendSpawnMonster(700, 280, "chat");
-                        this.sendAll(new C_SummonEventElement(4));
-                        break;
-                    }
-                    case 5002: {
-                        /// TODO: Implement the jackpot.
-                        break;
-                    }
-                    case 5003: {
-                        /// TODO: Implement the door handles.
-                        break;
-                    }
-                    case 5004: {
-                        /// TODO: Implement the Manor/Mansion map.
-                        break;
-                    }
+                default : {
+                    Application.getLogger().warn(Application.getTranslationManager().get("eventnamenotfound", Application.getPropertiesInfo().event.event_name));
                 }
             }
 
@@ -1046,6 +1063,7 @@ public final class Room {
      */
     public void sendSpawnMonster(int x, int y, String monsterType) {
         this.monsterLifes.putIfAbsent(this.server.lastMonsterId, monsterType.equals("chat") ? 10 * this.getAliveCount() : 5);
+        this.monsterLastChange.putIfAbsent(this.server.lastMonsterId, System.currentTimeMillis());
         this.sendAll(new C_SpawnMonster(this.server.lastMonsterId, x, y, monsterType));
         this.server.lastMonsterId++;
         if(!monsterType.equals("chat")) {
@@ -1209,8 +1227,8 @@ public final class Room {
             this.stopLuaScript(false);
         }
 
-        File file = new File("./lua/minigames/" + this.minigameName + ".lua");
-        if (file.exists()) {
+        if (this.server.getMinigameList().contains(this.minigameName))
+        {
             try {
                 this.sendAll(new C_InitializeLuaScripting());
                 this.maximumPlayers = 50;
@@ -1225,8 +1243,7 @@ public final class Room {
                 this.luaDebugLib.setTimeOut(-1, false);
 
                 StringBuilder sb = new StringBuilder();
-                try (BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+                try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("./config/lua/minigames/" + this.minigameName + ".lua"), StandardCharsets.UTF_8))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         sb.append(line).append('\n');
@@ -1431,15 +1448,15 @@ public final class Room {
             return switch (Application.getPropertiesInfo().event.event_name) {
                 case "Hugging" -> {
                     int mapCode = (SrcRandom.RandomNumber(1, 100) > 50 ? 2002 : 2801);
-                    yield new MapDetails(9, mapCode, "Transformice", Server.specialMapXmlList.get(mapCode), 0, 0);
+                    yield new MapDetails(9, mapCode, "_Hugging", Server.specialMapXmlList.get(mapCode), 0, 0);
                 }
                 case "Halloween" -> {
-                    int mapCode = SrcRandom.RandomNumber(5000, 5004);
-                    yield new MapDetails(666, mapCode, "Halloween", Server.specialMapXmlList.get(mapCode), 0, 0);
+                    int mapCode = SrcRandom.RandomNumber(0, 100) % 3 == 0 ? 816 : SrcRandom.RandomNumber(0, 100) % 2 == 0 ? 669 : 926;
+                    yield new MapDetails(87, mapCode, (mapCode == 816 ? "_Bar Halloween" : "_Halloween"), Server.specialMapXmlList.get(mapCode), 0, 0);
                 }
                 case "Ninja" -> new MapDetails(9, 2001, "Transformice", Server.specialMapXmlList.get(2001), 0, 0);
                 case "Fishing" -> {
-                    int mapCode = SrcRandom.RandomNumber(3000, 30005);
+                    int mapCode = SrcRandom.RandomNumber(3000, 3005);
                     yield new MapDetails(666, mapCode, "Transformice", Server.specialMapXmlList.get(mapCode), 0, 0);
                 }
                 default -> new MapDetails(-1, 0, "", "<C><P /><Z><S /><D /><O /></Z></C>", 0, 0);
@@ -1610,11 +1627,11 @@ public final class Room {
 
     public static class RoomDetails {
         public String roomPassword = "";
-        public boolean withoutShamanSkills;
+        public boolean withoutShamanSkills = false;
         public boolean withoutPhysicalConsumables = false;
-        public boolean withoutAdventureMaps;
-        public boolean withMiceCollisions;
-        public boolean withFallDamage;
+        public boolean withoutAdventureMaps = false;
+        public boolean withMiceCollisions = false;
+        public boolean withFallDamage = false;
         public int roundDuration = 100;
         public int miceWeight;
         public short maximumPlayers;

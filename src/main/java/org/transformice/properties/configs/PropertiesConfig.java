@@ -1,6 +1,7 @@
 package org.transformice.properties.configs;
 
 // Imports
+import dev.morphia.annotations.Embedded;
 import java.util.ArrayList;
 import org.transformice.libraries.JsonLoader;
 import org.transformice.properties.Property;
@@ -98,6 +99,7 @@ public final class PropertiesConfig implements Property {
             public ArrayList<Integer> adventure_progress;
         }
 
+        @Embedded
         public static class EventAdventureTasks {
             public int task_consumable_id;
             public int task_consumable_count;

@@ -50,7 +50,7 @@ public final class S_PlayerAction implements RecvPacket {
             client.getParseSkillsInstance().handleSkillAction(actionType);
         }
 
-        if(client.getRoom().getCurrentMap().mapCode == 2002 && client.getRoom().isEventTime() && Application.getPropertiesInfo().event.event_name.equals("Hugging")) {
+        if(client.getRoom().getCurrentMap().mapCode == 2002 && client.getRoom().isRunningEvent && Application.getPropertiesInfo().event.event_name.equals("Hugging")) {
             Client repPlayer = client.getServer().getPlayerBySessionId(playerSessionId);
             if(repPlayer != null && repPlayer.getRoom() == client.getRoom()) {
                 if(client.nickNameColor != repPlayer.nickNameColor) {
@@ -59,26 +59,25 @@ public final class S_PlayerAction implements RecvPacket {
                     client.getParseInventoryInstance().addConsumable("2227", 1, true);
                     repPlayer.getParseInventoryInstance().addConsumable("2227", 1, true);
                     if(!client.isGuest()) {
-                        client.getAccount().getAdventureList().getLast().getAdventureProgress().set(0, client.getAccount().getAdventureList().getLast().getAdventureProgress().getFirst() + 1);
+                        client.getAccount().getAdventureList().get(Application.getPropertiesInfo().event.adventure_id).getAdventureProgress().set(0, client.getAccount().getAdventureList().get(Application.getPropertiesInfo().event.adventure_id).getAdventureProgress().getFirst() + 1);
                         int i = 0;
-                        for(var task : client.getAccount().getAdventureList().getLast().getAdventureTasks()) {
+                        for(var task : client.getAccount().getAdventureList().get(Application.getPropertiesInfo().event.adventure_id).getAdventureTasks()) {
                             if(task.task_item_id == 2227) {
                                 task.taskProgress++;
-                                if(task.taskProgress > Application.getPropertiesInfo().event.adventure_tasks.get(i).task_progess_type2_minimum && Application.getPropertiesInfo().event.adventure_tasks.get(i).task_progess_type == 1) {
+                                if(task.taskProgress > client.getAccount().getAdventureList().get(Application.getPropertiesInfo().event.adventure_id).getAdventureTasksServer().get(i).task_progess_type2_minimum && client.getAccount().getAdventureList().get(Application.getPropertiesInfo().event.adventure_id).getAdventureTasksServer().get(i).task_progess_type == 1) {
                                     task.isFinished = true;
                                 }
                             }
-                            i++;
                         }
                     }
 
                     if(!repPlayer.isGuest()) {
-                        repPlayer.getAccount().getAdventureList().getLast().getAdventureProgress().set(0, repPlayer.getAccount().getAdventureList().getLast().getAdventureProgress().getFirst() + 1);
+                        repPlayer.getAccount().getAdventureList().get(Application.getPropertiesInfo().event.adventure_id).getAdventureProgress().set(0, repPlayer.getAccount().getAdventureList().get(Application.getPropertiesInfo().event.adventure_id).getAdventureProgress().getFirst() + 1);
                         int i = 0;
-                        for(var task : repPlayer.getAccount().getAdventureList().getLast().getAdventureTasks()) {
+                        for(var task : repPlayer.getAccount().getAdventureList().get(Application.getPropertiesInfo().event.adventure_id).getAdventureTasks()) {
                             if(task.task_item_id == 2227) {
                                 task.taskProgress++;
-                                if(task.taskProgress > Application.getPropertiesInfo().event.adventure_tasks.get(i).task_progess_type2_minimum && Application.getPropertiesInfo().event.adventure_tasks.get(i).task_progess_type == 1) {
+                                if(task.taskProgress > client.getAccount().getAdventureList().get(Application.getPropertiesInfo().event.adventure_id).getAdventureTasksServer().get(i).task_progess_type2_minimum && client.getAccount().getAdventureList().get(Application.getPropertiesInfo().event.adventure_id).getAdventureTasksServer().get(i).task_progess_type == 1) {
                                     task.isFinished = true;
                                 }
                             }

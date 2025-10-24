@@ -1,7 +1,7 @@
 package org.transformice.packets.send.player;
 
 // Imports
-import java.util.List;
+import java.util.Map;
 import org.bytearray.ByteArray;
 import org.transformice.Application;
 import org.transformice.database.embeds.Adventure;
@@ -10,24 +10,24 @@ import org.transformice.packets.SendPacket;
 public final class C_PlayerOpenAdventureInterface implements SendPacket {
     private final ByteArray byteArray = new ByteArray();
 
-    public C_PlayerOpenAdventureInterface(List<Adventure> adventureList, String playerName, String playerLook, int mouseColor, int adventurePoints, int unlockedTitles, int unlockedBadges) {
+    public C_PlayerOpenAdventureInterface(Map<Integer, Adventure> adventureList, String playerName, String playerLook, int mouseColor, int adventurePoints, int unlockedTitles, int unlockedBadges) {
         this.byteArray.writeString(playerName);
         this.byteArray.writeString(playerLook + ";" + Integer.toHexString(mouseColor));
         this.byteArray.writeInt(adventurePoints);
         this.byteArray.writeShort((short) unlockedTitles);
         this.byteArray.writeShort((short) unlockedBadges);
         this.byteArray.writeUnsignedShort(adventureList.size());
-        for(Adventure adventure : adventureList) {
+        for(Adventure adventure : adventureList.values()) {
             this.byteArray.writeUnsignedShort(adventure.getAdventureId());
             this.byteArray.writeUnsignedByte(1);
             this.byteArray.writeUnsignedShort(adventure.getBannerId());
             this.byteArray.writeInt(adventure.getDateDiscovered());
             this.byteArray.writeInt(adventure.getAdventurePoints());
             this.byteArray.writeBoolean(adventure.getAdventurePoints() == Application.getPropertiesInfo().event.event_points);
-            this.byteArray.writeByte(Application.getPropertiesInfo().event.adventure_tasks.size());
+            this.byteArray.writeByte(adventure.getAdventureTasksServer().size());
 
             int i = 0;
-            for(var task : Application.getPropertiesInfo().event.adventure_tasks) {
+            for(var task : adventure.getAdventureTasksServer()) {
                 this.byteArray.writeByte((task.task_consumable_count > 0) ? 4 : 1);
                 this.byteArray.writeBoolean(task.task_consumable_count > 0);
                 if(task.task_consumable_count > 0) {
@@ -50,9 +50,9 @@ public final class C_PlayerOpenAdventureInterface implements SendPacket {
                 i++;
             }
 
-            this.byteArray.writeByte(Application.getPropertiesInfo().event.adventure_progress.size());
+            this.byteArray.writeByte(adventure.getAdventureProgressServer().size());
             i = 0;
-            for(var progress : Application.getPropertiesInfo().event.adventure_progress) {
+            for(var progress : adventure.getAdventureProgressServer()) {
                 this.byteArray.writeByte(1);
                 this.byteArray.writeBoolean(false);
                 this.byteArray.writeShort(progress.shortValue());

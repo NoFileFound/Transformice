@@ -1,1 +1,0 @@
-# Add here your dreamed vanilla maps. don't forget to add the map codes in vanillaMapList and vanillaNoShamMapList arrays.

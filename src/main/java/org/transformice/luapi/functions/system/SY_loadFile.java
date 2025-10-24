@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
+
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.VarArgFunction;
@@ -20,7 +22,6 @@ import org.transformice.packets.send.lua.C_LuaMessage;
 
 public final class SY_loadFile extends VarArgFunction {
     private final Room room;
-    private long loadFileTime;
 
     public SY_loadFile(Room room) {
         this.room = room;
@@ -34,19 +35,19 @@ public final class SY_loadFile extends VarArgFunction {
     @Override
     public Varargs invoke(Varargs args) {
         if (this.room.luaDebugLib != null && !this.room.luaDebugLib.checkTestCode()) {
-            if (this.loadFileTime > System.currentTimeMillis()) {
+            if (!this.room.luaAdmin.canLoadFile) {
                 this.room.luaAdmin.sendPacket(new C_LuaMessage("You can't call this function [system.loadFile] more than once per 10 minutes."));
             } else {
                 int fileNumber = args.toint(1);
                 if (fileNumber >= 0 && fileNumber <= 99) {
                     String fileName;
                     if(this.room.getMinigameName().isEmpty()) {
-                        fileName = "./data/" + this.room.luaAdmin.getPlayerName() + ".json";
+                        fileName = "data/" + this.room.luaAdmin.getPlayerName() + ".json";
                     } else {
-                        fileName = "./data/module_" + this.room.getMinigameName() + "/" + this.room.luaAdmin.getPlayerName() + ".json";
+                        fileName = "data/module_" + this.room.getMinigameName() + "/" + this.room.luaAdmin.getPlayerName() + ".json";
                     }
 
-                    File file = new File(fileName);
+                    File file = new File("config/lua/" + fileName);
                     if (file.exists()) {
                         try {
                             String content = Files.readString(Paths.get(file.toURI()), StandardCharsets.UTF_8);
@@ -55,7 +56,8 @@ public final class SY_loadFile extends VarArgFunction {
                             if (json.has(key)) {
                                 JsonElement value = json.get(key);
                                 this.room.luaApi.callEvent("eventFileLoaded", fileNumber, value.getAsString());
-                                this.loadFileTime = System.currentTimeMillis() + 600000;
+                                this.room.luaAdmin.canLoadFile = false;
+                                this.room.luaAdmin.loadFileTimer.schedule(() -> this.room.luaAdmin.canLoadFile = true, TimeUnit.MINUTES);
                                 return TRUE;
                             }
                         } catch (JsonSyntaxException | IOException error) {

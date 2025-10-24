@@ -26,22 +26,34 @@ public final class C_LoadInventory implements SendPacket {
             }
 
             InventoryConfig.ConsumableInfo info = Application.getInventoryInfo().get(consumableId);
-            if(info == null) continue;
-
             this.byteArray.writeShort((short)consumableId);
             this.byteArray.writeUnsignedShort(entry.getValue());
-            this.byteArray.writeUnsignedShort(info.sort);
-            this.byteArray.writeUnsignedByte(info.priority);
-            this.byteArray.writeBoolean(info.fromEvent);
-            this.byteArray.writeBoolean(info.canUse);
-            this.byteArray.writeBoolean(info.canEquip);
-            this.byteArray.writeBoolean(info.canTrade);
-            this.byteArray.writeByte(info.category);
-            this.byteArray.writeByte(info.countdown);
-            this.byteArray.writeBoolean(info.canUseWhenDead);
-            this.byteArray.writeBoolean(consumableImageId != -1);
-            if(consumableImageId != -1) {
-                this.byteArray.writeString(info.images.split(";")[consumableImageId]);
+            if(info == null) {
+                this.byteArray.writeUnsignedShort(0);
+                this.byteArray.writeUnsignedByte(0);
+                this.byteArray.writeBoolean(true);
+                this.byteArray.writeBoolean(false);
+                this.byteArray.writeBoolean(false);
+                this.byteArray.writeBoolean(true);
+                this.byteArray.writeByte(20);
+                this.byteArray.writeByte(0);
+                this.byteArray.writeBoolean(false);
+                this.byteArray.writeBoolean(false);
+            }
+            else {
+                this.byteArray.writeUnsignedShort(info.sort);
+                this.byteArray.writeUnsignedByte(info.priority);
+                this.byteArray.writeBoolean(info.fromEvent);
+                this.byteArray.writeBoolean(info.canUse);
+                this.byteArray.writeBoolean(info.canEquip);
+                this.byteArray.writeBoolean(info.canTrade);
+                this.byteArray.writeByte(info.category);
+                this.byteArray.writeByte(info.countdown);
+                this.byteArray.writeBoolean(info.canUseWhenDead);
+                this.byteArray.writeBoolean(consumableImageId != -1);
+                if(consumableImageId != -1) {
+                    this.byteArray.writeString(info.images.split(";")[consumableImageId]);
+                }
             }
 
             if(equippedConsumables.contains(consumableId)) {

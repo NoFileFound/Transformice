@@ -11,6 +11,9 @@ public final class S_ExecuteLuaScript implements RecvPacket {
     public void handle(Client client, int fingerPrint, ByteArray data) {
         int length = ((data.readUnsignedByte() & 0xFF) << 16) | ((data.readUnsignedByte() & 0xFF) << 8) | (data.readUnsignedByte() & 0xFF);
         String script = new String(data.readBytes(length));
+        if(client.getRoom().isRunningEvent)
+            return;
+
         if(client.hasStaffPermission("LuaDev", "Lua_Run") || client.hasStaffPermission("Admin", "Lua_Run")) {
             client.runLuaScript(script);
         }

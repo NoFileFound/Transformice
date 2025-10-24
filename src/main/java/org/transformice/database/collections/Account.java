@@ -5,9 +5,13 @@ import static org.transformice.utils.Utils.getUnixTime;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.transformice.Application;
@@ -88,7 +92,7 @@ public final class Account {
     private final int[] survivorStats;
     private final int[] defilanteStats;
     @Setter private int adventurePoints;
-    private final List<Adventure> adventureList;
+    private final Map<Integer, Adventure> adventureList;
     @Setter private int currentBanner;
     private final List<Integer> purchasedBanners;
 
@@ -169,7 +173,7 @@ public final class Account {
         this.survivorStats = new int[4];
         this.defilanteStats = new int[3];
         this.adventurePoints = 0;
-        this.adventureList = new ArrayList<>();
+        this.adventureList = new HashMap<>();
         this.currentBanner = 1;
         this.purchasedBanners = new ArrayList<>(List.of(1));
     }
@@ -195,11 +199,7 @@ public final class Account {
      * @return True if he has it or else False.
      */
     public boolean containsAdventure(int adventureId) {
-        for(var adventure : this.adventureList) {
-            if(adventure.getAdventureId() == adventureId) return true;
-        }
-
-        return false;
+        return this.adventureList.get(adventureId) != null;
     }
 
     /**
@@ -232,6 +232,15 @@ public final class Account {
      * Updates the database of player.
      */
     public void save() {
+        for(var task : this.adventureList.get(Application.getPropertiesInfo().event.adventure_id).getAdventureTasks()) {
+            if(task.isFinished && !task.isPrized) {
+                int points = this.adventureList.get(Application.getPropertiesInfo().event.adventure_id).getAdventureTasksServer().get(task.lastPrizedTaskId).task_finish_points;
+                this.adventurePoints += points;
+                this.adventureList.get(Application.getPropertiesInfo().event.adventure_id).setAdventurePoints(this.adventureList.get(Application.getPropertiesInfo().event.adventure_id).getAdventurePoints() + points);
+                task.lastPrizedTaskId++;
+            }
+        }
+
         DBManager.saveInstance(this);
     }
 }

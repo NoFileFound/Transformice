@@ -9,5 +9,8 @@
         <language minSize="67" name="Java" />
       </Languages>
     </inspection_tool>
+    <inspection_tool class="ExtractMethodRecommender" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="minLength" value="721" />
+    </inspection_tool>
   </profile>
 </component>

@@ -54,9 +54,10 @@ public final class Server {
     public int lastGiftID;
     public int lastCollectibleId;
     public int lastNPCSessionId = -1;
-    public int lastMonsterId = -1;
+    public int lastMonsterId = 0;
     public int leftistPlayers = 0;
     public int rightistPlayers = 0;
+    public int lastHalloweenJackpointId = 0;
     private final List<Channel> channels = new ArrayList<>();
     private final Map<Integer, Client> clientSessions = new HashMap<>();
     private boolean isClosed;

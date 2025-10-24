@@ -12,7 +12,15 @@ import org.transformice.packets.send.player.C_PlayerOpenAdventureInterface;
 public final class S_PlayerOpenAdventureInterface implements RecvPacket {
     @Override
     public void handle(Client client, int fingerPrint, ByteArray data) {
-        client.sendPacket(new C_PlayerOpenAdventureInterface(client.getAccount().getAdventureList(), client.getPlayerName(), client.getAccount().getMouseLook(), client.getAccount().getMouseColor(), client.getAccount().getAdventurePoints(), client.getAccount().getTitleList().size(), client.getAccount().getShopBadges().size()));
+        String playerName = data.readString();
+        if(playerName.startsWith("*")) {
+            return;
+        }
+
+        if(client.getServer().checkIsConnected(playerName)) {
+            var player = client.getServer().getPlayers().get(playerName);
+            client.sendPacket(new C_PlayerOpenAdventureInterface(player.getAccount().getAdventureList(), player.getPlayerName(), player.getAccount().getMouseLook(), player.getAccount().getMouseColor(), player.getAccount().getAdventurePoints(), player.getAccount().getTitleList().size(), player.getAccount().getShopBadges().size()));
+        }
     }
 
     @Override

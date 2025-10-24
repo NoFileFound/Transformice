@@ -11,6 +11,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
+
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.VarArgFunction;
@@ -21,7 +23,6 @@ import org.transformice.packets.send.lua.C_LuaMessage;
 
 public final class SY_saveFile extends VarArgFunction {
     private final Room room;
-    private long saveFileTime;
 
     public SY_saveFile(Room room) {
         this.room = room;
@@ -37,7 +38,7 @@ public final class SY_saveFile extends VarArgFunction {
         if (this.room.luaDebugLib != null && !this.room.luaDebugLib.checkTestCode()) {
             if (args.isnil(1)) {
                 this.room.luaAdmin.sendPacket(new C_LuaMessage("system.saveFile : argument 1 can't be NIL."));
-            } else if (this.saveFileTime > System.currentTimeMillis()) {
+            } else if (!this.room.luaAdmin.canSaveFile) {
                 this.room.luaAdmin.sendPacket(new C_LuaMessage("You can't call this function [system.saveFile] more than once per 10 minutes."));
             } else {
                 String data = args.tojstring(1);
@@ -46,14 +47,13 @@ public final class SY_saveFile extends VarArgFunction {
                     try {
                         String fileName;
                         if(this.room.getMinigameName().isEmpty()) {
-                            fileName = "./data/" + this.room.luaAdmin.getPlayerName() + ".json";
+                            fileName = "data/" + this.room.luaAdmin.getPlayerName() + ".json";
                         } else {
-                            fileName = "./data/module_" + this.room.getMinigameName() + "/" + this.room.luaAdmin.getPlayerName() + ".json";
+                            fileName = "data/module_" + this.room.getMinigameName() + "/" + this.room.luaAdmin.getPlayerName() + ".json";
                         }
 
-                        File file = new File(fileName);
+                        File file = new File("config/lua/" + fileName);
                         if (!file.exists()) {
-                            file.createNewFile();
                             try (FileWriter writer = new FileWriter(file, StandardCharsets.UTF_8)) {
                                 writer.write("{}");
                             }
@@ -71,9 +71,9 @@ public final class SY_saveFile extends VarArgFunction {
                         }
 
                         this.room.luaApi.callEvent("eventFileSaved", fileNumber);
-                        this.saveFileTime = System.currentTimeMillis() + 600_000;
+                        this.room.luaAdmin.canSaveFile = false;
+                        this.room.luaAdmin.saveFileTimer.schedule(() -> this.room.luaAdmin.canSaveFile = true, TimeUnit.MINUTES);
                         return TRUE;
-
                     } catch (JsonSyntaxException | IOException error) {
                         throw new LuaError(error.getMessage());
                     }

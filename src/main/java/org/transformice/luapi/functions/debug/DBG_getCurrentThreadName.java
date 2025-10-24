@@ -20,6 +20,6 @@ public final class DBG_getCurrentThreadName extends VarArgFunction {
      */
     @Override
     public Varargs invoke(Varargs args) {
-        return LuaString.valueOf(this.room.luaAdmin.getLuaThread().getPriority()); /// Module
+        return LuaString.valueOf(this.room.luaAdmin.getLuaThread().getName()); /// Module
     }
 }

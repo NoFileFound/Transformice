@@ -46,13 +46,12 @@ public final class SY_savePlayerData extends VarArgFunction {
                         try {
                             String fileName;
                             if(this.room.getMinigameName().isEmpty()) {
-                                fileName = "./data/" + this.room.luaAdmin.getPlayerName() + ".json";
+                                fileName = "data/" + this.room.luaAdmin.getPlayerName() + ".json";
                             } else {
-                                fileName = "./data/module_" + this.room.getMinigameName() + "/" + playerName + ".json";
+                                fileName = "data/module_" + this.room.getMinigameName() + "-" + playerName + ".json";
                             }
-                            File file = new File(fileName);
+                            File file = new File("config/lua/" + fileName);
                             if (!file.exists()) {
-                                file.createNewFile();
                                 try (FileWriter writer = new FileWriter(file, StandardCharsets.UTF_8)) {
                                     writer.write("{}");
                                 }

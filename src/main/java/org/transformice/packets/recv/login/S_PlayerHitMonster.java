@@ -15,15 +15,22 @@ public final class S_PlayerHitMonster implements RecvPacket {
     public void handle(Client client, int fingerPrint, ByteArray data) {
         int monsterId = data.readInt();
         boolean right = data.readBoolean();
-
         if(!client.getRoom().getMonsterLifes().containsKey(monsterId)) {
-            client.closeConnection();
             return;
         }
 
         client.getRoom().getMonsterLifes().put(monsterId, client.getRoom().getMonsterLifes().get(monsterId) - 1);
         if(client.getRoom().getMonsterLifes().get(monsterId) <= 0) {
+            client.getRoom().getMonsterLifes().remove(monsterId);
+            client.getRoom().getMonsterLastChange().remove(monsterId);
             client.getRoom().sendAll(new C_DespawnMonster(monsterId));
+            if(monsterId == 0) {
+                for(Client player : client.getRoom().getPlayers().values()) {
+                    if(player.playerHealth > 0)
+                        player.getParseInventoryInstance().addConsumable("2336", 1, true);
+                }
+                client.getRoom().send20SecRemainingTimer();
+            }
         } else {
             client.getRoom().sendAll(new C_SetMonsterHit(monsterId, right));
         }
