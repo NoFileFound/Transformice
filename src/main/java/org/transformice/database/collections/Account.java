@@ -232,15 +232,17 @@ public final class Account {
      * Updates the database of player.
      */
     public void save() {
-        for(var task : this.adventureList.get(Application.getPropertiesInfo().event.adventure_id).getAdventureTasks()) {
-            if(task.isFinished && !task.isPrized) {
-                int points = this.adventureList.get(Application.getPropertiesInfo().event.adventure_id).getAdventureTasksServer().get(task.lastPrizedTaskId).task_finish_points;
-                this.adventurePoints += points;
-                this.adventureList.get(Application.getPropertiesInfo().event.adventure_id).setAdventurePoints(this.adventureList.get(Application.getPropertiesInfo().event.adventure_id).getAdventurePoints() + points);
-                task.lastPrizedTaskId++;
+        if(this.adventureList.size() > 0) {
+	    for(var task : this.adventureList.get(Application.getPropertiesInfo().event.adventure_id).getAdventureTasks()) {
+                if(task.isFinished && !task.isPrized) {
+                    int points = this.adventureList.get(Application.getPropertiesInfo().event.adventure_id).getAdventureTasksServer().get(task.lastPrizedTaskId).task_finish_points;
+                    this.adventurePoints += points;
+                    this.adventureList.get(Application.getPropertiesInfo().event.adventure_id).setAdventurePoints(this.adventureList.get(Application.getPropertiesInfo().event.adventure_id).getAdventurePoints() + points);
+                    task.lastPrizedTaskId++;
+                }
             }
-        }
 
-        DBManager.saveInstance(this);
+            DBManager.saveInstance(this);
+        }
     }
 }
