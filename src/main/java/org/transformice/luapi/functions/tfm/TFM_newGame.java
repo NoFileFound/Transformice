@@ -29,14 +29,13 @@ public final class TFM_newGame extends VarArgFunction {
         }
 
         String mapCode = args.tojstring(1);
-        this.room.luaAdmin.sendPacket(new C_LuaMessage("mapCode : " + mapCode));
         if(mapCode.startsWith("@")) {
             if(DBUtils.findMapByCode(Integer.parseInt(mapCode.substring(1))) == null) {
                 this.room.luaAdmin.sendPacket(new C_LuaMessage("tfm.exec.newGame : The map is not found in the database."));
                 return NIL;
             }
 
-            this.room.forceNextMap = mapCode.substring(1);
+            this.room.forceNextMap = mapCode;
         }
 
         else if(mapCode.startsWith("#")) {
