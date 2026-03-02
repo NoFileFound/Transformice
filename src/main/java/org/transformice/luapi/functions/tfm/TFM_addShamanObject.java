@@ -41,9 +41,9 @@ public final class TFM_addShamanObject extends VarArgFunction {
                 boolean ghost = !args.toboolean(7);
                 if(istable(8)) {
                     LuaTable objectInfo = args.checktable(8);
-                    this.room.sendPlaceObject(this.room.getLastObjectID() + 1, objectType, xPosition, yPosition, angle, xSpeed, ySpeed, ghost, objectInfo.get("contactListener").toboolean(), new byte[]{}, null, true);
+                    this.room.sendPlaceObject(this.room.getLastObjectID() + 1, objectType, xPosition, yPosition, angle, xSpeed, ySpeed, ghost, objectInfo.get("contactListener").toboolean(), new byte[]{}, this.room.luaAdmin, true);
                 } else {
-                    this.room.sendPlaceObject(this.room.getLastObjectID() + 1, objectType, xPosition, yPosition, angle, xSpeed, ySpeed, ghost, false, new byte[]{}, null, true);
+                    this.room.sendPlaceObject(this.room.getLastObjectID() + 1, objectType, xPosition, yPosition, angle, xSpeed, ySpeed, ghost, false, new byte[]{}, this.room.luaAdmin, true);
                 }
                 return LuaInteger.valueOf(this.room.getLastObjectID());
             }

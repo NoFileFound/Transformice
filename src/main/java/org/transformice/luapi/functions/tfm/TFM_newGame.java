@@ -35,7 +35,7 @@ public final class TFM_newGame extends VarArgFunction {
                 return NIL;
             }
 
-            this.room.forceNextMap = mapCode.substring(1);
+            this.room.forceNextMap = mapCode;
         }
 
         else if(mapCode.startsWith("#")) {

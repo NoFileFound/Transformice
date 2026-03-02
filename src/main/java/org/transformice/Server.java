@@ -1080,7 +1080,7 @@ public final class Server {
         }
 
         // Load the minigames
-        try (Stream<Path> stream = Files.walk(Path.of("./lua/minigames"))) {
+        try (Stream<Path> stream = Files.walk(Path.of("config/lua/minigames"))) {
             stream.filter(Files::isRegularFile).filter(path -> path.toString().toLowerCase().endsWith(".lua")).forEach(path -> this.minigameList.add(path.getFileName().toString().replace(".lua", "")));
         } catch (IOException ignored) {
 
@@ -1092,7 +1092,6 @@ public final class Server {
             pipeline.addLast("encoder", new Encoder());
             pipeline.addLast("decoder", new Decoder());
             pipeline.addLast("handler", new ClientHandler(this));
-
             for (Integer port : Application.getSwfInfo().ports) {
                 this.channels.add(bootstrap.bind(new InetSocketAddress(port)));
             }

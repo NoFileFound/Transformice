@@ -3,9 +3,6 @@ package org.transformice.packets.recv.room;
 // Imports
 import java.util.List;
 import org.bytearray.ByteArray;
-import org.luaj.vm2.LuaBoolean;
-import org.luaj.vm2.LuaError;
-import org.luaj.vm2.LuaTable;
 import org.transformice.Client;
 import org.transformice.libraries.Pair;
 import org.transformice.packets.RecvPacket;
@@ -58,31 +55,6 @@ public final class S_ShamanSpawnObject implements RecvPacket {
 
             client.getRoom().sendPlaceObject(objectId, shamanObjectId, posX, posY, angle, velocityX, velocityY, miceCollidable, false, colorBytes, client, false);
             client.getParseSkillsInstance().handleSkill(objectId, shamanObjectId, posX, posY, angle);
-            if (client.getRoom().luaMinigame != null) {
-                LuaTable colors = new LuaTable();
-                for (int i = 0; i < itemColors.size(); i++) {
-                    colors.set(String.valueOf(i), String.format("%06X", (0xFFFFFF & itemColors.get(i))));
-                }
-
-                LuaTable item = new LuaTable();
-                item.set("id", objectId);
-                item.set("type", shamanObjectId);
-                item.set("baseType", (shamanObjectId > 99 ? shamanObjectId / 100 : shamanObjectId));
-                item.set("angle", angle);
-                item.set("x", posX);
-                item.set("y", posY);
-                item.set("vx", velocityX);
-                item.set("vy", velocityY);
-                item.set("ghost", LuaBoolean.valueOf(!miceCollidable));
-                item.set("colors", colors);
-                try {
-                    if (client.getRoom().luaMinigame.get("tfm").get("get").get("room").get("objectList").istable()) {
-                        client.getRoom().luaMinigame.get("tfm").get("get").get("room").get("objectList").set(String.valueOf(objectId), item);
-                    }
-                } catch (LuaError _) {}
-
-                client.getRoom().luaApi.callEvent("eventSummoningEnd", client.getPlayerName(), shamanObjectId, posX, posY, angle, item);
-            }
         }
     }
 

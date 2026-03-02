@@ -156,7 +156,6 @@ public final class Room {
     @Getter private final List<Pair<String, String>> roomFunCorpPlayersLinked;
     @Getter private final Map<String, Integer> roomFunCorpPlayersNickColor;
     @Getter private final Map<String, Integer> roomFunCorpPlayersMouseColor;
-    @Getter private final Map<Integer, Timer> luaTimers;
     @Getter private final List<Map<String, String>> musicVideos;
     @Getter private final Object2ObjectMap<String, Client> players;
     @Getter private final List<String> redTeam;
@@ -174,6 +173,7 @@ public final class Room {
     @Getter @Setter private boolean isEventTime;
 
     // Timers
+    @Getter private final Map<Integer, Timer> luaTimers;
     public Timer luaLoopTimer;
     private final Timer autoRespawnTimer;
     private final Timer changeMapTimer;
@@ -183,6 +183,7 @@ public final class Room {
     private final Timer voteCloseTimer;
     private final List<Timer> consumablesTimers;
     private final Timer endSnowTimer;
+    private final Timer checkChangeMap;
     private Timer startEventTimer;
 
     /**
@@ -234,6 +235,7 @@ public final class Room {
         this.consumablesTimers = new ArrayList<>();
         this.luaTimers = new HashMap<>();
         this.endSnowTimer = new Timer();
+        this.checkChangeMap = new Timer();
 
         // Room checks
         this.canAddPassword = false;
@@ -310,7 +312,7 @@ public final class Room {
         }
 
         this.changeMap();
-        new Timer().schedule(this::checkChangeMap, 6, TimeUnit.SECONDS);
+        this.checkChangeMap.schedule(this::checkChangeMap, 6, TimeUnit.SECONDS);
     }
 
     /**
@@ -403,16 +405,21 @@ public final class Room {
             this.monsterLastChange.clear();
         }
 
-        for (Timer timer : new Timer[] {this.changeMapTimer, this.mapStartTimer, this.closeRoomRoundJoinTimer, this.killAfkTimer, this.voteCloseTimer, this.autoRespawnTimer}) {
+        for (Timer timer : new Timer[] {this.changeMapTimer, this.mapStartTimer, this.closeRoomRoundJoinTimer, this.killAfkTimer, this.voteCloseTimer, this.autoRespawnTimer, this.endSnowTimer, this.startEventTimer, this.luaLoopTimer, this.checkChangeMap}) {
             if (timer != null) {
                 timer.cancel();
             }
+        }
+
+        for(Timer timer : this.luaTimers.values()) {
+            timer.cancel();
         }
 
         for (Timer timer : this.consumablesTimers) {
             timer.cancel();
         }
         this.consumablesTimers.clear();
+        this.luaTimers.clear();
         if (this.initVotingMode) {
             if (!this.isVotingBox && (this.currentMap.mapPerma == 0 && this.currentMap.mapCode != -1) && this.getPlayersCount() >= 2) {
                 this.isVotingMode = true;
@@ -581,7 +588,7 @@ public final class Room {
 
         this.mapStartTimer.schedule(() -> {for (Client player : this.players.values()) { player.sendPacket(new C_StartRoundCountdown(false)); } }, 3, TimeUnit.SECONDS);
         this.closeRoomRoundJoinTimer.schedule(() -> this.isCurrentlyPlay = true, 3, TimeUnit.SECONDS);
-        if (!this.disableAutoNewGame && !this.isTribeHouse) {
+        if (!this.disableAutoNewGame && !this.isTribeHouse && !this.isVillage) {
             this.changeMapTimer.schedule(this::changeMap, this.roundTime + this.addTime, TimeUnit.SECONDS);
         }
         this.killAfkTimer.schedule(this::killAfk, 30, TimeUnit.SECONDS);
@@ -736,7 +743,17 @@ public final class Room {
         }
 
         if(this.players.isEmpty()) {
-            for (Timer timer : new Timer[] {this.changeMapTimer, this.mapStartTimer, this.closeRoomRoundJoinTimer, this.killAfkTimer, this.voteCloseTimer, this.autoRespawnTimer, this.endSnowTimer}) {
+            for(Timer timer : this.consumablesTimers) {
+                timer.cancel();
+            }
+
+            for(Timer timer : this.luaTimers.values()) {
+                timer.cancel();
+            }
+
+            this.consumablesTimers.clear();
+            this.luaTimers.clear();
+            for (Timer timer : new Timer[] {this.changeMapTimer, this.mapStartTimer, this.closeRoomRoundJoinTimer, this.killAfkTimer, this.voteCloseTimer, this.autoRespawnTimer, this.endSnowTimer, this.startEventTimer, this.luaLoopTimer, this.checkChangeMap}) {
                 if (timer != null) {
                     timer.cancel();
                 }
@@ -1052,6 +1069,32 @@ public final class Room {
             this.sendAllOthers(sender, new C_SpawnObject(objectId, code, posX, posY, angle, velocityX, velocityY, hasContactListener, isMiceCollidable, colors));
         } else {
             this.sendAll(new C_SpawnObject(objectId, code, posX, posY, angle, velocityX, velocityY, hasContactListener, isMiceCollidable, colors));
+        }
+
+        if(this.luaMinigame != null) {
+            LuaTable colortable = new LuaTable();
+            for(int i = 0; i < colors.length; i++) {
+                colortable.set(String.valueOf(i), String.format("%06X", (0xFFFFFF & colors[i])));
+            }
+
+            LuaTable item = new LuaTable();
+            item.set("id", objectId);
+            item.set("type", code);
+            item.set("baseType", (code > 99 ? code / 100 : code));
+            item.set("angle", angle);
+            item.set("x", posX);
+            item.set("y", posY);
+            item.set("vx", velocityX);
+            item.set("vy", velocityY);
+            item.set("ghost", LuaBoolean.valueOf(!isMiceCollidable));
+            item.set("colors", colortable);
+            try {
+                if(this.luaMinigame.get("tfm").get("get").get("room").get("objectList").istable()) {
+                    this.luaMinigame.get("tfm").get("get").get("room").get("objectList").set(objectId, item);
+                }
+            } catch(LuaError ignored) {}
+
+            this.luaApi.callEvent("eventSummoningEnd", sender.getPlayerName(), code, posX, posY, angle, item);
         }
     }
 
