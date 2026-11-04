@@ -1,0 +1,75 @@
+{
+	"is_debug": true,
+	"db_config": {
+		"host": "127.0.0.69",
+		"port": -1,
+		"name": "Transformice",
+		"username": "",
+		"password": ""
+	},
+	"adminpanel_config": {
+		"port": 8882,
+		"username": "root",
+		"password": "changeme"
+	},
+	"email_config": {
+		"host": "",
+		"port": 0,
+		"username": "",
+		"password": ""
+	},
+	"swf_config": {
+		"version": 893,
+		"ports": [11801, 12801, 13801, 14801],
+		"connection_key": "rtTmLdcXKpu",
+		"packet_keys": [40, 47, 8, 48, 18, 59, 3, 57, 41, 19, 117, 115, 118, 87, 105, 73, 98, 100, 80, 66],
+		"login_keys": [10101561, 676121, 1, 10656886, 10707218, 32, 10532735, 11307842, 11866524, 7043074, 256, 501638, 262144],
+		"authorization_key": 1099831313,
+		"swf_url": ""
+	},
+	"event_config": {
+		"event_id": 1,
+		"event_name": "EVENT_HALLOWEEN",
+		"flyer_img": "flyer_2024_06_20.jpg",
+		"banner_id": 23,
+		"minimum_minutes_to_start_event": 15,
+		"banner_bg_img": "x_cimetiere.jpg",
+		"banner_fg_img": "",
+		"cheese_sprite_suffix": "",
+		"shop_news_file_id": ""
+	},
+	"game_config": {
+		"enable_email_address_login": true,
+		"enable_server_anticheat": false,
+		"login_attempts": 15,
+		"max_accounts_per_email": 10,
+		"max_players": 100,
+		"map_editor_export_cheese_price": 40,
+		"minimum_players_to_count_stats": 1,
+		"shop_shaman_sprites": [],
+		"shop_item_sprites": [],
+		"shop_promotions": [],
+		"shop_outfits": [],
+		"partners": [
+			{
+			  "name": "Source Code",
+			  "url": "https://github.com/NoFileFound/Transformice"
+			}
+		],
+		"chatfilter": [],
+		"yt_key": "AIzaSyCt3DULzE2trDJhfFUosWZT-3GEObbMqVU",
+		"room_stats": {
+			"racing_play_rounds": 1500,
+			"racing_complete_rounds": 10000,
+			"racing_get_firstsecondthird": 10000,
+			"racing_get_first": 10000,
+			"survivor_play_rounds": 1000,
+			"survivor_be_shaman": 800,
+			"survivor_kill_mice": 20000,
+			"survivor_survive": 10000,
+			"defilante_play_rounds": 1500,
+			"defilante_complete_rounds_firstsecondthird": 10000,
+			"defilante_collect_points": 100000
+		}
+	}
+}

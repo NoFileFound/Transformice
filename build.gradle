@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '9.2.2'
+}
+
+group = 'org.transformice'
+version = '1.2beta-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url = uri('https://jitpack.io')
+    }
+}
+
+dependencies {
+    // PS Framework
+    implementation('com.github.NoFileFound:PSFramework:1.0.2')
+    implementation('io.netty:netty-all:4.1.130.Final')
+}
+
+shadowJar {
+    archiveClassifier.set('')
+    manifest {
+        attributes('Main-Class': 'org.transformice.Application')
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
