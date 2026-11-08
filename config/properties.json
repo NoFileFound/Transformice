@@ -1,9 +1,9 @@
 {
-	"is_debug": true,
+	"is_debug": false,
 	"db_config": {
-		"host": "127.0.0.69",
+		"host": "127.0.0.1",
 		"port": -1,
-		"name": "Transformice",
+		"name": "tfmdb69",
 		"username": "",
 		"password": ""
 	},
@@ -45,11 +45,31 @@
 		"max_accounts_per_email": 10,
 		"max_players": 100,
 		"map_editor_export_cheese_price": 40,
-		"minimum_players_to_count_stats": 1,
+		"minimum_players_to_count_stats": 0,
 		"shop_shaman_sprites": [],
 		"shop_item_sprites": [],
-		"shop_promotions": [],
-		"shop_outfits": [],
+		"shop_promotions": [
+			{
+			  "promotion_id": 1,
+			  "promotion_type": "COLLECTOR",
+			  "is_shaman_item": false,
+			  "item_id": "22_404",
+			  "start_date": 1794081360,
+			  "expiration_date": 1794340560,
+			  "discount": 0,
+			  "is_perm": false
+			}
+		],
+		"shop_outfits": [
+			{
+			  "outfit_id": 1,
+			  "outfit_name": "Test Outfit",
+			  "outfit_bg": "STARS",
+			  "outfit_look": "1;0,0,0,0,0,0,0,0,0,0,0,0",
+			  "expiration_date": 1799375394,
+			  "is_perm": false
+			}
+		],
 		"partners": [
 			{
 			  "name": "Source Code",

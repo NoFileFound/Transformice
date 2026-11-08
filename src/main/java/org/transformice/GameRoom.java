@@ -2,6 +2,7 @@ package org.transformice;
 
 // Imports
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,12 @@ public final class GameRoom {
     private final List<PSTimer> consumablesTimers;
     private final Set<CheesePosition> cheesePositions;
     private final Set<HolePosition> holePositions;
+    private final List<String> roomFunCorpPlayersChangedSize;
+    private final List<String> roomFunCorpPlayersTransformationAbility;
+    private final List<String> roomFunCorpPlayersMeepAbility;
+    private final Map<String, String> roomFunCorpPlayersLinked;
+    private final Map<String, Integer> roomFunCorpPlayersNickColor;
+    private final Map<String, Integer> roomFunCorpPlayersMouseColor;
     private final RoomType roomType;
     private final ModuleLua parseLua;
     private final PSTimer voteCloseTimer;
@@ -67,6 +74,7 @@ public final class GameRoom {
     private final PSTimer changeMapTimer;
     private final PSTimer autoRespawnTimer;
     private final PSTimer startTimerLeft;
+    private final PSTimer endSnowTimer;
     private final int roundDuration;
     private final int miceWeight;
     private final boolean disableAdventureMaps;
@@ -81,6 +89,7 @@ public final class GameRoom {
     private int lastObjectID;
     private int lastBonusId;
     private int lastRoundId;
+    private int lastImageId;
     public int musicSkipVotes;
     private int roundCount;
     private int mulodromeRoundCount;
@@ -99,9 +108,10 @@ public final class GameRoom {
     private boolean isVotingMode;
     private boolean isEventTime;
     private boolean isChanged20secTimer;
+    private boolean isSnowing;
     private long gameStartTimeMillis;
     public int[] lastHandyMouseObjectId;
-    public int forceNextMap;
+    public MapDetails forceNextMap;
     public int lastCloudObjectId;
     public int lastCompanionBoxId;
     public int deathMice;
@@ -153,13 +163,18 @@ public final class GameRoom {
         this.cheesePositions = new HashSet<>();
         this.holePositions = new HashSet<>();
         this.mapRotation = mapRotation;
-        this.consumablesTimers = new ArrayList<>();
+        this.roomFunCorpPlayersChangedSize = new ArrayList<>();
+        this.roomFunCorpPlayersLinked = new HashMap<>();
+        this.roomFunCorpPlayersMeepAbility = new ArrayList<>();
+        this.roomFunCorpPlayersMouseColor = new HashMap<>();
+        this.roomFunCorpPlayersNickColor = new HashMap<>();
+        this.roomFunCorpPlayersTransformationAbility = new ArrayList<>();
         this.currentShaman = null;
         this.currentSecondShaman = null;
         this.currentSync = null;
         this.forceNextShaman = null;
         this.additionalTime = 0;
-        this.forceNextMap = -1;
+        this.forceNextMap = null;
         this.lastCloudObjectId = -1;
         this.lastCompanionBoxId = -1;
         this.lastObjectID = 0;
@@ -212,9 +227,11 @@ public final class GameRoom {
         this.changeMapTimer = new PSTimer(this.server.getScheduler());
         this.autoRespawnTimer = new PSTimer(this.server.getScheduler());
         this.startTimerLeft = new PSTimer(this.server.getScheduler());
+        this.endSnowTimer = new PSTimer(this.server.getScheduler());
+        this.consumablesTimers = new ArrayList<>();
         this.gameStartTimeMillis = System.currentTimeMillis();
         this.roomPassword = roomPassword;
-        if (this.roomName.startsWith("*" + (char)3)) {
+        if (this.roomName.startsWith("*\u0003")) {
             this.roomType = RoomType.TRIBE_HOUSE;
             this.disableAutoRespawn = false;
             this.disableAutoShaman = true;
@@ -288,7 +305,7 @@ public final class GameRoom {
         this.server.getParseEvents().handleEventRoomPlayerCountChange(this);
         player.setPlayerRoom(this);
         player.isDead = this.isCurrentlyPlay;
-        if (player.getPlayerData().getStaffRoles().contains(StaffRoleType.FUNCORP))
+        if (player.getPlayerData().getStaffRoles().contains(StaffRoleType.FUNCORP) && this.isFunCorp)
             this.funCorpMembers.add(player.getPlayerName());
 
         player.broadcastPacket(new PacketSendRoomServerType(0));
@@ -339,6 +356,12 @@ public final class GameRoom {
             player.funcorpNickColor = -1;
         }
 
+        if (this.funCorpMembers.contains(player.getPlayerName()) && this.isFunCorp)  {
+            this.funCorpMembers.remove(player.getPlayerName());
+            if (this.funCorpMembers.isEmpty())
+                this.sendDisableFunCorp();
+        }
+
         if (this.isMulodrome) {
             this.mulodromeRedTeam.remove(player.getPlayerName());
             this.mulodromeBlueTeam.remove(player.getPlayerName());
@@ -358,11 +381,8 @@ public final class GameRoom {
             this.autoRespawnTimer.cancelTask(false);
             this.voteCloseTimer.cancelTask(false);
             this.startTimerLeft.cancelTask(false);
-            this.parseLua.getLuaLoopTimer().cancelTask(false);
-            for (PSTimer timer : this.parseLua.getLuaTimers().values())
-                timer.cancelTask(false);
-
-            this.parseLua.getLuaTimers().clear();
+            this.endSnowTimer.cancelTask(false);
+            this.parseLua.sendRoomDestruction();
             for (PSTimer timer : this.consumablesTimers)
                 timer.cancelTask(false);
 
@@ -568,6 +588,14 @@ public final class GameRoom {
     }
 
     /**
+     * Checks if is snowing in the current room.
+     * @return True if its snowing or else False.
+     */
+    public boolean getIsSnowing() {
+        return this.isSnowing;
+    }
+
+    /**
      * Gets the room's last object id.
      * @return The room's last object id.
      */
@@ -696,11 +724,67 @@ public final class GameRoom {
     }
 
     /**
+     * Gets the list of players who have changed their size in a funcorp room.
+     * @return The list of players who changed their size.
+     */
+    public List<String> getRoomFunCorpPlayersChangedSize() {
+        return this.roomFunCorpPlayersChangedSize;
+    }
+
+    /**
+     * Gets the players who have been linked in a funcorp room.
+     * @return The players and their link.
+     */
+    public Map<String, String> getRoomFunCorpPlayersLinked() {
+        return this.roomFunCorpPlayersLinked;
+    }
+
+    /**
+     * Gets the list of players who have the meep ability enabled in a funcorp room.
+     * @return The list of players who have the meep ability.
+     */
+    public List<String> getRoomFunCorpPlayersMeepAbility() {
+        return this.roomFunCorpPlayersMeepAbility;
+    }
+
+    /**
+     * Gets the players who have changed mouse colors in a funcorp room.
+     * @return The map of players and their mouse colors.
+     */
+    public Map<String, Integer> getRoomFunCorpPlayersMouseColor() {
+        return this.roomFunCorpPlayersMouseColor;
+    }
+
+    /**
+     * Gets the players who have changed nick colors in a funcorp room.
+     * @return The map of players and their nickname colors.
+     */
+    public Map<String, Integer> getRoomFunCorpPlayersNickColor() {
+        return this.roomFunCorpPlayersNickColor;
+    }
+
+    /**
+     * Gets the list of players who have the transformation enabled in a funcorp room.
+     * @return The list of players who have the transformation ability.
+     */
+    public List<String> getRoomFunCorpPlayersTransformationAbility() {
+        return this.roomFunCorpPlayersTransformationAbility;
+    }
+
+    /**
      * Gets the room's type.
      * @return The room's type.
      */
     public RoomType getRoomType() {
         return this.roomType;
+    }
+
+    /**
+     * Gets the round's time.
+     * @return The round's time.
+     */
+    public int getRoundTime() {
+        return (!this.isChanged20secTimer ? this.roundTime + this.additionalTime : 20);
     }
 
     /**
@@ -735,13 +819,16 @@ public final class GameRoom {
      * @return True if the room has modifications or else False.
      */
     public boolean hasAnyRoomModifications() {
-        return this.disableAllShamanSkills || this.disablePhysicalConsumables || this.disableAdventureMaps || this.enableMiceCollisions || this.enableFallDamage || this.roundDuration != 100 || this.miceWeight != 0 || !this.mapRotation.isEmpty();
+        return this.disableAllShamanSkills || this.disablePhysicalConsumables || this.disableAdventureMaps || this.enableMiceCollisions || this.enableFallDamage || this.roundDuration != 100 || this.miceWeight != 0 || !this.mapRotation.isEmpty() || this.maximumPlayers > 0;
     }
 
     /**
      * Sends the last 20 seconds before the round ends if there are too little alive mice.
      */
     public void send20SecRemainingTimer() {
+        if (this.disableAutoTimeLeft)
+            return;
+
         long time = TimeUnit.SECONDS.toMillis(this.roundTime + this.additionalTime) - (System.currentTimeMillis() - this.getGameStartTimeMillis());
         if (time > 20 && !this.isChanged20secTimer) {
             this.changeMapTimer.cancelTask(true);
@@ -806,7 +893,7 @@ public final class GameRoom {
             this.broadcastPacket(sender, new PacketSendShamanSpawnObject(objectId, shamanObjectId, posX, posY, angle, velX, velY, hasContactListener, miceCollidable, colors));
         }
 
-        this.parseLua.handleEventPlayerEndInvocation(sender, shamanObjectId, posX, posY, angle, velX, velY, hasContactListener, miceCollidable);
+        this.parseLua.handleEventPlayerEndInvocation(sender, shamanObjectId, posX, posY, angle, velX, velY, hasContactListener, miceCollidable, colors);
     }
 
     /**
@@ -826,8 +913,11 @@ public final class GameRoom {
      * @param player The player to make a vampire.
      */
     public void sendAddVampire(GamePlayer player) {
+        if (player.isVampire)
+            return;
+
         player.isVampire = true;
-        this.broadcastPacket(new PacketSendPlayerSetVampire(player.getSessionId(), true));
+        this.broadcastPacket(new PacketSendPlayerSetVampire(player.getSessionId(), true, true));
         this.vampireCount++;
     }
 
@@ -841,6 +931,7 @@ public final class GameRoom {
         PSSendPacket packet = new PacketSendChatMessage(playerName, message);
         GamePlayer player = this.players.get(playerName);
         if (player != null) {
+            this.parseLua.handleChatMessage(player, message);
             if (message.startsWith("!")) {
                 this.parseLua.handleChatCommand(player, message.substring(1));
                 if (this.parseLua.getDisableChatCommandListDisplay().contains(message.substring(1).split(" ")[0])) {
@@ -869,6 +960,44 @@ public final class GameRoom {
     }
 
     /**
+     * Disables the FunCorp in the current room.
+     */
+    public void sendDisableFunCorp() {
+        this.isFunCorp = false;
+        this.isFunCorpHighlighedRoom = false;
+        for (GamePlayer player : this.players.values()) {
+            player.broadcastPacket(new PacketSendTranslatedMessage("", "<FC>$FunCorpDesactive</FC>"));
+            player.funcorpPlayerName = "";
+            player.funcorpMouseColor = -1;
+            player.funcorpNickColor = -1;
+            player.funcorpPlayerLook = "";
+            if (this.roomFunCorpPlayersChangedSize.contains(player.getPlayerName()))
+                this.broadcastPacket(new PacketSendPlayerChangeSize(player.getSessionId(), 100, false));
+        }
+
+        this.roomFunCorpPlayersChangedSize.clear();
+        this.roomFunCorpPlayersMeepAbility.clear();
+        this.roomFunCorpPlayersMouseColor.clear();
+        this.roomFunCorpPlayersNickColor.clear();
+        this.roomFunCorpPlayersTransformationAbility.clear();
+        this.roomFunCorpPlayersLinked.clear();
+        this.funCorpMembers.clear();
+    }
+
+    /**
+     * Enables the FunCorp in the current room.
+     */
+    public void sendEnableFunCorp() {
+        this.isFunCorp = true;
+        this.isFunCorpHighlighedRoom = true;
+        for (GamePlayer player : this.players.values()) {
+            player.broadcastPacket(new PacketSendTranslatedMessage("", "<FC>$FunCorpActive</FC>"));
+            if (player.hasStaffPermission(StaffRoleType.FUNCORP, false))
+                this.funCorpMembers.add(player.getPlayerName());
+        }
+    }
+
+    /**
      * Initializes the player on the room when a new round appears.
      * @param player The player to initialize.
      */
@@ -878,10 +1007,10 @@ public final class GameRoom {
         player.isAfk = true;
         player.canTotem = true;
         player.broadcastPacket(new PacketSendRoomRoundCountDown(false));
-        player.broadcastPacket(new PacketSendRoomMap(this.currentMap.mapCode, this.players.size(), this.lastRoundId, this.currentMap.mapXml, this.currentMap.mapName, this.currentMap.mapPerma, this.currentMap.isInverted, this.currentMap.isConj, this.currentMap.isAIE || this.enableFallDamage, this.enableMiceCollisions, this.miceWeight));
+        player.broadcastPacket(new PacketSendRoomMap(this.currentMap.mapCode, this.players.size(), this.lastRoundId, this.currentMap.mapXml, this.currentMap.mapName, (this.roomType == RoomType.EDITOR ? (this.isMapEditorMapValidating ? 100 : -1) : this.currentMap.mapPerma), this.currentMap.isInverted, this.currentMap.isConj, this.currentMap.isAIE || this.enableFallDamage, this.enableMiceCollisions, this.miceWeight));
         GamePlayer[] shamans = this.getShamanClients();
         player.isShaman = player == shamans[0] || player == shamans[1];
-        if (player.isShaman && !this.disableAllShamanSkills && !this.currentMap.isCatchTheCheese)
+        if (player.isShaman && !this.disableAllShamanSkills && !this.parseLua.disableAllShamanSkills && !this.currentMap.isCatchTheCheese)
             player.getParseSkills().sendShamanRoomSkills();
 
         player.broadcastPacket(new PacketSendRoomPlayerList(this.getPlayerRoomInfos()));
@@ -902,12 +1031,12 @@ public final class GameRoom {
         if (this.roomType == RoomType.TOTEM)
             player.sendTotemEditor();
 
-        if (this.currentMap.isTransform) {
+        if (this.currentMap.isTransform || this.roomFunCorpPlayersTransformationAbility.contains(player.getPlayerName())) {
             player.canTransform = true;
             player.broadcastPacket(new PacketSendEnableTransformation(true));
         }
 
-        if (this.roomType == RoomType.SURVIVOR && player.isShaman) {
+        if ((this.roomType == RoomType.SURVIVOR && player.isShaman) || this.roomFunCorpPlayersTransformationAbility.contains(player.getPlayerName())) {
             player.canMeep = true;
             player.broadcastPacket(new PacketSendEnableMeep(true));
         }
@@ -958,11 +1087,7 @@ public final class GameRoom {
         this.autoRespawnTimer.cancelTask(false);
         this.voteCloseTimer.cancelTask(false);
         this.startTimerLeft.cancelTask(false);
-        this.parseLua.getLuaLoopTimer().cancelTask(false);
-        for (PSTimer timer : this.parseLua.getLuaTimers().values())
-            timer.cancelTask(false);
-
-        this.parseLua.getLuaTimers().clear();
+        this.endSnowTimer.cancelTask(false);
         for (PSTimer timer : this.consumablesTimers)
             timer.cancelTask(false);
 
@@ -1127,7 +1252,7 @@ public final class GameRoom {
         this.getSync();
         if (!this.isEventTime) {
             this.getShamanClients();
-            if (!this.disableAllShamanSkills) {
+            if (!this.disableAllShamanSkills && !this.parseLua.disableAllShamanSkills) {
                 if (this.currentShaman != null && this.currentShaman.getPlayerData().shamanSkillsEnabled) {
                     this.additionalTime += this.currentShaman.getPlayerData().getShamanSkills().getOrDefault(SkillType.SKILL_ADDITIONAL_TIME, 0) * 5;
                 }
@@ -1235,6 +1360,19 @@ public final class GameRoom {
     }
 
     /**
+     * Makes the player non-vampire.
+     * @param player The player's instance.
+     */
+    public void sendRemoveVampire(GamePlayer player) {
+        if (!player.isVampire)
+            return;
+
+        player.isVampire = false;
+        this.broadcastPacket(new PacketSendPlayerSetVampire(player.getSessionId(), false, false));
+        this.vampireCount--;
+    }
+
+    /**
      * Respawns a player in the current room.
      * @param player The player to respawn.
      */
@@ -1248,6 +1386,19 @@ public final class GameRoom {
             this.broadcastPacket(new PacketSendRoomNewPlayer(player.getPlayerRoomInfo(), false, true));
             this.parseLua.handleEventPlayerRespawn(player);
         }
+    }
+
+    /**
+     * Starts to snow.
+     * @param millis Milliseconds to snow (delay).
+     * @param power Snow power.
+     * @param enabled Enable snowing.
+     */
+    public void sendStartSnow(int millis, int power, boolean enabled) {
+        this.isSnowing = enabled;
+        this.broadcastPacket(new PacketSendRoomSnow(enabled, power));
+        if (enabled)
+            this.endSnowTimer.schedule(() -> {if (this.isSnowing) {this.sendStartSnow(0, power, false);}}, millis, TimeUnit.SECONDS);
     }
 
     /**
@@ -1336,34 +1487,29 @@ public final class GameRoom {
      */
     private MapDetails selectMap() {
         if (this.roomType == RoomType.TOTEM)
-            return new MapDetails(444, "", null, false);
+            return new MapDetails(444, null, false);
 
         if (this.roomType == RoomType.TUTORIAL)
-            return new MapDetails(900, "", null, false);
+            return new MapDetails(900, null, false);
 
         if (this.roomType == RoomType.VILLAGE)
-            return new MapDetails(801, "_Atelier 801", this.server.getSpecialMapXml(801), false);
+            return new MapDetails(801, "_Atelier 801", this.server.getSpecialMapXml(801));
 
-        if (this.roomType == RoomType.EDITOR) {
-            return new MapDetails(this.mapEditorMapCode, (this.isMapEditorMapValidating ? 100 : -1), "-", this.mapEditorMapXml, 0, 0);
-        }
+        if (this.roomType == RoomType.EDITOR)
+            return new MapDetails(this.mapEditorMapCode, "-", this.mapEditorMapXml.getBytes());
 
+        boolean isInverted = PSRandom.nextInt(0, 100) >= 90;
         if (this.parseLua.getIsRunningLua()) {
             MapDetails map = this.parseLua.getLuaMap();
+            isInverted = this.parseLua.setAutoMapFlipMode;
             if (map != null)
                 return map;
         }
 
-        if (this.forceNextMap != -1) {
-            MapEntry map = this.server.getDatabase().loadMapByCode(this.forceNextMap);
-            if (map == null) {
-                MapDetails info = new MapDetails(this.forceNextMap, "", this.server.getVanillaMapXml(this.forceNextMap), true);
-                this.forceNextMap = -1;
-                return info;
-            }
-
-            this.forceNextMap = -1;
-            return new MapDetails(map.getMapCode(), map.mapCategory, map.getMapAuthor(), map.mapXML, map.mapYesVotes, map.mapNoVotes);
+        if (this.forceNextMap != null) {
+            MapDetails map = this.forceNextMap;
+            this.forceNextMap = null;
+            return map;
         }
 
         if (this.roomType == RoomType.TRIBE_HOUSE) {
@@ -1371,13 +1517,13 @@ public final class GameRoom {
             if (tribe != null) {
                 int mapCode = tribe.tribeHouseMap;
                 if (mapCode == 0)
-                    return new MapDetails(0, "", this.server.getSpecialMapXml(0), false);
+                    return new MapDetails(0, "", this.server.getSpecialMapXml(0));
 
                 MapEntry map = this.server.getDatabase().loadMapByCode(mapCode);
-                return new MapDetails(map.getMapCode(), map.mapCategory, map.getMapAuthor(), map.mapXML, map.mapYesVotes, map.mapNoVotes);
+                return new MapDetails(map, isInverted);
             }
 
-            return new MapDetails(0, "", this.server.getVanillaMapXml(0), false);
+            return new MapDetails(0, "", this.server.getVanillaMapXml(0));
         }
 
         MapDetails eventMap = this.server.getParseEvents().getEventMap(this);
@@ -1386,16 +1532,16 @@ public final class GameRoom {
             return eventMap;
         }
 
-        if (this.roomType == RoomType.VANILLA) {
+        if (this.roomType == RoomType.VANILLA || (this.roomType == RoomType.MUSIC && PSRandom.nextInt(0, 100) >= 50)) {
             int mapCode = GameServer.VANILLA_MAP_LIST.stream().skip(PSRandom.nextInt(GameServer.VANILLA_MAP_LIST.size())).findFirst().orElse(0);
-            return new MapDetails(mapCode, "", this.server.getVanillaMapXml(mapCode), true);
+            return new MapDetails(mapCode, this.server.getVanillaMapXml(mapCode), isInverted);
         }
 
         int mapCategory = switch (this.roomType) {
             case SURVIVOR -> PSRandom.nextInt(0, 100) >= 70 ? 11 : 10;
             case RACING -> 17;
             case DEFILANTE -> 18;
-            case BOOTCAMP -> PSRandom.nextInt(0, 100) >= 70 ? 13 : 3;
+            case BOOTCAMP -> PSRandom.nextInt(0, 100) >= 50 ? 13 : 3;
             case NORMAL -> {
                 int value;
                 do {
@@ -1417,10 +1563,10 @@ public final class GameRoom {
         if (mapCategory != -1) {
             MapEntry map = this.server.getDatabase().loadRandomMapByCategory(mapCategory);
             if (map != null)
-                return new MapDetails(map.getMapCode(), mapCategory, map.getMapAuthor(), map.mapXML, map.mapYesVotes, map.mapNoVotes);
+                return new MapDetails(map, isInverted);
         }
 
-        return new MapDetails(0, "", this.server.getVanillaMapXml(0), false);
+        return new MapDetails(0, null, false);
     }
 
     /**
@@ -1482,54 +1628,69 @@ public final class GameRoom {
         public final boolean isGravity;
 
         /**
-         * Creates a new map details.
-         * @param mapCode The map's code.
-         * @param mapAuthor The map's author, such as _Atelier 801.
-         * @param mapXml The map's xml code.
-         * @param isVanilla is the map from the vanilla maps.
+         * Creates a new vanilla map details.
+         * @param mapCode The vanilla map's code.
          */
-        public MapDetails(int mapCode, String mapAuthor, byte[] mapXml, boolean isVanilla) {
+        public MapDetails(int mapCode, byte[] mapXml, boolean isInverted) {
             this.mapCode = mapCode;
             this.mapPerma = -1;
-            this.mapName = mapAuthor;
-            this.mapXml = mapXml != null ? PSZlib.compress(mapXml) : new byte[0];
-            this.isDudoe = isVanilla && ((mapCode >= 176 && mapCode <= 183) || mapCode == 216);
-            this.isConj = isVanilla && ((mapCode >= 101 && mapCode <= 107) || (mapCode >= 211 && mapCode <= 213));
-            this.isNoShaman = isVanilla && GameServer.VANILLA_NO_SHAMAN_MAPS.contains(mapCode);
-            this.isDualShaman = isVanilla && ((mapCode >= 44 && mapCode <= 53) || (mapCode >= 138 && mapCode <= 143) || mapCode == 223 || mapCode == 227);
-            this.isCatchTheCheese = isVanilla && ((mapCode >= 108 && mapCode <= 113) || mapCode == 144 || mapCode == 170 || mapCode == 171 || mapCode == 214 || mapCode == 215 || mapCode == 239 || mapCode == 240);
-            this.isTransform = isVanilla && mapCode >= 200 && mapCode <= 210;
-            this.isInverted = isVanilla && PSRandom.nextInt(1, 100) > 90;
-            this.isGravity = isVanilla && mapCode == 81;
+            this.mapName = "";
+            this.mapXml = PSZlib.compress(mapXml);
+            this.isDudoe = ((mapCode >= 176 && mapCode <= 183) || mapCode == 216);
+            this.isConj = ((mapCode >= 101 && mapCode <= 107) || (mapCode >= 211 && mapCode <= 213));
+            this.isNoShaman = GameServer.VANILLA_NO_SHAMAN_MAPS.contains(mapCode);
+            this.isDualShaman = ((mapCode >= 44 && mapCode <= 53) || (mapCode >= 138 && mapCode <= 143) || mapCode == 223 || mapCode == 227);
+            this.isCatchTheCheese = ((mapCode >= 108 && mapCode <= 113) || mapCode == 144 || mapCode == 170 || mapCode == 171 || mapCode == 214 || mapCode == 215 || mapCode == 239 || mapCode == 240);
+            this.isTransform = mapCode >= 200 && mapCode <= 210;
+            this.isInverted = isInverted;
+            this.isGravity = mapCode == 81;
             this.isAIE = false;
             this.mapYesVotes = 0;
             this.mapNoVotes = 0;
         }
 
         /**
-         * Creates a new map details.
-         * @param mapCode The map's code.
-         * @param mapAuthor The map's author.
-         * @param mapXml The map's xml code.
-         * @param mapYesVotes The map's vote yes.
-         * @param mapNoVotes The mao's vote nos.
+         * Creates a new event map details.
+         * @param mapCode The vanilla map's code.
          */
-        public MapDetails(int mapCode, int mapPerma, String mapAuthor, String mapXml, int mapYesVotes, int mapNoVotes) {
-            this.mapPerma = mapPerma;
+        public MapDetails(int mapCode, String mapAuthor, byte[] mapXml) {
             this.mapCode = mapCode;
+            this.mapPerma = -1;
             this.mapName = mapAuthor;
-            this.mapXml = PSZlib.compress(mapXml.getBytes());
-            this.mapYesVotes = mapYesVotes;
-            this.mapNoVotes = mapNoVotes;
-            this.isDudoe = mapXml.contains("dodue");
-            this.isConj = mapXml.contains("conju");
-            this.isAIE = mapXml.contains("aie");
-            this.isNoShaman = !mapXml.contains("DC") && !mapXml.contains("DC2") && mapPerma != 4;
-            this.isDualShaman = mapXml.contains("DC2");
+            this.mapXml = mapXml != null ? PSZlib.compress(mapXml) : new byte[0];
+            this.isDudoe = false;
+            this.isConj = false;
+            this.isNoShaman = true;
+            this.isDualShaman = false;
+            this.isCatchTheCheese = false;
+            this.isTransform = false;
+            this.isInverted = false;
+            this.isGravity = false;
+            this.isAIE = false;
+            this.mapYesVotes = 0;
+            this.mapNoVotes = 0;
+        }
+
+        /**
+         * Creates a new regular map details.
+         * @param mapInfo The map's information.
+         */
+        public MapDetails(MapEntry mapInfo, boolean isInverted) {
+            this.mapPerma = mapInfo.mapCategory;
+            this.mapCode = mapInfo.getMapCode();
+            this.mapName = mapInfo.getMapAuthor();
+            this.mapXml = PSZlib.compress(mapInfo.mapXML.getBytes());
+            this.mapYesVotes = mapInfo.mapYesVotes;
+            this.mapNoVotes = mapInfo.mapNoVotes;
+            this.isDudoe = mapInfo.mapXML.contains("dodue");
+            this.isConj = mapInfo.mapXML.contains("conju");
+            this.isAIE = mapInfo.mapXML.contains("aie");
+            this.isNoShaman = !mapInfo.mapXML.contains("DC") && !mapInfo.mapXML.contains("DC2") && mapPerma != 4;
+            this.isDualShaman = mapInfo.mapXML.contains("DC2");
             this.isCatchTheCheese = false;
             this.isTransform = false;
             this.isInverted = PSRandom.nextInt(1, 100) > 90;
-            this.isGravity = mapXml.contains("G=");
+            this.isGravity = mapInfo.mapXML.contains("G=");
         }
     }
 }

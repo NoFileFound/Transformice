@@ -14,6 +14,6 @@ import org.transformice.packets.PacketOpcodes;
 public final class PacketRecvShopPurchaseItem extends PSReceivePacket<GameServer, NetSession, NetByteArray> {
     @Override
     public void handle(GameServer gameServer, NetSession client, NetByteArray psHeader, NetByteArray psData) throws PSReceivePacketException {
-        gameServer.getParseShop().sendPurchaseItem(client.getPlayer(), psData.readInt(), psData.readBoolean(), psData.readShort());
+        gameServer.getParseShop().sendPurchaseItem(client.getPlayer(), psData.readInt(), psData.readBoolean());
     }
 }

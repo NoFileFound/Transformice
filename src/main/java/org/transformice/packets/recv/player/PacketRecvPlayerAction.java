@@ -52,6 +52,6 @@ public final class PacketRecvPlayerAction extends PSReceivePacket<GameServer, Ne
             player.getParseSkills().handleSkillByAction(actionType);
 
         gameServer.getParseEvents().handleEventPlayerEmote(room, player, actionType, playerSessionId);
-        room.getParseLua().handleEventPlayerEmote(player, actionType, playerSessionId);
+        room.getParseLua().handleEventPlayerEmote(player, actionType);
     }
 }

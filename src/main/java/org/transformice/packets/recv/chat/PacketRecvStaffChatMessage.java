@@ -44,11 +44,11 @@ public final class PacketRecvStaffChatMessage extends PSReceivePacket<GameServer
                 hasPerm = player.hasStaffPermission(StaffRoleType.ADMIN, false);
                 break;
 
-            case 7:
+            case 8:
                 hasPerm = player.hasStaffPermission(StaffRoleType.LUADEV, true);
                 break;
 
-            case 8:
+            case 7:
                 hasPerm = player.hasStaffPermission(StaffRoleType.MAPCREW, true);
                 break;
 

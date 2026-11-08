@@ -293,7 +293,7 @@ public class GameConfig {
         @JsonProperty("is_shaman_item")
         private boolean is_shaman_item;
         @JsonProperty("item_id")
-        private int item_id;
+        private String item_id;
         @JsonProperty("start_date")
         private long start_date;
         @JsonProperty("expiration_date")
@@ -318,7 +318,7 @@ public class GameConfig {
          * @param expirationDate The promotion expiration date.
          * @param discount The promotion discount.
          */
-        public ShopPromotion(int promotionId, int itemId, boolean isShamanItem, long startDate, long expirationDate, int discount) {
+        public ShopPromotion(int promotionId, String itemId, boolean isShamanItem, long startDate, long expirationDate, int discount) {
             this();
             this.promotion_id = promotionId;
             this.promotion_type = PromotionType.PROMOTION;
@@ -357,7 +357,7 @@ public class GameConfig {
          * Gets the item's id.
          * @return The item's id.
          */
-        public int getItemId() {
+        public String getItemId() {
             return this.item_id;
         }
 

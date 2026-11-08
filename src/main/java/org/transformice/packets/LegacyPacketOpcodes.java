@@ -49,7 +49,7 @@ public final class LegacyPacketOpcodes {
     public static final int SendDrawing = 6405;
     public static final int SendBanConsideration = 6665;
     public static final int SendTribeHouseMusic = 6668;
-    public static final int SendPlayerBanScreen = 6674;
+    public static final int SendPlayerBanScreen = 6673;
     public static final int SendPlayerBanScreenLogin = 6674;
     public static final int SendOpenFacebookPage = 6675;
 }

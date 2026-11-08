@@ -17,4 +17,13 @@ public enum AddBonusType {
     public int getId() {
         return this.value;
     }
+
+    public static AddBonusType parseFrom(int bonusType) {
+        for (AddBonusType type : values()) {
+            if (type.value == bonusType)
+                return type;
+        }
+
+        return BONUS_POINT;
+    }
 }

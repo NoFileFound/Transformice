@@ -16,6 +16,9 @@ public final class Mort implements CommandHandler {
         if (gameStartMillis > 0 && System.currentTimeMillis() - gameStartMillis < 15000)
             return;
 
+        if (player.getPlayerRoom().getParseLua().disableMortCommand)
+            return;
+
         player.sendDeath();
         player.getPlayerRoom().checkChangeMap();
     }

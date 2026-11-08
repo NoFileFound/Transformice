@@ -296,7 +296,7 @@ public final class ModuleEvents extends ModuleServer {
             return null;
         }
 
-        return new GameRoom.MapDetails(mapCode, "_" + eventName, this.server.getSpecialMapXml(mapCode), false);
+        return new GameRoom.MapDetails(mapCode, "_" + eventName, this.server.getSpecialMapXml(mapCode));
     }
 
     /**

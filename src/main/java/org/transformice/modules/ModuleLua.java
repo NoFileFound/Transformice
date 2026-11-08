@@ -2,48 +2,75 @@ package org.transformice.modules;
 
 // Imports
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
+import org.luaj.vm2.Globals;
+import org.luaj.vm2.LuaError;
+import org.luaj.vm2.LuaInteger;
+import org.luaj.vm2.LuaTable;
+import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.Varargs;
+import org.luaj.vm2.lib.DebugLib;
+import org.luaj.vm2.lib.VarArgFunction;
+import org.luaj.vm2.lib.jse.JsePlatform;
 import org.psframework.utils.PSTimer;
 import org.transformice.GamePlayer;
 import org.transformice.GameRoom;
 import org.transformice.GameServer;
+import org.transformice.data.objects.RoomType;
+import org.transformice.data.objects.ShamanType;
 import org.transformice.modules.impl.ModuleRoom;
+import org.transformice.modules.lua.LuaTfmTable;
 
 // Packets
+import org.transformice.modules.lua.debug.LuaTraceback;
 import org.transformice.packets.send.chat.PacketSendServerMessage;
-import org.transformice.packets.send.lua.PacketSendInitializeLuaRoom;
-import org.transformice.packets.send.lua.PacketSendLuaDisableRoomProperties;
+import org.transformice.packets.send.lua.*;
 import org.transformice.packets.send.player.PacketSendPlayerMove;
 
 public final class ModuleLua extends ModuleRoom {
+    private final ExecutorService luaExecutor;
     private final Map<Integer, PSTimer> luaTimers;
     private final List<String> disableChatCommandListDisplay;
-    private final PSTimer luaLoopTimer;
+    private final List<Object[]> pendentEvents;
+    private volatile PSTimer luaLoopTimer;
+    private volatile Globals luaGlobal;
+    private volatile LuaValue luaDebug;
+    private volatile GamePlayer luaAdmin;
+    private GameRoom.MapDetails luaMap;
     public boolean isDisabledWatchCommand;
     public boolean isDisabledDebugCommand;
     public boolean isDisabledMinimalistMode;
+    public boolean isDisabledEventLog;
     public boolean disablePhysicalConsumables;
-    private boolean isRunningLua;
-    private GamePlayer luaAdmin;
+    public boolean disableAllShamanSkills;
+    public boolean disableMortCommand;
+    public boolean disablePrespawnPreview;
+    public boolean setAutoMapFlipMode;
+    private volatile boolean isRunningLua;
+    private volatile boolean isInitializingLua;
+    private volatile boolean isDestroyed;
+    private volatile long luaGeneration;
 
     /**
      * Creates a lua module.
-     *
      * @param server The game server.
      * @param room The game room.
      */
     public ModuleLua(GameServer server, GameRoom room) {
         super(server, room);
-        this.isRunningLua = false;
-        this.isDisabledWatchCommand = false;
-        this.isDisabledDebugCommand = false;
-        this.isDisabledMinimalistMode = false;
-        this.luaTimers = new HashMap<>();
+        this.luaExecutor = Executors.newSingleThreadExecutor();
+        this.luaTimers = new ConcurrentHashMap<>();
         this.disableChatCommandListDisplay = new ArrayList<>();
-        this.luaLoopTimer = new PSTimer(this.server.getScheduler());
-        this.luaAdmin = null;
+        this.pendentEvents = new ArrayList<>();
+        this.isDisabledEventLog = true;
+        this.luaMap = null;
     }
 
     /**
@@ -59,24 +86,7 @@ public final class ModuleLua extends ModuleRoom {
      * @return The lua's map.
      */
     public GameRoom.MapDetails getLuaMap() {
-        return null;
-    }
-
-    /**
-     * Gets the lua's loop timer.
-     * @return The lua's loop timer.
-     */
-    public PSTimer getLuaLoopTimer() {
-        return this.luaLoopTimer;
-    }
-
-
-    /**
-     * Gets the lua's timers.
-     * @return The lua's timers.
-     */
-    public Map<Integer, PSTimer> getLuaTimers() {
-        return this.luaTimers;
+        return this.luaMap;
     }
 
     /**
@@ -92,24 +102,116 @@ public final class ModuleLua extends ModuleRoom {
      * @param luaScript The lua script to execute.
      * @param player The person who executed the script.
      */
-    public void executeScript(String luaScript, GamePlayer player) {
-        this.isRunningLua = true;
+    public synchronized void executeScript(String luaScript, GamePlayer player) {
+        RoomType roomType = this.room.getRoomType();
+        if (roomType == RoomType.EDITOR || roomType == RoomType.TOTEM || this.isDestroyed)
+            return;
+
+        if (this.isRunningLua || this.isInitializingLua)
+            this.sendRoomStopScript();
+
+        long generation = ++this.luaGeneration;
+        synchronized (this.pendentEvents) {
+            this.pendentEvents.clear();
+        }
+
+        this.isRunningLua = false;
+        this.isInitializingLua = true;
         this.luaAdmin = player;
+        this.luaGlobal = JsePlatform.standardGlobals();
+        this.luaGlobal.load(new DebugLib());
+        this.luaDebug = this.luaGlobal.get("debug");
+        this.luaGlobal.load(new LuaTfmTable(this.room));
+        this.luaGlobal.get("debug").set("traceback", new LuaTraceback(this.luaDebug));
+        player.luaThread = new Thread(() -> {
+            long startTime = System.nanoTime();
+            LuaValue debug = this.luaDebug;
+
+            try {
+                LuaValue hook = new VarArgFunction() {
+                    @Override
+                    public Varargs invoke(Varargs args) {
+                        if (generation != luaGeneration || isDestroyed)
+                            throw new LuaError("Lua script stopped.");
+
+                        if (System.nanoTime() - startTime > 4_000_000_000L)
+                            throw new LuaError("Lua destroyed : Runtime too long!");
+
+                        return LuaValue.NONE;
+                    }
+                };
+
+                debug.get("sethook").invoke(LuaValue.varargsOf(new LuaValue[] {hook, LuaValue.valueOf(""), LuaValue.valueOf(1000)}));
+                this.luaGlobal.load(luaScript).call();
+                if (generation != this.luaGeneration || this.isDestroyed)
+                    return;
+
+                synchronized (this) {
+                    if (generation != this.luaGeneration || this.isDestroyed)
+                        return;
+
+                    this.isRunningLua = true;
+                    this.isInitializingLua = false;
+                    synchronized (this.pendentEvents) {
+                        for (Object[] object : this.pendentEvents)
+                            this.callEvent((String) object[0], (Object[]) object[1]);
+
+                        this.pendentEvents.clear();
+                    }
+
+                    if (generation != this.luaGeneration)
+                        return;
+
+                    PSTimer loopTimer = new PSTimer(this.server.getScheduler());
+                    this.luaLoopTimer = loopTimer;
+                    loopTimer.scheduleAtFixedRate(() -> {
+                        if (!this.isRunningLua || generation != this.luaGeneration || this.isDestroyed)
+                            return;
+
+                        long currentTime = System.currentTimeMillis();
+                        long elapsedTime = currentTime - this.room.getGameStartTimeMillis();
+                        long remainingTime = this.room.getRoundTime() * 1000L - elapsedTime;
+                        this.callEvent("eventLoop", elapsedTime, remainingTime);
+                    }, 500, 500, TimeUnit.MILLISECONDS);
+
+                    this.room.broadcastPacket(new PacketSendInitializeLuaRoom());
+                }
+
+                long endTime = (System.nanoTime() - startTime) / 1_000_000L;
+                this.sendLuaMessage("<V>[" + this.room.getRoomName() + "]</V> [" + player.getPlayerName() + "] Lua script loaded in " + endTime + " ms (4000 max)");
+            } catch (Exception error) {
+                if (generation == this.luaGeneration && !this.isDestroyed) {
+                    this.sendLuaMessage("<V>[" + this.room.getRoomName() + "]</V> Init Error : " + player.getPlayerName() + ".lua : " + error.getMessage());
+                    this.sendRoomStopScript();
+                }
+            } finally {
+                debug.get("sethook").call();
+            }
+        });
+
+        player.luaThread.start();
     }
 
     /**
      * Handles when the player contacts a listener.
-     * @param player The player's name.
-     * @param groundId The ground's id.
-     * @param i1 - Arg 1.
-     * @param i2 - Arg 2.
-     * @param i3 - Arg 3.
-     * @param i4 - Arg 4.
-     * @param i5 - Arg 5.
-     * @param i6 - Arg 6.
+     * @param player The player who contacted the ground.
+     * @param groundId The ID of the ground.
+     * @param contactX The horizontal coordinate of the contact point.
+     * @param contactY The vertical coordinate of the contact point.
+     * @param playerX The player's horizontal coordinate at the time of contact.
+     * @param playerY The player's vertical coordinate at the time of contact.
+     * @param speedX The player's horizontal speed at the time of contact.
+     * @param speedY The player's vertical speed at the time of contact.
      */
-    public void handleEventContactListener(GamePlayer player, int groundId, int i1, int i2, int i3, int i4, int i5, int i6) {
-        this.callEvent("eventContactListener", player.getPlayerName(), groundId, i1, i2, i3, i4, i5, i6);
+    public void handleEventContactListener(GamePlayer player, int groundId, int contactX, int contactY, int playerX, int playerY, int speedX, int speedY) {
+        LuaTable contactInfos = new LuaTable();
+        contactInfos.set("contactX", LuaValue.valueOf(contactX));
+        contactInfos.set("contactY", LuaValue.valueOf(contactY));
+        contactInfos.set("playerX", LuaValue.valueOf(playerX));
+        contactInfos.set("playerY", LuaValue.valueOf(playerY));
+        contactInfos.set("speedX", LuaValue.valueOf(speedX));
+        contactInfos.set("speedY", LuaValue.valueOf(speedY));
+        this.callEvent("eventContactListener", player.getPlayerName(), groundId, contactInfos);
     }
 
     /**
@@ -149,6 +251,7 @@ public final class ModuleLua extends ModuleRoom {
      * @param player The player's instance
      */
     public void handleEventPlayerDeath(GamePlayer player) {
+        this.sendLuaUpdatePlayerInfo(player, false);
         this.callEvent("eventPlayerDied", player.getPlayerName());
     }
 
@@ -156,10 +259,9 @@ public final class ModuleLua extends ModuleRoom {
      * Handles when the player makes an emote.
      * @param player The player's instance.
      * @param emoteId The emote's id.
-     * @param playerSessionId The opponent's session id.
      */
-    public void handleEventPlayerEmote(GamePlayer player, int emoteId, int playerSessionId) {
-        this.callEvent("eventEmotePlayed", player.getPlayerName(), emoteId, playerSessionId);
+    public void handleEventPlayerEmote(GamePlayer player, int emoteId) {
+        this.callEvent("eventEmotePlayed", player.getPlayerName(), emoteId, "");
     }
 
     /**
@@ -167,6 +269,7 @@ public final class ModuleLua extends ModuleRoom {
      * @param player The player's instance.
      */
     public void handleEventPlayerGetCheese(GamePlayer player) {
+        this.sendLuaUpdatePlayerInfo(player, false);
         this.callEvent("eventPlayerGetCheese", player.getPlayerName());
     }
 
@@ -222,8 +325,19 @@ public final class ModuleLua extends ModuleRoom {
      * @param hasContactListener Has contact listener.
      * @param miceCollidable Is mice collidable.
      */
-    public void handleEventPlayerEndInvocation(GamePlayer player, int shamanObjectId, int posX, int posY, int angle, int velX, int velY, boolean hasContactListener, boolean miceCollidable) {
-        this.callEvent("eventSummoningEnd", player.getPlayerName(), shamanObjectId, posX, posY, angle, velX, velY, hasContactListener, miceCollidable);
+    public void handleEventPlayerEndInvocation(GamePlayer player, int shamanObjectId, int posX, int posY, int angle, int velX, int velY, boolean hasContactListener, boolean miceCollidable, byte[] colors) {
+        LuaTable table = new LuaTable();
+        table.set("id", LuaValue.valueOf(shamanObjectId));
+        /// TODO:  type (Int)
+        /// TODO: baseType (Int)
+        table.set("x", LuaValue.valueOf(posX));
+        table.set("y", LuaValue.valueOf(posY));
+        table.set("vx", LuaValue.valueOf(velX));
+        table.set("vy", LuaValue.valueOf(velY));
+        table.set("angle", LuaValue.valueOf(angle));
+        table.set("ghost", LuaValue.valueOf(miceCollidable));
+        table.set("colors", LuaValue.valueOf(colors));
+        this.callEvent("eventSummoningEnd", player.getPlayerName(), shamanObjectId, posX, posY, angle, table);
     }
 
     /**
@@ -237,19 +351,38 @@ public final class ModuleLua extends ModuleRoom {
     /**
      * Handles when the player enters in the hole.
      * @param player The player's instance.
-     * @param timeTaken The time's taken.
+     * @param timeElapsed Time elapsed.
+     * @param timeElapsedSinceRespawn Time elapsed since respawn.
      */
-    public void handleEventPlayerWin(GamePlayer player, int timeTaken) {
-        this.callEvent("eventPlayerWon", player.getPlayerName(), timeTaken);
+    public void handleEventPlayerWin(GamePlayer player, int timeElapsed, int timeElapsedSinceRespawn) {
+        this.callEvent("eventPlayerWon", player.getPlayerName(), timeElapsed, timeElapsedSinceRespawn);
+    }
+
+    /**
+     * Handles when the player becomes a vampire.
+     * @param player The player's instance.
+     */
+    public void handleEventPlayerVampire(GamePlayer player, String infectorName) {
+        this.sendLuaUpdatePlayerInfo(player, false);
+        this.callEvent("eventPlayerVampire", player.getPlayerName(), infectorName);
     }
 
     /**
      * Handles when the player send a chat command.
      * @param player The player's name.
-     * @param message The chat's message.
+     * @param message The chat's command.
      */
     public void handleChatCommand(GamePlayer player, String message) {
         this.callEvent("eventChatCommand", player.getPlayerName(), message);
+    }
+
+    /**
+     * Handles when the player send a chat message.
+     * @param player The player's name.
+     * @param message The chat's message.
+     */
+    public void handleChatMessage(GamePlayer player, String message) {
+        this.callEvent("eventChatMessage", player.getPlayerName(), message);
     }
 
     /**
@@ -324,12 +457,202 @@ public final class ModuleLua extends ModuleRoom {
     }
 
     /**
-     * Calls the given event.
-     * @param event The event name.
-     * @param args The event arguments.
+     * Sends a #lua message.
+     * @param message The message to send.
      */
-    private void callEvent(String event, Object... args) {
+    public void sendLuaMessage(String message) {
+        if (this.luaAdmin == null)
+            return;
 
+        this.luaAdmin.broadcastPacket(new PacketSendLuaMessage(message));
+    }
+
+    /**
+     * Handles when the script gets stopped in the room.
+     */
+    public synchronized void sendRoomStopScript() {
+        RoomType roomType = this.room.getRoomType();
+        this.luaGeneration++;
+        this.isRunningLua = false;
+        this.isInitializingLua = false;
+        if (this.luaAdmin != null && this.luaAdmin.luaThread != null)
+            this.luaAdmin.luaThread.interrupt();
+
+        this.luaAdmin = null;
+        this.isDisabledMinimalistMode = false;
+        this.isDisabledDebugCommand = false;
+        this.isDisabledWatchCommand = false;
+        switch (roomType) {
+            case TRIBE_HOUSE -> {
+                this.room.disableAutoRespawn = false;
+                this.room.disableAutoShaman = true;
+                this.room.disableAutoTimeLeft = true;
+                this.room.disableAutoNewGame = true;
+                this.room.disableAfkDeath = true;
+            }
+            case TUTORIAL -> {
+                this.room.disableAutoShaman = true;
+                this.room.disableAutoTimeLeft = true;
+            }
+            case RACING, DEFILANTE -> this.room.disableAutoShaman = true;
+            case BOOTCAMP -> {
+                this.room.disableAutoTimeLeft = true;
+                this.room.disableAutoRespawn = false;
+                this.room.disableAutoShaman = true;
+                this.room.disableAfkDeath = true;
+            }
+            case VILLAGE -> {
+                this.room.disableAutoRespawn = false;
+                this.room.disableAutoTimeLeft = true;
+                this.room.disableAutoShaman = true;
+                this.room.disableAutoNewGame = true;
+                this.room.disableAfkDeath = true;
+            }
+        }
+
+        this.room.maximumPlayers = 0;
+        this.disableChatCommandListDisplay.clear();
+        PSTimer loopTimer = this.luaLoopTimer;
+        this.luaLoopTimer = null;
+        if (loopTimer != null)
+            loopTimer.cancelTask(false);
+
+        for (PSTimer timer : this.luaTimers.values())
+            timer.cancelTask(false);
+
+        this.luaTimers.clear();
+        synchronized (this.pendentEvents) {
+            this.pendentEvents.clear();
+        }
+
+        this.room.broadcastPacket(new PacketSendDestructLuaRoom());
+        this.room.sendChangeMap();
+    }
+
+    /**
+     * Handles when the room gets deleted.
+     */
+    public synchronized void sendRoomDestruction() {
+        this.isDestroyed = true;
+        this.luaGeneration++;
+        this.isRunningLua = false;
+        this.isInitializingLua = false;
+        if (this.luaAdmin != null && this.luaAdmin.luaThread != null)
+            this.luaAdmin.luaThread.interrupt();
+
+        this.luaAdmin = null;
+        PSTimer loopTimer = this.luaLoopTimer;
+        this.luaLoopTimer = null;
+        if (loopTimer != null)
+            loopTimer.cancelTask(false);
+
+        for (PSTimer timer : this.luaTimers.values())
+            timer.cancelTask(false);
+
+        this.luaTimers.clear();
+        synchronized (this.pendentEvents) {
+            this.pendentEvents.clear();
+        }
+
+        this.luaExecutor.shutdownNow();
+    }
+
+    /**
+     * Changes the lua map.
+     * @param luaMap The lua's map.
+     */
+    public void setLuaMap(GameRoom.MapDetails luaMap) {
+        this.luaMap = luaMap;
+    }
+
+    /**
+     * Updates the player's info in the lua room.
+     * @param player The player's info.
+     */
+    public void sendLuaUpdatePlayerInfo(GamePlayer player) {
+        this.sendLuaUpdatePlayerInfo(player, false);
+    }
+
+    /**
+     * Calls the given event.
+     * @param eventName The event's name.
+     * @param args The event's arguments.
+     */
+    private synchronized void callEvent(String eventName, Object... args) {
+        if (this.isDestroyed)
+            return;
+
+        if (!this.isRunningLua) {
+            if (this.isInitializingLua) {
+                synchronized (this.pendentEvents) {
+                    if (this.isInitializingLua && !this.isDestroyed)
+                        this.pendentEvents.add(new Object[] {eventName, args});
+                }
+            }
+
+            return;
+        }
+
+        long generation = this.luaGeneration;
+
+        try {
+            this.luaExecutor.execute(() -> {
+                if (!this.isRunningLua || generation != this.luaGeneration || this.isDestroyed)
+                    return;
+
+                LuaValue debug = this.luaDebug;
+                Globals globals = this.luaGlobal;
+                if (debug == null || globals == null)
+                    return;
+
+                long startTime = System.nanoTime();
+
+                try {
+                    LuaValue event = globals.get(eventName);
+                    if (!event.isfunction())
+                        return;
+
+                    LuaValue[] luaArgs = Arrays.stream(args).map(arg -> arg instanceof Integer ? LuaValue.valueOf((Integer) arg) : arg instanceof String ? LuaValue.valueOf((String) arg) : arg instanceof Boolean ? LuaValue.valueOf((Boolean) arg) : arg instanceof Long ? LuaInteger.valueOf((Long) arg) : (LuaValue) arg).toArray(LuaValue[]::new);
+                    LuaValue hook = new VarArgFunction() {
+                        private boolean warned = false;
+
+                        @Override
+                        public Varargs invoke(Varargs hookArgs) {
+                            if (generation != luaGeneration || isDestroyed)
+                                throw new LuaError("Lua script stopped.");
+
+                            long elapsedTime = (System.nanoTime() - startTime) / 1_000_000L;
+                            if (elapsedTime > 4000)
+                                throw new LuaError("Lua destroyed : Runtime too long!");
+
+                            if (elapsedTime > 60 && !warned) {
+                                warned = true;
+                                sendLuaMessage("<V>[" + room.getRoomName() + "]</V> Warning: " + "Runtime can't exceed 60 ms in 4 seconds! Currently: " + elapsedTime + " ms.");
+                            }
+
+                            return LuaValue.NONE;
+                        }
+                    };
+
+                    debug.get("sethook").invoke(LuaValue.varargsOf(new LuaValue[] {hook, LuaValue.valueOf(""), LuaValue.valueOf(1000)}));
+                    event.invoke(LuaValue.varargsOf(luaArgs));
+                    if (generation != this.luaGeneration || this.isDestroyed)
+                        return;
+
+                    long endTime = (System.nanoTime() - startTime) / 1_000_000L;
+                    if (!this.isDisabledEventLog)
+                        this.sendLuaMessage("Event <V>" + eventName + "</V> : " + endTime + " ms");
+
+                } catch (Exception error) {
+                    if (generation == this.luaGeneration && !this.isDestroyed) {
+                        this.sendLuaMessage("Runtime Error : " + error.getMessage());
+                        this.sendRoomStopScript();
+                    }
+                } finally {
+                    debug.get("sethook").call();
+                }
+            });
+        } catch (RejectedExecutionException ignored) {}
     }
 
     /**
@@ -337,6 +660,44 @@ public final class ModuleLua extends ModuleRoom {
      * @param player The player's instance.
      */
     private void sendLuaUpdatePlayerInfo(GamePlayer player, boolean toAdd) {
+        try {
+            if (this.luaGlobal == null || !this.isRunningLua)
+                return;
 
+            LuaValue playerList = this.luaGlobal.get("tfm").get("get").get("room").get("playerList");
+            if (!playerList.istable())
+                return;
+
+            String playerName = player.getPlayerName();
+            if (!toAdd) {
+                playerList.set(playerName, LuaValue.NIL);
+                return;
+            }
+
+            LuaTable table = new LuaTable();
+            table.set("isJumping", LuaValue.valueOf(player.isJumping));
+            table.set("title", LuaValue.valueOf(player.getPlayerData().currentTitle.titleId));
+            table.set("y", LuaValue.valueOf(player.positionY));
+            table.set("x", LuaValue.valueOf(player.positionX));
+            table.set("id", LuaValue.valueOf(player.getSessionId()));
+            table.set("isDead", LuaValue.valueOf(player.isDead));
+            table.set("look", LuaValue.valueOf(player.getPlayerData().playerLook));
+            table.set("isShaman", LuaValue.valueOf(player.isShaman));
+            table.set("vx", LuaValue.valueOf(player.velocityX));
+            table.set("score", LuaValue.valueOf(player.playerScore));
+            table.set("inHardMode", LuaValue.valueOf(player.getPlayerData().getShamanType() == ShamanType.HARD));
+            table.set("vy", LuaValue.valueOf(player.velocityY));
+            table.set("movingRight", LuaValue.valueOf(player.isFacingRight));
+            table.set("hasCheese", LuaValue.valueOf(player.cheeseCount > 0));
+            table.set("registrationDate", LuaValue.valueOf(player.getPlayerData().getRegistrationDate()));
+            table.set("shamanMode", LuaValue.valueOf(player.getPlayerData().getShamanType().ordinal()));
+            table.set("playerName", LuaValue.valueOf(playerName));
+            table.set("community", LuaValue.valueOf(player.getPlayerCommunity()));
+            table.set("tribeName", LuaValue.valueOf(player.getPlayerData().tribeName));
+            table.set("movingLeft", LuaValue.valueOf(player.isFacingLeft));
+            table.set("isFacingRight", LuaValue.valueOf(!player.isFacingLeft && player.isFacingRight));
+            table.set("isVampire", LuaValue.valueOf(player.isVampire));
+            playerList.set(playerName, table);
+        } catch (LuaError ignored) {}
     }
 }

@@ -10,7 +10,7 @@ import org.transformice.network.NetSession;
 import org.transformice.packets.PacketOpcodes;
 
 @SuppressWarnings("unused")
-@PSPacket(id = PacketOpcodes.RECV_LUA_TEXTAREA_CALLBACK)
+@PSPacket(id = PacketOpcodes.RECV_LUA_TEXT_AREA_CALLBACK)
 public final class PacketRecvLuaTextAreaCallback extends PSReceivePacket<GameServer, NetSession, NetByteArray> {
     @Override
     public void handle(GameServer gameServer, NetSession client, NetByteArray psHeader, NetByteArray psData) throws PSReceivePacketException {

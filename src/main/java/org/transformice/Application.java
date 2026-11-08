@@ -3,7 +3,6 @@ package org.transformice;
 // Imports
 import java.io.IOException;
 import java.util.ArrayList;
-
 import org.fusesource.jansi.AnsiConsole;
 import org.psframework.admin.PSAdminConfig;
 import org.psframework.database.PSDatabaseConfig;
@@ -20,7 +19,6 @@ public class Application {
      * Entry point of the application.
      * @param args the command-line arguments passed to the application.
      */
-
     public static void main(String[] args) {
         try {
             AnsiConsole.systemInstall();

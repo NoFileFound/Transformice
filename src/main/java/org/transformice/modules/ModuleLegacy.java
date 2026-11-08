@@ -265,6 +265,9 @@ public final class ModuleLegacy extends ModuleServer {
      * @param psData The packet's data.
      */
     private void handleRecvRoomMoveCheese(GameRoom playerRoom, NetByteArray psData) {
+        if (!playerRoom.getCurrentMap().isCatchTheCheese)
+            return;
+
         playerRoom.broadcastLegacyPacket(new PSSendPacket(LegacyPacketOpcodes.SendRoomMoveCheese) {
             @Override
             public PSByteArray build() throws PSSendPacketException {

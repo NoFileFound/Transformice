@@ -27,7 +27,7 @@ public final class Lslua implements CommandHandler {
         }
 
         NetByteArray packet = new NetByteArray();
-        packet.writeUnsignedByte(7);
+        packet.writeUnsignedByte(8);
         packet.writeUnsignedByte(staffInfo.size());
         for (String[] info : staffInfo) {
             packet.writeUTF(info[0], true);

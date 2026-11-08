@@ -15,6 +15,6 @@ public final class PacketRecvAntiCheatInconsistentTiming extends PSReceivePacket
     @Override
     public void handle(GameServer gameServer, NetSession client, NetByteArray psHeader, NetByteArray psData) throws PSReceivePacketException {
         gameServer.getLogger().warn(String.format("[AntiCheat][%s] (%s) has inconsistent timing with the game.", client.getIpAddress(), client.getPlayer().getPlayerName()));
-        gameServer.sendPlayerBan(client.getPlayer().getPlayerName(), 24, "Hack", null, true);
+        client.getPlayer().disconnect(true);
     }
 }

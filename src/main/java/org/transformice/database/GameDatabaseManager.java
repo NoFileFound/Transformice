@@ -11,6 +11,13 @@ public interface GameDatabaseManager {
     void initialize();
 
     /**
+     * Checks if the ip address is blacklisted.
+     * @param ipAddress The given ip address.
+     * @return True if the ip address is blacklisted or else False.
+     */
+    boolean isIpBlacklisted(String ipAddress);
+
+    /**
      * Deletes all login logs.
      */
     void deleteAllLoginLogs();
@@ -25,6 +32,12 @@ public interface GameDatabaseManager {
      * @param cafeData The cafe topic's data.
      */
     void deleteCafe(CafeEntry cafeData);
+
+    /**
+     * Deletes a ip temp ban.
+     * @param ipTempBanData The ip temp's data.
+     */
+    void deleteIpTempBan(IpTempBanEntry ipTempBanData);
 
     /**
      * Deletes a map.
@@ -144,6 +157,28 @@ public interface GameDatabaseManager {
     SanctionEntry loadLastSanction(String playerName, SanctionEntry.SanctionType sanctionType);
 
     /**
+     * Loads shop gift by id.
+     * @param giftId The gift's id.
+     * @return The shop gift data.
+     */
+    ShopgiftEntry loadShopGiftById(int giftId);
+
+    /**
+     * Loads shop gifts by receiver.
+     * @param playerName The receiver's name.
+     * @param hasRespond Has a respond message.
+     * @return List of shop gifts.
+     */
+    List<ShopgiftEntry> loadShopGiftsByReceiver(String playerName, boolean hasRespond);
+
+    /**
+     * Loads temp ip ban info.
+     * @param ipAddress The given ip address.
+     * @return The temp ip ban info.
+     */
+    IpTempBanEntry loadTempIpBanByIp(String ipAddress);
+
+    /**
      * Loads the tribe from the database.
      * @param tribeName The tribe's name.
      * @return Tribe data from the database.
@@ -197,4 +232,16 @@ public interface GameDatabaseManager {
      * @param mySanction The sanction's data.
      */
     void saveSanction(SanctionEntry mySanction);
+
+    /**
+     * Saves a shop gift.
+     * @param gift The gift's data.
+     */
+    void saveShopGift(ShopgiftEntry gift);
+
+    /**
+     * Saves the ip temp ban.
+     * @param ipTempBanEntry The ip temp ban's data.
+     */
+    void saveIpTempBan(IpTempBanEntry ipTempBanEntry);
 }

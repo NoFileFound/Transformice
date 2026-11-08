@@ -21,7 +21,7 @@ public final class Reloadpromotions implements CommandHandler {
             if (!client.getIsGuest()) {
                 for (GameConfig.ShopPromotion promotion : server.getConfig().getGameConfig().getShopPromotions()) {
                     if (promotion.getExpirationDate() > Utils.getUnixTime()) {
-                        client.broadcastPacket(new PacketSendShopPromotion(promotion));
+                        client.broadcastPacket(new PacketSendShopPromotion(promotion, true));
                     }
                 }
             }

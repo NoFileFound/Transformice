@@ -20,7 +20,9 @@ public final class PacketRecvPlayerStopInvocation extends PSReceivePacket<GameSe
     public void handle(GameServer gameServer, NetSession client, NetByteArray psHeader, NetByteArray psData) throws PSReceivePacketException {
         GamePlayer player = client.getPlayer();
         if (player.isShaman) {
-            player.getPlayerRoom().broadcastPacket(player, new PacketSendPlayerStopInvocation(player.getSessionId()));
+            if (!player.getPlayerRoom().getParseLua().disablePrespawnPreview)
+                player.getPlayerRoom().broadcastPacket(player, new PacketSendPlayerStopInvocation(player.getSessionId()));
+
             player.getPlayerRoom().getParseLua().handleEventPlayerStopInvocation(player);
         }
     }

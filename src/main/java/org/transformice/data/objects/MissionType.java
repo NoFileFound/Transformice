@@ -27,6 +27,15 @@ public enum MissionType {
         this.value = value;
     }
 
+    public static MissionType parseFrom(int i) {
+        for (MissionType type : values()) {
+            if (type.getId() == i)
+                return type;
+        }
+
+        return null;
+    }
+
     public int getId() {
         return this.value;
     }

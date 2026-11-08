@@ -13,6 +13,7 @@ import org.transformice.GamePlayer;
 import org.transformice.GameServer;
 import org.transformice.data.objects.AccountErrorType;
 import org.transformice.data.objects.StaffRoleType;
+import org.transformice.database.data.IpTempBanEntry;
 import org.transformice.database.data.PlayerEntity;
 import org.transformice.network.NetByteArray;
 import org.transformice.network.NetSession;
@@ -68,7 +69,7 @@ public final class PacketRecvLogin extends PSReceivePacket<GameServer, NetSessio
         }
 
         if (client.getLoginAttempts() >= gameServer.getConfig().getGameConfig().getLoginAttempts()) {
-            gameServer.getTempBannedIPs().put(client.getIpAddress(), System.currentTimeMillis() + TimeUnit.HOURS.toMillis(24));
+            gameServer.getDatabase().saveIpTempBan(new IpTempBanEntry(client.getIpAddress(), 24, "Bruteforcing accounts"));
             client.disconnect();
             return;
         }

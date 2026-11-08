@@ -3,6 +3,7 @@ package org.transformice.command.commands;
 // Imports
 import java.util.List;
 import org.transformice.GamePlayer;
+import org.transformice.GameRoom;
 import org.transformice.GameServer;
 import org.transformice.command.Command;
 import org.transformice.command.CommandHandler;
@@ -18,8 +19,8 @@ public final class Npp implements CommandHandler {
     public void execute(GamePlayer player, GameServer server, List<String> args) {
         try {
             String mapCode = args.getFirst();
-            int code = Integer.parseInt(mapCode.startsWith("@") ? mapCode.substring(1) : mapCode);
             if (mapCode.startsWith("@")) {
+                int code = Integer.parseInt(mapCode.substring(1));
                 MapEntry mapInfo = server.getDatabase().loadMapByCode(code);
                 if (mapInfo == null) {
                     player.broadcastPacket(new PacketSendTranslatedMessage("", "$CarteIntrouvable"));
@@ -27,12 +28,14 @@ public final class Npp implements CommandHandler {
                 }
 
                 player.broadcastPacket(new PacketSendTranslatedMessage("", String.format("$ProchaineCarte : %s - %s", mapInfo.getMapAuthor(), mapInfo.getMapCode())));
+                player.getPlayerRoom().forceNextMap = new GameRoom.MapDetails(mapInfo, false);
             } else {
-                player.broadcastPacket(new PacketSendTranslatedMessage("", String.format("$ProchaineCarte : %s", mapCode)));
+                int code = Integer.parseInt(mapCode);
+                player.broadcastPacket(new PacketSendTranslatedMessage("", String.format("$ProchaineCarte : %s", code)));
+                player.getPlayerRoom().forceNextMap = new GameRoom.MapDetails(code, "", server.getVanillaMapXml(code));
             }
 
-            player.getPlayerRoom().forceNextMap = code;
-        } catch (Exception ignored) {
+        } catch (NumberFormatException ignored) {
             player.broadcastPacket(new PacketSendTranslatedMessage("", "$CarteIntrouvable"));
         }
     }

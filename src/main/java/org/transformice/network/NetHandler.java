@@ -32,14 +32,9 @@ public final class NetHandler extends ChannelInboundHandlerAdapter
     public void channelActive(ChannelHandlerContext context) {
         Channel channel = context.channel();
         String ipAddress = ((InetSocketAddress) context.channel().remoteAddress()).getAddress().getHostAddress();
-        Long expiration = this.server.getTempBannedIPs().get(ipAddress);
-        if (expiration != null) {
-            if (System.currentTimeMillis() < expiration) {
-                context.close();
-                return;
-            }
-
-            this.server.getTempBannedIPs().remove(ipAddress, expiration);
+        if (this.server.getDatabase().isIpBlacklisted(ipAddress)) {
+            context.close();
+            return;
         }
 
         NetSession session = new NetSession(this.server, context.channel());

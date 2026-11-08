@@ -1423,7 +1423,13 @@ public final class ModuleTribulle extends ModulePlayer {
         String roomName = "";
         if (online) {
             friendAccount = onlinePlayer.getPlayerData();
-            roomName = onlinePlayer.getPlayerRoom().getRoomNameSuffix().startsWith("@") ? "" : onlinePlayer.getRoomName();
+            roomName = onlinePlayer.getRoomName();
+            String roomSuffix = roomName.substring(roomName.indexOf('-') + 1);
+            if (roomSuffix.startsWith("@"))
+                roomName = "";
+
+            if (roomSuffix.startsWith("*"))
+                roomName = roomSuffix;
         } else {
             friendAccount = this.server.getDatabase().loadPlayerByName(friendName);
         }
@@ -1488,8 +1494,15 @@ public final class ModuleTribulle extends ModulePlayer {
         PlayerEntity accountClient = playerClient != null ? playerClient.getPlayerData() : this.server.getDatabase().loadPlayerByName(playerName);
         boolean online = playerClient != null;
         String roomName = "";
-        if (online && !playerClient.getPlayerRoom().getRoomNameSuffix().startsWith("@"))
+        if (online) {
             roomName = playerClient.getRoomName();
+            String roomSuffix = roomName.substring(roomName.indexOf('-') + 1);
+            if (roomSuffix.startsWith("@"))
+                roomName = "";
+
+            if (roomSuffix.startsWith("*"))
+                roomName = roomSuffix;
+        }
 
         NetByteArray data = new NetByteArray();
         data.writeInt(accountClient.getAccountId());
@@ -1613,13 +1626,13 @@ public final class ModuleTribulle extends ModulePlayer {
             channelId = 2;
         } else if (this.player.hasStaffPermission(StaffRoleType.MAPCREW, true)) {
             staffRole = StaffRoleType.MAPCREW;
-            channelId = 8;
+            channelId = 7;
         } else if (this.player.hasStaffPermission(StaffRoleType.FASHIONSQUAD, true)) {
             staffRole = StaffRoleType.FASHIONSQUAD;
             channelId = 10;
         } else if (this.player.hasStaffPermission(StaffRoleType.LUADEV, true)) {
             staffRole = StaffRoleType.LUADEV;
-            channelId = 7;
+            channelId = 8;
         } else if (this.player.hasStaffPermission(StaffRoleType.FUNCORP, true)) {
             staffRole = StaffRoleType.FUNCORP;
             channelId = 9;

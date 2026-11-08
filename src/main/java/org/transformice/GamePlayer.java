@@ -14,6 +14,7 @@ import org.psframework.network.PSSendPacketException;
 import org.psframework.utils.PSBase64;
 import org.psframework.utils.PSByteArray;
 import org.psframework.utils.PSTimer;
+import org.transformice.config.titleconfig.TitleData;
 import org.transformice.data.objects.CheesePosition;
 import org.transformice.data.objects.GameCommunity;
 import org.transformice.data.objects.MissionType;
@@ -31,8 +32,6 @@ import org.transformice.modules.ModuleSkillTree;
 import org.transformice.modules.ModuleTribulle;
 import org.transformice.network.NetSession;
 import org.transformice.packets.LegacyPacketOpcodes;
-import org.transformice.packets.send.legacy.PacketSendUnlockTitle;
-import org.transformice.packets.send.player.PacketSendPlayerUnlockBadge;
 import org.transformice.utils.Utils;
 
 // Packets
@@ -43,11 +42,13 @@ import org.transformice.packets.send.legacy.PacketSendPlayerBanScreenLogin;
 import org.transformice.packets.send.legacy.PacketSendPlayerDeath;
 import org.transformice.packets.send.legacy.PacketSendPlayerSaveRemainingNotification;
 import org.transformice.packets.send.legacy.PacketSendTotem;
+import org.transformice.packets.send.legacy.PacketSendUnlockTitle;
 import org.transformice.packets.send.login.PacketSendLoginSouris;
 import org.transformice.packets.send.player.PacketSendPlayerAvailableEmoji;
 import org.transformice.packets.send.player.PacketSendPlayerChangeTitle;
 import org.transformice.packets.send.player.PacketSendPlayerCollectibleAction;
 import org.transformice.packets.send.player.PacketSendPlayerEnterHole;
+import org.transformice.packets.send.player.PacketSendPlayerUnlockBadge;
 import org.transformice.packets.send.login.PacketSendPlayerIdentity;
 import org.transformice.packets.send.room.PacketSendRoomGetCheese;
 import org.transformice.packets.send.room.PacketSendShamanInfo;
@@ -68,7 +69,7 @@ public final class GamePlayer {
     private final PSTimer chatMessageTimer;
     private final List<String> invitedTribeHouses;
     private final List<Integer> cheeseIdxs;
-    private final List<String> voteBans;
+    private final Map<String, Set<String>> voteBans;
     private final Set<GamePlayer> modopwetWatchers;
     private final int playerId;
     private final int[] mulodromePosition;
@@ -101,6 +102,7 @@ public final class GamePlayer {
     public int drawColor;
     public int lastPingPayload;
     public long lastPingTimeStart;
+    public long lastSonarTime;
     public int lastPingTimeEnd;
     public int lastGameModeId;
     public boolean canMeep;
@@ -133,6 +135,7 @@ public final class GamePlayer {
     public boolean isShaman;
     public boolean isVampire;
     public boolean isLuaAdmin;
+    public boolean isJumping;
     public Object[] tempTotem;
     public String currentTribeInvite;
     public String currentMarriageInvite;
@@ -145,6 +148,7 @@ public final class GamePlayer {
     public String currentOpenedNpc;
     public GamePlayer lastWatchedPlayer;
     public List<String> modopwetSubscribedCommunities;
+    public Thread luaThread;
 
     /**
      * Creates a new player.
@@ -162,11 +166,11 @@ public final class GamePlayer {
         this.cheeseIdxs = new ArrayList<>();
         this.modopwetWatchers = new HashSet<>();
         this.modopwetSubscribedCommunities = new ArrayList<>();
-        this.voteBans = new ArrayList<>();
+        this.voteBans = new HashMap<>();
         this.tradeConsumables = new HashMap<>();
         this.playerRoom = null;
         this.roomName = "";
-        this.playerCommunity = this.session.getCurrentCommunity();
+        this.playerCommunity = this.session.getCurrentCommunity().toUpperCase();
         this.lastRoomName = "";
         this.currentTribeInvite = "";
         this.currentMarriageInvite = "";
@@ -215,6 +219,31 @@ public final class GamePlayer {
     }
 
     /**
+     * Checks if a player should unlock a title.
+     * @param score The player's data score.
+     * @param titleType The title's type.
+     */
+    public void checkTitleProgress(int score, String titleType) {
+        Map<Integer, TitleData> titles = switch (titleType) {
+            case "first" -> this.server.getTitleConfig().getFirstTitleList();
+            case "cheese" -> this.server.getTitleConfig().getCheeseTitleList();
+            case "bootcamp" -> this.server.getTitleConfig().getBootcampTitleList();
+            case "shop" -> this.server.getTitleConfig().getShopTitleList();
+            case "shaman" -> this.server.getTitleConfig().getShamanTitleList();
+            case "hardmode" -> this.server.getTitleConfig().getHardModeTitleList();
+            case "divinemode" -> this.server.getTitleConfig().getDivineModeTitleList();
+            case "shamannoskills" -> this.server.getTitleConfig().getShamanTitleListNoSkills();
+            case "hardmodenoskills" -> this.server.getTitleConfig().getHardModeTitleListNoSkills();
+            case "divinemodenoskills" -> this.server.getTitleConfig().getDivineModeTitleListNoSkills();
+            default -> throw new IllegalStateException("Unexpected value: " + titleType);
+        };
+
+        if (titles.containsKey(score)) {
+            this.sendUnlockTitle(titles.get(score).getTitleId());
+        }
+    }
+
+    /**
      * Disconnects the player from the game.
      * @param isClientSide is the function being called from the client.
      */
@@ -224,18 +253,15 @@ public final class GamePlayer {
         }
         else {
             this.chatMessageTimer.cancelTask(true);
-            this.server.getMarriageTimer(this.getPlayerName()).cancelTask(true);
-            this.server.getParseCafe().getCreateCafeReloadTimer(this.getPlayerName()).cancelTask(true);
             if (this.playerRoom != null)
                 this.playerRoom.removePlayer(this);
 
             this.server.getParseModopwet().handlePlayerDisconnect(this);
             if (!this.isGuest) {
-                long unixTime = Utils.getUnixTime();
                 this.parseInventory.sendTradeClose(this.currentTradeName, false);
                 this.parseTribulle.sendTribulleDestruction();
-                this.playerData.playedTime += unixTime - this.loginTime;
-                this.playerData.lastConnectedTime = unixTime;
+                this.playerData.playedTime += Utils.getUnixTime() - this.loginTime;
+                this.playerData.lastConnectedTime = (System.currentTimeMillis() / 60000);
                 this.parseInventory.saveInventory();
                 this.server.getDatabase().savePlayer(this.playerData);
             }
@@ -406,7 +432,7 @@ public final class GamePlayer {
                 (!this.funcorpPlayerLook.isEmpty() ? this.funcorpPlayerLook : (this.playerRoom.getRoomType() == RoomType.BOOTCAMP ? "1;0,0,0,0,0,0,0,0,0,0,0,0" : this.playerData.playerLook)),
                 (this.funcorpMouseColor != -1 ? this.funcorpMouseColor : this.playerData.mouseColor),
                 this.playerData.shamanColor,
-                0,
+                this.funcorpNickColor,
                 (this.isShaman ? this.playerData.shamanColor : this.funcorpNickColor),
                 0
         );
@@ -456,7 +482,7 @@ public final class GamePlayer {
      * Gets the player's voted bans against him.
      * @return The player's voted bans.
      */
-    public List<String> getVoteBans() {
+    public Map<String, Set<String>> getVoteBans() {
         return this.voteBans;
     }
 
@@ -564,8 +590,9 @@ public final class GamePlayer {
             this.playerRoom.firstShamanNumCompleted++;
         }
 
-        int timeTaken = (int) ((System.currentTimeMillis() - (!this.playerRoom.disableAutoRespawn ? this.playerStartTimeMillis : this.playerRoom.getGameStartTimeMillis())) / 10);
         int place = (this.playerRoom.firstShamanNumCompleted + this.playerRoom.secondShamanNumCompleted);
+        int timeElapsed = (int) ((System.currentTimeMillis() - (!this.playerRoom.disableAutoRespawn ? this.playerStartTimeMillis : this.playerRoom.getGameStartTimeMillis())) / 10);
+        int timeElapsedSinceRespawn = (int) ((System.currentTimeMillis() - this.playerStartTimeMillis) / 10);
         this.currentPlace = place;
         boolean isDefilante = (this.playerRoom.getRoomType() == RoomType.DEFILANTE);
         boolean isRacing = (this.playerRoom.getRoomType() == RoomType.RACING || this.playerRoom.getIsMulodrome());
@@ -573,14 +600,19 @@ public final class GamePlayer {
             this.playerScore += (short) (isDefilante ? this.defilantePoints : (isRacing) ? (place == 1 ? 4 : place == 2 ? 3 : place == 3 ? 2 : 1) : (place == 1 ? 16 : place == 2 ? 14 : place == 3 ? 12 : 10));
 
         if (this.playerRoom.getIsCountingStats()) {
-            if (place == 1)
+            if (place == 1) {
                 this.playerData.firstCount++;
+                this.checkTitleProgress(this.playerData.firstCount, "first");
+            }
 
             this.parseDailyQuests.increaseMission(MissionType.BRING_BACK_CHEESE, this.cheeseCount);
             this.playerData.cheeseCount++;
+            this.checkTitleProgress(this.playerData.cheeseCount, "cheese");
             this.playerData.shopCheese++;
-            if (this.playerRoom.getRoomType() == RoomType.BOOTCAMP)
+            if (this.playerRoom.getRoomType() == RoomType.BOOTCAMP) {
                 this.playerData.bootcampCount++;
+                this.checkTitleProgress(this.playerData.bootcampCount, "bootcamp");
+            }
 
             if (!this.isShaman) {
                 int shamanLevel = this.playerData.shamanLevel;
@@ -615,7 +647,7 @@ public final class GamePlayer {
             this.playerRoom.sendMulodromeDelta(blueCount, redCount);
         }
 
-        this.playerRoom.broadcastPacket(new PacketSendPlayerEnterHole(this.getSessionId(), holeType, this.playerScore, this.currentPlace, timeTaken));
+        this.playerRoom.broadcastPacket(new PacketSendPlayerEnterHole(this.getSessionId(), holeType, this.playerScore, this.currentPlace, timeElapsed));
         if (this.playerRoom.getRoomType() == RoomType.TUTORIAL) {
             this.broadcastPacket(new PacketSendTutorialStep(2));
             this.playerRoom.getPlayers().values().forEach(client -> client.broadcastPacket(new PacketSendRoomRoundTime((short) 10)));
@@ -631,7 +663,7 @@ public final class GamePlayer {
             this.playerRoom.checkChangeMap();
         }
 
-        this.playerRoom.getParseLua().handleEventPlayerWin(this, timeTaken);
+        this.playerRoom.getParseLua().handleEventPlayerWin(this, timeElapsed, timeElapsedSinceRespawn);
     }
 
     /**
@@ -657,6 +689,10 @@ public final class GamePlayer {
 
         roomName = Utils.formatRoomName(roomName, this.playerCommunity, !this.playerData.getStaffRoles().isEmpty());
         if (this.roomName.equals(roomName))
+            return;
+
+        var restrictionTimer = this.server.getTempRestrictedRoomTimer(this.getPlayerName(), roomName);
+        if (restrictionTimer != null && restrictionTimer.getRemainingTime() > 0)
             return;
 
         this.roomName = roomName;
@@ -937,7 +973,7 @@ public final class GamePlayer {
      * @param titleId The title's id.
      */
     public void sendUnlockTitle(int titleId) {
-        int titleStars = 1;
+        int titleStars = 0;
         for (PlayerTitleInfo title : this.playerData.getUnlockedTitles()) {
             if (title.titleId == titleId) {
                 titleStars = title.titleStars + 1;
@@ -950,7 +986,7 @@ public final class GamePlayer {
 
         this.playerData.getUnlockedTitles().removeIf(title -> title.titleId == titleId);
         this.playerData.getUnlockedTitles().add(new PlayerTitleInfo((short) titleId, (byte) titleStars));
-        this.playerRoom.broadcastPacket(new PacketSendUnlockTitle(this.getSessionId(), titleId, titleStars));
+        this.playerRoom.broadcastLegacyPacket(new PacketSendUnlockTitle(this.getSessionId(), titleId, titleStars));
     }
 
     /**

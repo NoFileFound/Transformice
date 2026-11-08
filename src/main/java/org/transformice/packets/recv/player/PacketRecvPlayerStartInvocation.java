@@ -26,7 +26,10 @@ public final class PacketRecvPlayerStartInvocation extends PSReceivePacket<GameS
             int angle = psData.readInt128();
             String rotation = psData.readUTF();
             boolean invocation = psData.readBoolean();
-            player.getPlayerRoom().broadcastPacket(player, new PacketSendPlayerStartInvocation(player.getSessionId(), objectCode, posX, posY, angle, rotation, invocation));
+
+            if (!player.getPlayerRoom().getParseLua().disablePrespawnPreview)
+                player.getPlayerRoom().broadcastPacket(player, new PacketSendPlayerStartInvocation(player.getSessionId(), objectCode, posX, posY, angle, rotation, invocation));
+
             player.getPlayerRoom().getParseLua().handleEventPlayerStartInvocation(player, objectCode, posX, posY, angle, rotation);
         }
     }

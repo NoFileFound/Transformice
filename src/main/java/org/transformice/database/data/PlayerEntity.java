@@ -84,6 +84,7 @@ public class PlayerEntity {
     public int adventurePoints;
     public int currentAdventureBanner;
     private final Map<Integer, Integer> playerBadges;
+    public boolean isEnabledFacebookCommand;
 
     /**
      * Creates a new player entity.
@@ -148,6 +149,7 @@ public class PlayerEntity {
         this.survivorStats = new SurvivorStats();
         this.defilanteStats = new DefilanteStats();
         this.currentAdventureBanner = 1;
+        this.isEnabledFacebookCommand = false;
     }
 
     /**
@@ -371,11 +373,18 @@ public class PlayerEntity {
      */
     @Embedded
     public static class Mission {
-        @Id private long id;
+        @Id private int id;
         private MissionType missionType;
-        private int missionProgress;
+        public int missionProgress;
         private int missionRequirement;
         private int missionAward;
+
+        /**
+         * Creates a new mission.
+         */
+        public Mission() {
+            // Required by Morphia.
+        }
 
         /**
          * Creates a new mission.
@@ -386,11 +395,44 @@ public class PlayerEntity {
          * @param missionAward The mission's prize.
          */
         public Mission(int id, MissionType missionType, int missionProgress, int missionRequirement, int missionAward) {
+            this();
             this.id = id;
             this.missionType = missionType;
             this.missionProgress = missionProgress;
             this.missionRequirement = missionRequirement;
             this.missionAward = missionAward;
+        }
+
+        /**
+         * Gets the mission's id.
+         * @return The mission's id.
+         */
+        public int getMissionId() {
+            return this.id;
+        }
+
+        /**
+         * Gets the mission's type.
+         * @return The mission's type.
+         */
+        public MissionType getMissionType() {
+            return this.missionType;
+        }
+
+        /**
+         * Gets the mission's requirement.
+         * @return The mission's requirement.
+         */
+        public int getMissionRequirement() {
+            return this.missionRequirement;
+        }
+
+        /**
+         * Gets the mission's award.
+         * @return The mission's award.
+         */
+        public int getMissionAward() {
+            return this.missionAward;
         }
     }
 

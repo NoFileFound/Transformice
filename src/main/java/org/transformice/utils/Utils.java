@@ -53,6 +53,27 @@ public final class Utils {
     }
 
     /**
+     * Converts the hex ip to normal ip address.
+     * @param ip Hex form ip address.
+     * @return A normal ip address.
+     */
+    public static String decodeIP(String ip) {
+        if (ip.isEmpty())
+            return "(offline)";
+
+        ip = ip.substring(1);
+        String[] parts = ip.split("\\.");
+        StringBuilder decodedIP = new StringBuilder();
+
+        for (String part : parts) {
+            int value = Integer.parseInt(part, 16);
+            decodedIP.append(value).append(".");
+        }
+
+        return decodedIP.substring(0, decodedIP.length() - 1);
+    }
+
+    /**
      * Converts the IP address to HEX format.
      * @param ipAddress The given IP address.
      * @return A HEX format of the ip address.
@@ -71,6 +92,58 @@ public final class Utils {
         }
 
         return encodedIP.toString();
+    }
+
+    /**
+     * Formats the room name.
+     * @param roomName The room name to format.
+     * @param roomCommunity The room's community.
+     * @param isStaff Is the player a staff member.
+     * @return The formatted room name.
+     */
+    public static String formatRoomName(String roomName, String roomCommunity, boolean isStaff) {
+        if (roomName.isEmpty())
+            return roomName;
+
+        roomCommunity = getCommunityFromLanguage(roomCommunity).toUpperCase();
+        roomName = roomName.replace("<", "lt;");
+        int sep = roomName.indexOf('-');
+        if (sep != -1) {
+            String prefix = roomName.substring(0, sep).toUpperCase();
+            String name = roomName.substring(sep + 1);
+            if (name.startsWith("*"))
+                return "int-" + name;
+
+            if (isStaff || prefix.equals(roomCommunity))
+                return roomName;
+
+            if (!getCommunityFromLanguage(prefix).equals("INT"))
+                roomName = name;
+        }
+
+        return (roomName.startsWith("*") ? "INT" : roomCommunity) + '-' + roomName;
+    }
+
+    /**
+     * Searches if string contains any html url, tags or clickque event.
+     * @param text The given string.
+     * @return 1 if string contains url, 2 if contains clickque event, 3 if contains img tag or else 0.
+     */
+    public static int filterHtml(String text) {
+        Matcher matcher = Pattern.compile("href=([\"'])(.*?)([\"'])").matcher(text);
+        if (matcher.find()) {
+            String url = matcher.group(2);
+            if (url.contains("http")) {
+                return 1;
+            } else if (!url.startsWith("event:")) {
+                return 2;
+            }
+        }
+
+        if (text.contains("<img"))
+            return 3;
+
+        return 0;
     }
 
     /**
@@ -251,72 +324,18 @@ public final class Utils {
     }
 
     /**
-     * Formats the room name.
-     * @param roomName The room name to format.
-     * @param roomCommunity The room's community.
-     * @param isStaff Is the player a staff member.
-     * @return The formatted room name.
+     * Gets the integer RGB of the Hex color.
+     * @param color The hex's color.
+     * @return -1 if its invalid or else the int RGB.
      */
-    public static String formatRoomName(String roomName, String roomCommunity, boolean isStaff) {
-        if (roomName.isEmpty())
-            return roomName;
+    public static int hexColorToInt(String color) {
+        if (color == null || !color.matches("^#[0-9A-Fa-f]{6}$"))
+            return -1;
 
-        roomCommunity = getCommunityFromLanguage(roomCommunity).toUpperCase();
-        roomName = roomName.replace("<", "lt;");
-        int sep = roomName.indexOf('-');
-        if (sep != -1) {
-            String prefix = roomName.substring(0, sep).toUpperCase();
-            String name = roomName.substring(sep + 1);
-            if (name.startsWith("*"))
-                return "int-" + name;
-
-            if (isStaff || prefix.equals(roomCommunity))
-                return roomName;
-
-            if (!getCommunityFromLanguage(prefix).equals("INT"))
-                roomName = name;
+        try {
+            return Integer.parseInt(color.substring(1), 16);
+        } catch (NumberFormatException e) {
+            return -1;
         }
-
-        return (roomName.startsWith("*") ? "INT" : roomCommunity) + '-' + roomName;
-    }
-
-    /**
-     * Searches if string contains any html url, tags or clickque event.
-     * @param text The given string.
-     * @return 1 if string contains url, 2 if contains clickque event, 3 if contains img tag or else 0.
-     */
-    public static int filterHtml(String text) {
-        Matcher matcher = Pattern.compile("href=([\"'])(.*?)([\"'])").matcher(text);
-        if (matcher.find()) {
-            String url = matcher.group(2);
-            if (url.contains("http")) {
-                return 1;
-            } else if (!url.startsWith("event:")) {
-                return 2;
-            }
-        }
-
-        if (text.contains("<img"))
-            return 3;
-
-        return 0;
-    }
-
-    /**
-     * Converts the hex ip to normal ip address.
-     * @param ip Hex form ip address.
-     * @return A normal ip address.
-     */
-    public static String decodeIP(String ip) {
-        ip = ip.substring(1);
-        String[] parts = ip.split("\\.");
-        StringBuilder decodedIP = new StringBuilder();
-
-        for (String part : parts) {
-            int value = Integer.parseInt(part, 16);
-            decodedIP.append(value).append(".");
-        }
-
-        return decodedIP.substring(0, decodedIP.length() - 1);
     }
 }

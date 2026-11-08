@@ -26,5 +26,6 @@ public final class PacketRecvPlayerSetVampire extends PSReceivePacket<GameServer
             return;
 
         room.sendAddVampire(player);
+        room.getParseLua().handleEventPlayerVampire(player, player.getPlayerName());
     }
 }

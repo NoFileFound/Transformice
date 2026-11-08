@@ -121,18 +121,24 @@ public final class ModuleSkillTree extends ModulePlayer {
                 if (playerData.shamanSkillsEnabled) {
                     if (playerData.shamanType == ShamanType.NORMAL) {
                         playerData.savesNormalWithSkill += exp;
+                        this.player.checkTitleProgress(playerData.savesNormalWithSkill, "shaman");
                     } else if (playerData.shamanType == ShamanType.HARD) {
                         playerData.savesHardWithSkill += exp;
+                        this.player.checkTitleProgress(playerData.savesHardWithSkill, "hardmode");
                     } else {
                         playerData.savesDivineWithSkill += exp;
+                        this.player.checkTitleProgress(playerData.savesDivineWithSkill, "divinemode");
                     }
                 } else {
                     if (playerData.shamanType == ShamanType.NORMAL) {
                         playerData.savesNormalWithoutSkill += exp;
+                        this.player.checkTitleProgress(playerData.savesNormalWithoutSkill, "shamannoskills");
                     } else if (playerData.shamanType == ShamanType.HARD) {
                         playerData.savesHardWithoutSkill += exp;
+                        this.player.checkTitleProgress(playerData.savesHardWithoutSkill, "hardmodenoskills");
                     } else {
                         playerData.savesDivineWithoutSkill += exp;
+                        this.player.checkTitleProgress(playerData.savesDivineWithoutSkill, "divinemodenoskills");
                     }
                 }
             }
@@ -181,7 +187,7 @@ public final class ModuleSkillTree extends ModulePlayer {
         if (!this.player.isShaman || !this.player.getPlayerData().getShamanSkills().containsKey(SkillType.SKILL_ANTIGRAVITY))
             return;
 
-        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills)
+        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills || this.player.getPlayerRoom().getParseLua().disableAllShamanSkills)
             return;
 
         this.player.getPlayerRoom().broadcastPacket(new PacketSendAntigravitySkill(objectId, 0));
@@ -195,7 +201,7 @@ public final class ModuleSkillTree extends ModulePlayer {
         if (!this.player.isShaman || !this.player.getPlayerData().getShamanSkills().containsKey(SkillType.SKILL_ARCHITECT))
             return;
 
-        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills)
+        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills || this.player.getPlayerRoom().getParseLua().disableAllShamanSkills)
             return;
 
         this.player.getPlayerRoom().broadcastPacket(new PacketSendConvertSkill(objectId, false));
@@ -209,7 +215,7 @@ public final class ModuleSkillTree extends ModulePlayer {
         if (!this.player.isShaman || !this.player.getPlayerData().getShamanSkills().containsKey(SkillType.SKILL_DEMOLISH_WORKER))
             return;
 
-        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills)
+        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills || this.player.getPlayerRoom().getParseLua().disableAllShamanSkills)
             return;
 
         this.player.getPlayerRoom().broadcastPacket(new PacketSendDemolitionSkill(objectId));
@@ -224,7 +230,7 @@ public final class ModuleSkillTree extends ModulePlayer {
         if (!this.player.isShaman || !this.player.getPlayerData().getShamanSkills().containsKey(SkillType.SKILL_HANDYMOUSE))
             return;
 
-        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().getRoomType() == RoomType.SURVIVOR || this.player.getPlayerRoom().disableAllShamanSkills)
+        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().getRoomType() == RoomType.SURVIVOR || this.player.getPlayerRoom().disableAllShamanSkills || this.player.getPlayerRoom().getParseLua().disableAllShamanSkills)
             return;
 
         GameRoom myRoom = this.player.getPlayerRoom();
@@ -245,7 +251,7 @@ public final class ModuleSkillTree extends ModulePlayer {
         if (!this.player.isShaman || !this.player.getPlayerData().getShamanSkills().containsKey(SkillType.SKILL_LEAF))
             return;
 
-        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().getRoomType() == RoomType.SURVIVOR || this.player.getPlayerRoom().disableAllShamanSkills)
+        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().getRoomType() == RoomType.SURVIVOR || this.player.getPlayerRoom().disableAllShamanSkills || this.player.getPlayerRoom().getParseLua().disableAllShamanSkills)
             return;
 
         this.player.getPlayerRoom().broadcastPacket(new PacketSendLeafSkill(true, sessionId));
@@ -261,7 +267,7 @@ public final class ModuleSkillTree extends ModulePlayer {
         if (!this.player.isShaman || !this.player.getPlayerData().getShamanSkills().containsKey(SkillType.SKILL_PROJECTION))
             return;
 
-        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills)
+        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills || this.player.getPlayerRoom().getParseLua().disableAllShamanSkills)
             return;
 
         this.player.getPlayerRoom().broadcastPacket(this.player, new PacketSendProjectionSkill(posX, posY, distance));
@@ -275,7 +281,7 @@ public final class ModuleSkillTree extends ModulePlayer {
         if (!this.player.isShaman || !this.player.getPlayerData().getShamanSkills().containsKey(SkillType.SKILL_RECYCLING))
             return;
 
-        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills)
+        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills || this.player.getPlayerRoom().getParseLua().disableAllShamanSkills)
             return;
 
         this.player.getPlayerRoom().broadcastPacket(new PacketSendRecyclingSkill(jointId));
@@ -290,7 +296,7 @@ public final class ModuleSkillTree extends ModulePlayer {
         if (!this.player.isShaman || !this.player.getPlayerData().getShamanSkills().containsKey(SkillType.SKILL_RESTORATIVE))
             return;
 
-        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills)
+        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills || this.player.getPlayerRoom().getParseLua().disableAllShamanSkills)
             return;
 
         this.player.getPlayerRoom().broadcastPacket(new PacketSendRestorativeSkill(objectId, objectId2));
@@ -305,7 +311,7 @@ public final class ModuleSkillTree extends ModulePlayer {
      * @param angle The angle where skill is going to summon.
      */
     public void handleSkill(int objectId, int shamanObjectId, int posX, int posY, int angle) {
-        if (!this.player.isShaman || (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills) && shamanObjectId != 44)
+        if (!this.player.isShaman || (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills || this.player.getPlayerRoom().getParseLua().disableAllShamanSkills) && shamanObjectId != 44)
             return;
 
         var room = this.player.getPlayerRoom();
@@ -510,7 +516,7 @@ public final class ModuleSkillTree extends ModulePlayer {
      * @param actionType The action type.
      */
     public void handleSkillByAction(int actionType) {
-        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills)
+        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills || this.player.getPlayerRoom().getParseLua().disableAllShamanSkills)
             return;
 
         int actionId = -1;
@@ -556,7 +562,7 @@ public final class ModuleSkillTree extends ModulePlayer {
         if (!this.player.isShaman || !this.player.getPlayerData().getShamanSkills().containsKey(SkillType.SKILL_ANGEL))
             return;
 
-        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills)
+        if (!this.player.getPlayerData().shamanSkillsEnabled || this.player.getPlayerRoom().disableAllShamanSkills || this.player.getPlayerRoom().getParseLua().disableAllShamanSkills)
             return;
 
         this.player.getPlayerRoom().broadcastPacket(this.player, new PacketSendShamanFlySkill(this.player.getSessionId(), isFlying));

@@ -16,24 +16,12 @@ public final class PacketSendPlayerSetVampire extends PSSendPacket {
      * @param sessionId The player's session id.
      * @param isTransmissible Is transmissible.
      */
-    public PacketSendPlayerSetVampire(int sessionId, boolean isTransmissible) {
+    public PacketSendPlayerSetVampire(int sessionId, boolean isVampire, boolean isTransmissible) {
         super(PacketOpcodes.SEND_PLAYER_SET_VAMPIRE);
         this.sessionId = sessionId;
-        this.isVampire = true;
+        this.isVampire = isVampire;
         this.isTransmissible = isTransmissible;
     }
-
-    /**
-     * Creates a new packet of SEND_PLAYER_SET_VAMPIRE.
-     * @param sessionId The player's session id.
-     */
-    public PacketSendPlayerSetVampire(int sessionId) {
-        super(PacketOpcodes.SEND_PLAYER_SET_VAMPIRE);
-        this.sessionId = sessionId;
-        this.isVampire = false;
-        this.isTransmissible = false;
-    }
-
 
     @Override
     public PSByteArray build() throws PSSendPacketException {

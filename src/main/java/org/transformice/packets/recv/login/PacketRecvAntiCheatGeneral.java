@@ -28,6 +28,6 @@ public final class PacketRecvAntiCheatGeneral extends PSReceivePacket<GameServer
                 break;
         }
 
-        gameServer.sendPlayerBan(client.getPlayer().getPlayerName(), 24, "Hack", null, true);
+        client.getPlayer().disconnect(true);
     }
 }

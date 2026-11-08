@@ -49,10 +49,14 @@ import org.transformice.config.TransformiceConfig;
 import org.transformice.config.VillageNPCConfig;
 import org.transformice.config.inventory.ConsumableConfig;
 import org.transformice.config.shop.ShopConfig;
+import org.transformice.config.titleconfig.TitleConfig;
 import org.transformice.data.objects.RoomType;
 import org.transformice.data.objects.StaffRoleType;
 import org.transformice.database.GameDatabaseManager;
 import org.transformice.database.GameDatabaseManagerFactory;
+import org.transformice.database.data.IpTempBanEntry;
+import org.transformice.database.data.PlayerEntity;
+import org.transformice.database.data.SanctionEntry;
 import org.transformice.modules.ModuleCafe;
 import org.transformice.modules.ModuleDelichoc;
 import org.transformice.modules.ModuleEvents;
@@ -64,20 +68,22 @@ import org.transformice.utils.PlayerQueue;
 import org.transformice.utils.Utils;
 
 // Packets
+import org.transformice.packets.send.chat.PacketSendServerMessage;
 import org.transformice.packets.send.chat.PacketSendStaffChatMessage;
 import org.transformice.packets.send.informations.PacketSendServerRestart;
+import org.transformice.packets.send.informations.PacketSendTranslatedMessage;
 
 public final class GameServer extends PSGameServer {
     private static final char[] FILTER_CHARS = "!@#$%&*?".toCharArray();
     private final TransformiceConfig tfmConfig;
     private Map<Integer, ConsumableConfig> inventoryConfig;
     private Map<String, VillageNPCConfig> villageNPCConfig;
+    private TitleConfig titlesConfig;
     private ShopConfig shopConfig;
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
     private final List<Channel> channels;
     private final PSPacketHandler generalPacketHandler;
-    private final Map<String, Long> tempBannedIPs;
     private final Map<ChannelId, NetSession> clientSessions;
     private final Map<String, GamePlayer> players;
     private final Map<String, GameRoom> rooms;
@@ -85,8 +91,12 @@ public final class GameServer extends PSGameServer {
     private final Map<String, PSTimer> accountCreationTimer;
     private final Map<String, PSTimer> marriageTimers;
     private final Map<String, PSTimer> redistributionSkillTimer;
+    private final Map<String, PSTimer> dailyQuestGenerateTimer;
+    private final Map<String, PSTimer> dailyQuestChangeTimer;
+    private final Map<String, Map<String, PSTimer>> tempRestrictedRoomsTimer;
     private final Map<String, Map<String, Deque<String[]>>> chatMessages;
     private final Map<String, Map<String, Deque<String[]>>> whisperMessages;
+    private final Map<String, List<String>> sonarPlayerMovement;
     private final Set<String> maximumPlayerCount;
     private final Pattern chatFilterPattern;
     private final PlayerQueue playerQueue;
@@ -124,7 +134,6 @@ public final class GameServer extends PSGameServer {
         this.workerGroup = new NioEventLoopGroup();
         this.channels = new ArrayList<>();
         this.generalPacketHandler = new PSPacketHandler("org.transformice.packets.recv");
-        this.tempBannedIPs = new ConcurrentHashMap<>();
         this.clientSessions = new ConcurrentHashMap<>();
         this.players = new ConcurrentHashMap<>();
         this.rooms = new ConcurrentHashMap<>();
@@ -140,6 +149,7 @@ public final class GameServer extends PSGameServer {
             this.pssmtp = null;
         else
             this.pssmtp = new PSSMTP(this.tfmConfig.getSMTPConfig().getHost(), this.tfmConfig.getSMTPConfig().getPort(), this.tfmConfig.getSMTPConfig().getUsername(), this.tfmConfig.getSMTPConfig().getPassword(), this.tfmConfig.getSMTPConfig().getUsername(), true, false);
+        this.sonarPlayerMovement = new HashMap<>();
 
         // Instances
         this.commandManager = new CommandLoader(this);
@@ -151,9 +161,12 @@ public final class GameServer extends PSGameServer {
         this.parseDelichoc = new ModuleDelichoc(this);
 
         // Timers
-        this.accountCreationTimer = new HashMap<>();
+        this.accountCreationTimer = new ConcurrentHashMap<>();
         this.marriageTimers = new ConcurrentHashMap<>();
         this.redistributionSkillTimer = new HashMap<>();
+        this.tempRestrictedRoomsTimer = new ConcurrentHashMap<>();
+        this.dailyQuestGenerateTimer = new HashMap<>();
+        this.dailyQuestChangeTimer = new HashMap<>();
     }
 
     /**
@@ -192,11 +205,15 @@ public final class GameServer extends PSGameServer {
 
             this.inventoryConfig = PSJson.readFile(new File("./config/inventory.json"), new TypeReference<>() {});
             this.villageNPCConfig = PSJson.readFile(new File("./config/village_npcs.json"), new TypeReference<>() {});
+            this.titlesConfig = PSJson.readFile(new File("./config/titles.json"), new TypeReference<>() {});
             this.logger.info("[Inventory] Loaded the inventory resources.");
             this.shopConfig = PSJson.readFile(new File("./config/shop.json"), new TypeReference<>() {});
             this.logger.info("[Shop] Loaded total {} shop banners.", this.shopConfig.getShopBanners().size());
             this.logger.info("[Shop] Loaded total {} shop emoji.", this.shopConfig.getShopEmoji().size());
+            this.logger.info("[Shop] Loaded total {} shop regular items.", this.shopConfig.getShopItems().size());
             this.logger.info("[Shop] Loaded total {} shop shaman items.", this.shopConfig.getShopShamanItems().size());
+            this.logger.info("[Shop] Loaded total {} shop promotions.", this.tfmConfig.getGameConfig().getShopPromotions().size());
+            this.logger.info("[Shop] Loaded total {} shop outfits.", this.tfmConfig.getGameConfig().getShopOutfits().size());
         } catch (Exception ex) {
             this.logger.error("Unable to initialize the game server. It is not safe to continue.", ex);
             System.exit(1);
@@ -431,6 +448,15 @@ public final class GameServer extends PSGameServer {
         return this.marriageTimers.computeIfAbsent(username, _ -> new PSTimer(this.scheduler, 1, TimeUnit.HOURS));
     }
 
+    /**
+     * Gets the restricted room timer based on the player.
+     * @param username The player.
+     * @param roomName The room's name.
+     * @return The player's temp restricted room timer.
+     */
+    public PSTimer getTempRestrictedRoomTimer(String username, String roomName) {
+        return this.tempRestrictedRoomsTimer.computeIfAbsent(username, _ -> new ConcurrentHashMap<>()).put(roomName, new PSTimer(this.scheduler, 1, TimeUnit.HOURS));
+    }
 
     /**
      * Gets the next counter by variable name from the database.
@@ -490,7 +516,7 @@ public final class GameServer extends PSGameServer {
      */
     public String getRecommendedRoom(String roomName, String community) {
         if (roomName.isEmpty())
-            roomName = "1";
+            roomName = community + "-1";
 
         String roomKey = community + "-" + roomName;
         GameRoom room = this.rooms.get(roomKey);
@@ -573,19 +599,29 @@ public final class GameServer extends PSGameServer {
     }
 
     /**
+     * Gets the daily quest's generator timer.
+     * @param username The player's username.
+     * @return The daily quest's generator timer.
+     */
+    public PSTimer getDailyQuestGenerateTimer(String username) {
+        return this.dailyQuestGenerateTimer.computeIfAbsent(username, _ -> new PSTimer(this.scheduler, 24, TimeUnit.HOURS));
+    }
+
+    /**
+     * Gets the daily quest's change timer.
+     * @param username The player's username.
+     * @return The daily quest's change timer.
+     */
+    public PSTimer getDailyQuestChangeTimer(String username) {
+        return this.dailyQuestChangeTimer.computeIfAbsent(username, _ -> new PSTimer(this.scheduler, 24, TimeUnit.HOURS));
+    }
+
+    /**
      * Gets the server's smtp.
      * @return The server's SMTP.
      */
     public PSSMTP getPssmtp() {
         return this.pssmtp;
-    }
-
-    /**
-     * Gets the server's temperately banned IP Addresses.
-     * @return The server's temp banned IPs.
-     */
-    public Map<String, Long> getTempBannedIPs() {
-        return this.tempBannedIPs;
     }
 
     /**
@@ -622,6 +658,22 @@ public final class GameServer extends PSGameServer {
     }
 
     /**
+     * Gets the players's movement.
+     * @return The players's movement.
+     */
+    public Map<String, List<String>> getSonarPlayerMovement() {
+        return this.sonarPlayerMovement;
+    }
+
+    /**
+     * Gets the title's config.
+     * @return The title's config.
+     */
+    public TitleConfig getTitleConfig() {
+        return this.titlesConfig;
+    }
+
+    /**
      * Gets the XML map from the vanilla maps.
      * @param mapCode The vanilla's map code.
      * @return The vanilla's map xml.
@@ -647,6 +699,210 @@ public final class GameServer extends PSGameServer {
         }
 
         return matcher.appendTail(result).toString();
+    }
+
+    /**
+     * Bans the player.
+     * @param playerName The player's name.
+     * @param banHours The ban hours.
+     * @param banReason The ban's reason.
+     * @param moderatorPlayer The moderator's instance.
+     * @param isSilent Is the ban message silent.
+     * @return True if the ban was successful or else False.
+     */
+    public boolean sendPlayerBan(String playerName, int banHours, String banReason, GamePlayer moderatorPlayer, boolean isSilent) {
+        if (playerName.equals(moderatorPlayer.getPlayerName()))
+            return false;
+
+        if (banHours <= 0) {
+            moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, "Invalid ban duration."));
+            return false;
+        }
+
+        GamePlayer player = this.players.get(playerName);
+        if (player != null && player.getIsGuest()) {
+            banHours = Math.max(banHours, 24);
+            this.sendIPBan(player.getIpAddress(), banHours, banReason);
+            moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, String.format("The player %s got banned.", playerName)));
+            this.sendServerMessageOthers(moderatorPlayer, String.format("%s banned the player %s for %sh (%s).", moderatorPlayer.getPlayerName(), playerName, banHours, banReason), StaffRoleType.PUBLIC_MODO);
+            return true;
+        }
+
+        PlayerEntity playerEntity = this.getDatabase().loadPlayerByName(playerName);
+        if (playerEntity == null) {
+            moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, "The supplied argument isn't a valid nickname."));
+            return false;
+        }
+
+        SanctionEntry lastSanction = this.getDatabase().loadLastSanction(playerName, SanctionEntry.SanctionType.SANCTION_BAN);
+        if (lastSanction != null) {
+            moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, String.format("Player [%s] is already banned, please wait.", playerName)));
+            return false;
+        }
+
+        long endDate = Utils.getUnixTime() + (banHours * 3600L);
+        SanctionEntry sanction = new SanctionEntry(this.getNextDatabaseCounterId("lastSanctionId"), playerName, player != null ? player.getIpAddress() : "", SanctionEntry.SanctionType.SANCTION_BAN, moderatorPlayer.getPlayerName(), banReason, endDate);
+        this.getDatabase().saveSanction(sanction);
+        if (player != null) {
+            if (!isSilent)
+                player.getPlayerRoom().broadcastPacket(player, new PacketSendStaffChatMessage(0, "", "$Message_Ban", new ArrayList<>(List.of(playerName, String.valueOf(banHours), banReason)), true));
+
+            this.sendIPBan(player.getIpAddress(), banHours, banReason);
+            player.disconnect(true);
+        }
+
+        moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, String.format("The player %s got banned.", playerName)));
+        this.sendServerMessageOthers(moderatorPlayer, String.format("%s %s banned the player %s for %sh (%s).", moderatorPlayer.getPlayerName(), (player != null ? "" : "offline"), playerName, banHours, banReason), StaffRoleType.PUBLIC_MODO);
+        return true;
+    }
+
+    /**
+     * Bans an ip address.
+     * @param ipAddress The given ip address.
+     * @param banHours The ban hours.
+     * @param reason The reason.
+     */
+    public void sendIPBan(String ipAddress, int banHours, String reason) {
+        if (this.databaseManager.isIpBlacklisted(ipAddress))
+            return;
+
+        this.databaseManager.saveIpTempBan(new IpTempBanEntry(ipAddress, banHours, reason));
+    }
+
+    /**
+     * Unbans an ip address.
+     * @param ipAddress The given ip address.
+     * @param player The moderator's instance.
+     */
+    public void sendIPUnban(String ipAddress, GamePlayer player) {
+        var info = this.databaseManager.loadTempIpBanByIp(ipAddress);
+        if (info == null) {
+            player.broadcastPacket(new PacketSendServerMessage(true, String.format("The provided IP address (%s) is not banned", ipAddress)));
+            return;
+        }
+
+        this.databaseManager.deleteIpTempBan(info);
+    }
+
+    /**
+     * Kicks the player.
+     * @param playerName The player's name.
+     * @param kickReason The kick's reason.
+     * @param moderatorPlayer The kick's moderator.
+     */
+    public void sendPlayerKick(String playerName, String kickReason, GamePlayer moderatorPlayer) {
+        if (playerName.equals(moderatorPlayer.getPlayerName()))
+            return;
+
+        GamePlayer player = this.players.get(playerName);
+        if (player == null) {
+            moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, "The player is not connected."));
+            return;
+        }
+
+        player.disconnect(true);
+        moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, String.format("The player %s got kicked.", playerName)));
+        this.sendServerMessageOthers(moderatorPlayer, String.format("%s kicked the player %s (%s).", moderatorPlayer.getPlayerName(), playerName, kickReason), StaffRoleType.PUBLIC_MODO);
+    }
+
+    /**
+     * Mutes the player.
+     * @param playerName The player's name.
+     * @param muteHours The mute's duration.
+     * @param muteReason The mute's reason.
+     * @param moderatorPlayer The mute's moderator.
+     * @param isSilent is the mute message silent.
+     */
+    public void sendPlayerMute(String playerName, int muteHours, String muteReason, GamePlayer moderatorPlayer, boolean isSilent) {
+        if (playerName.equals(moderatorPlayer.getPlayerName()))
+            return;
+
+        if (muteHours <= 0) {
+            moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, "Invalid mute duration."));
+            return;
+        }
+
+        GamePlayer player = this.players.get(playerName);
+        PlayerEntity playerEntity = this.getDatabase().loadPlayerByName(playerName);
+        if (playerEntity == null) {
+            moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, "The supplied argument isn't a valid nickname."));
+            return;
+        }
+
+        SanctionEntry lastSanction = this.getDatabase().loadLastSanction(playerName, SanctionEntry.SanctionType.SANCTION_MUTE);
+        if (lastSanction != null) {
+            moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, String.format("Player [%s] is already muted, please wait.", playerName)));
+            return;
+        }
+
+        long endDate = Utils.getUnixTime() + (muteHours * 3600L);
+        SanctionEntry sanction = new SanctionEntry(this.getNextDatabaseCounterId("lastSanctionId"), playerName, player != null ? player.getIpAddress() : "", SanctionEntry.SanctionType.SANCTION_MUTE, moderatorPlayer.getPlayerName(), muteReason, endDate);
+        this.getDatabase().saveSanction(sanction);
+        if (player != null) {
+            if (!isSilent)
+                player.getPlayerRoom().broadcastPacket(player, new PacketSendTranslatedMessage("", "<ROSE>$MuteInfo2</ROSE>", new String[]{playerName, String.valueOf(muteHours), muteReason}));
+
+            player.broadcastPacket(new PacketSendTranslatedMessage("", "<ROSE>$MuteInfo1</ROSE>", new String[]{String.valueOf(muteHours), muteReason}));
+        }
+
+        moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, String.format("The player %s got muted.", playerName)));
+        this.sendServerMessageOthers(moderatorPlayer, String.format("%s %s muted the player %s for %sh (%s)", moderatorPlayer.getPlayerName(), (player != null ? "" : "offline"), playerName, muteHours, muteReason), StaffRoleType.PUBLIC_MODO);
+    }
+
+    /**
+     * Unbans the player.
+     * @param playerName The player's name.
+     * @param unbanReason The unban reason.
+     * @param moderatorPlayer The unban's moderator.
+     */
+    public void sendPlayerUnban(String playerName, String unbanReason, GamePlayer moderatorPlayer) {
+        PlayerEntity playerEntity = this.getDatabase().loadPlayerByName(playerName);
+        if (playerEntity == null) {
+            moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, "The supplied argument isn't a valid nickname."));
+            return;
+        }
+
+        SanctionEntry lastSanction = this.getDatabase().loadLastSanction(playerName, SanctionEntry.SanctionType.SANCTION_BAN);
+        if (lastSanction == null) {
+            moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, String.format("The player %s is not banned yet.", playerName)));
+            return;
+        }
+
+        lastSanction.sanctionState = SanctionEntry.SanctionState.CANCELED;
+        lastSanction.cancelDate = Utils.getUnixTime();
+        lastSanction.cancelAuthor = moderatorPlayer.getPlayerName();
+        lastSanction.cancelReason = unbanReason;
+        this.getDatabase().saveSanction(lastSanction);
+        moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, String.format("The player %s got unbanned.", playerName)));
+        this.sendServerMessageOthers(moderatorPlayer, String.format("%s unbanned the player %s (%s).", moderatorPlayer.getPlayerName(), playerName, unbanReason), StaffRoleType.PUBLIC_MODO);
+    }
+
+    /**
+     * Unmutes the player.
+     * @param playerName The player's name.
+     * @param unmuteReason The unmute's reason.
+     * @param moderatorPlayer The unmute's moderator.
+     */
+    public void sendPlayerUnmute(String playerName, String unmuteReason, GamePlayer moderatorPlayer) {
+        PlayerEntity playerEntity = this.getDatabase().loadPlayerByName(playerName);
+        if (playerEntity == null) {
+            moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, "The supplied argument isn't a valid nickname."));
+            return;
+        }
+
+        SanctionEntry lastSanction = this.getDatabase().loadLastSanction(playerName, SanctionEntry.SanctionType.SANCTION_MUTE);
+        if (lastSanction == null) {
+            moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, String.format("The player %s is not muted yet.", playerName)));
+            return;
+        }
+
+        lastSanction.sanctionState = SanctionEntry.SanctionState.CANCELED;
+        lastSanction.cancelDate = Utils.getUnixTime();
+        lastSanction.cancelAuthor = moderatorPlayer.getPlayerName();
+        lastSanction.cancelReason = unmuteReason;
+        this.getDatabase().saveSanction(lastSanction);
+        moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, String.format("The player %s got unmuted.", playerName)));
+        this.sendServerMessageOthers(moderatorPlayer, String.format("%s unmuted the player %s (%s).", moderatorPlayer.getPlayerName(), playerName, unmuteReason), StaffRoleType.PUBLIC_MODO);
     }
 
     /**
@@ -694,8 +950,8 @@ public final class GameServer extends PSGameServer {
             boolean hasPermission = switch (channelId) {
                 case 3, 4 -> player.hasStaffPermission(StaffRoleType.TRIAL_MODO, true) || player.hasStaffPermission(StaffRoleType.PUBLIC_MODO, true) || player.hasStaffPermission(StaffRoleType.PRIVATE_MODO, true);
                 case 2, 5 -> player.hasStaffPermission(StaffRoleType.ARBITRE, true) || player.hasStaffPermission(StaffRoleType.TRIAL_MODO, true) || player.hasStaffPermission(StaffRoleType.PUBLIC_MODO, true) || player.hasStaffPermission(StaffRoleType.PRIVATE_MODO, true);
-                case 7 -> player.hasStaffPermission(StaffRoleType.LUADEV, true);
-                case 8 -> player.hasStaffPermission(StaffRoleType.MAPCREW, true);
+                case 8 -> player.hasStaffPermission(StaffRoleType.LUADEV, true);
+                case 7 -> player.hasStaffPermission(StaffRoleType.MAPCREW, true);
                 case 9 -> player.hasStaffPermission(StaffRoleType.FUNCORP, true);
                 case 10 -> player.hasStaffPermission(StaffRoleType.FASHIONSQUAD, true);
                 default -> false;
@@ -708,26 +964,23 @@ public final class GameServer extends PSGameServer {
         }
     }
 
-
-
-
-
-
-
-    public void sendPlayerBan(String playerName, int banHours, String banReason, GamePlayer banModerator, boolean isSilent) {
-        ///  TODO: IMPLEMENT
-
-    }
-
-    public void sendPlayerMute(String playerName, int banHours, String banReason, GamePlayer banModerator, boolean isSilent) {
-        ///  TODO: IMPLEMENT
-    }
-
-    public void sendPlayerUnmute(String playerName, String banReason, GamePlayer muteModerator) {
-        ///  TODO: IMPLEMENT
-    }
-
+    /**
+     * Sends a #Server message to every else in the server.
+     * @param player The excluded player.
+     * @param message The message to send.
+     * @param staffRole The minimum required staff role.
+     */
     public void sendServerMessageOthers(GamePlayer player, String message, StaffRoleType staffRole) {
-        ///  TODO: IMPLEMENT
+        for (GamePlayer target : this.players.values()) {
+            if (target == player)
+                continue;
+
+            List<StaffRoleType> targetRoles = target.getPlayerData().getStaffRoles();
+            boolean isAdmin = targetRoles.contains(StaffRoleType.ADMIN);
+            boolean isModerator = isAdmin || targetRoles.contains(StaffRoleType.PUBLIC_MODO) || targetRoles.contains(StaffRoleType.PRIVATE_MODO) || targetRoles.contains(StaffRoleType.TRIAL_MODO);
+            boolean canSee = isAdmin || (staffRole == StaffRoleType.MAPCREW && (isModerator || targetRoles.contains(StaffRoleType.MAPCREW))) || ((staffRole == StaffRoleType.PUBLIC_MODO || staffRole == StaffRoleType.PRIVATE_MODO) && isModerator);
+            if (canSee)
+                target.broadcastPacket(new PacketSendServerMessage(false, message));
+        }
     }
 }

@@ -11,7 +11,9 @@ public class ShopConfig {
     @JsonProperty("shop_emoji")
     private Map<Integer, ShopEmojiConfig> shop_emoji = new HashMap<>();
     @JsonProperty("shop_items")
-    private Map<Integer, ShopItemConfig> shop_items = new HashMap<>();
+    private Map<String, ShopItemConfig> shop_items = new HashMap<>();
+    @JsonProperty("shop_items_badges")
+    private Map<String, Integer> shop_items_badges = new HashMap<>();
     @JsonProperty("shop_shaman_items")
     private Map<Integer, ShopShamanItemConfig> shop_shaman_items = new HashMap<>();
 
@@ -42,8 +44,16 @@ public class ShopConfig {
      * Gets the shop regular items.
      * @return The shop regular items.
      */
-    public Map<Integer, ShopItemConfig> getShopItems() {
+    public Map<String, ShopItemConfig> getShopItems() {
         return this.shop_items;
+    }
+
+    /**
+     * Gets the shop regular item's badges.
+     * @return The shop regular item's badges.
+     */
+    public Map<String, Integer> getShopItemsBadges() {
+        return this.shop_items_badges;
     }
 
     /**
@@ -144,7 +154,66 @@ public class ShopConfig {
      * Creates a new shop item
      */
     public static class ShopItemConfig {
+        @JsonProperty("color_num")
+        private int color_num;
+        @JsonProperty("type")
+        private int type;
+        @JsonProperty("cheese_price")
+        private int cheese_price;
+        @JsonProperty("strawberry_price")
+        private int strawberry_price;
+        @JsonProperty("is_new")
+        private boolean is_new;
+        @JsonProperty("require_another_item")
+        private int require_another_item;
 
+        /**
+         * Gets the item's color len.
+         * @return The item's color len.
+         */
+        public int getColorNum() {
+            return this.color_num;
+        }
+
+        /**
+         * Gets the item's type.
+         * @return The item's type.
+         */
+        public int getType() {
+            return this.type;
+        }
+
+        /**
+         * Gets the shop item's cheese price.
+         * @return The item's cheese price.
+         */
+        public int getCheesePrice() {
+            return this.cheese_price;
+        }
+
+        /**
+         * Gets the shop item's strawberry price.
+         * @return The shop item's strawberry price.
+         */
+        public int getStrawberryPrice() {
+            return this.strawberry_price;
+        }
+
+        /**
+         * Checks if the shop item is new.
+         * @return True if the shop item is new or else False.
+         */
+        public boolean getIsNew() {
+            return this.is_new;
+        }
+
+        /**
+         * Gets the other item required to purchase the current item.
+         * @return The required item.
+         */
+        public int getRequireAnotherItem() {
+            return this.require_another_item;
+        }
     }
 
     /**

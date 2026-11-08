@@ -41,6 +41,25 @@ public final class MongoGameDatabaseManager implements GameDatabaseManager {
     }
 
     /**
+     * Checks if the ip address is blacklisted.
+     * @param ipAddress The given ip address.
+     * @return True if the ip address is blacklisted or else False.
+     */
+    @Override
+    public boolean isIpBlacklisted(String ipAddress) {
+        IpTempBanEntry entry = this.datastore.find(IpTempBanEntry.class).filter(Filters.eq("ipAddress", ipAddress)).first();
+        if (entry == null)
+            return false;
+
+        if (Utils.getUnixTime() >= entry.getStartTime() + entry.getDuration() * 3600L) {
+            this.datastore.delete(entry);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Deletes all login logs.
      */
     @Override
@@ -66,6 +85,15 @@ public final class MongoGameDatabaseManager implements GameDatabaseManager {
             return;
 
         this.datastore.delete(cafeData);
+    }
+
+    /**
+     * Deletes a ip temp ban.
+     * @param ipTempBanData The ip temp's data.
+     */
+    @Override
+    public void deleteIpTempBan(IpTempBanEntry ipTempBanData) {
+        this.datastore.delete(ipTempBanData);
     }
 
     /**
@@ -294,6 +322,37 @@ public final class MongoGameDatabaseManager implements GameDatabaseManager {
     }
 
     /**
+     * Loads shop gift by id.
+     * @param giftId The gift's id.
+     * @return The shop gift data.
+     */
+    @Override
+    public ShopgiftEntry loadShopGiftById(int giftId) {
+        return this.datastore.find(ShopgiftEntry.class).filter(Filters.eq("id", giftId)).first();
+    }
+
+    /**
+     * Loads shop gifts by receiver.
+     * @param playerName The receiver's name.
+     * @param hasResponded Has a respond message.
+     * @return List of shop gifts.
+     */
+    @Override
+    public List<ShopgiftEntry> loadShopGiftsByReceiver(String playerName, boolean hasResponded) {
+        return this.datastore.find(ShopgiftEntry.class).filter(Filters.eq((hasResponded ? "sender" : "receiver"), playerName)).filter(Filters.eq("hasOpened", hasResponded)).filter(Filters.eq("hasRespond", hasResponded)).iterator().toList();
+    }
+
+    /**
+     * Loads temp ip ban info.
+     * @param ipAddress The given ip address.
+     * @return The temp ip ban info.
+     */
+    @Override
+    public IpTempBanEntry loadTempIpBanByIp(String ipAddress) {
+        return this.datastore.find(IpTempBanEntry.class).filter(Filters.eq("ipAddress", ipAddress)).first();
+    }
+
+    /**
      * Loads the tribe from the database.
      * @param tribeName The tribe's name.
      * @return Tribe data from the database.
@@ -398,5 +457,23 @@ public final class MongoGameDatabaseManager implements GameDatabaseManager {
             return;
 
         this.datastore.save(mySanction);
+    }
+
+    /**
+     * Saves a shop gift.
+     * @param gift The gift's data.
+     */
+    @Override
+    public void saveShopGift(ShopgiftEntry gift) {
+        this.datastore.save(gift);
+    }
+
+    /**
+     * Saves the ip temp ban.
+     * @param ipTempBanEntry The ip temp ban's data.
+     */
+    @Override
+    public void saveIpTempBan(IpTempBanEntry ipTempBanEntry) {
+        this.datastore.save(ipTempBanEntry);
     }
 }

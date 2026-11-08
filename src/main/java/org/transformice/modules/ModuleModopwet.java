@@ -171,27 +171,23 @@ public final class ModuleModopwet extends ModuleServer {
      * @param isSilent Is the ban going to be silent in the room.
      */
     public void handleBanHack(GamePlayer moderatorPlayer, String playerName, boolean isSilent) {
-        GamePlayer reportedPlayer = this.server.getPlayers().get(playerName);
-        if (reportedPlayer == null) {
-            moderatorPlayer.broadcastPacket(new PacketSendServerMessage(true, "The supplied argument isn't a valid nickname."));
-            return;
-        }
+        boolean result = this.server.sendPlayerBan(playerName, 360, "$MessageTriche", moderatorPlayer, isSilent);
+        if (result) {
+            ReportEntry myReport = this.latestReportByPlayer.get(playerName);
+            if (myReport != null) {
+                myReport.isResolved = true;
+                myReport.resolvedBy = moderatorPlayer.getPlayerName();
+                for (ReportEntry.ReporterEntry reporter : myReport.getReporters()) {
+                    String reporterName = reporter.playerName;
+                    GamePlayer reporterPlayer = this.server.getPlayers().get(reporterName);
+                    PlayerEntity reporterEntity = reporterPlayer != null ? reporterPlayer.getPlayerData() : this.server.getDatabase().loadPlayerByName(reporterName);
+                    reporterEntity.playerKarma++;
+                    if (!reporterName.startsWith("*"))
+                        this.server.getDatabase().savePlayer(reporterEntity);
 
-        this.server.sendPlayerBan(reportedPlayer.getPlayerName(), 360, "$MessageTriche", moderatorPlayer, isSilent);
-        ReportEntry myReport = this.latestReportByPlayer.get(reportedPlayer.getPlayerName());
-        if (myReport != null) {
-            myReport.isResolved = true;
-            myReport.resolvedBy = moderatorPlayer.getPlayerName();
-            for (ReportEntry.ReporterEntry reporter : myReport.getReporters()) {
-                String reporterName = reporter.playerName;
-                GamePlayer reporterPlayer = this.server.getPlayers().get(reporterName);
-                PlayerEntity reporterEntity = reporterPlayer != null ? reporterPlayer.getPlayerData() : this.server.getDatabase().loadPlayerByName(reporterName);
-                reporterEntity.playerKarma++;
-                if (!reporterName.startsWith("*"))
-                    this.server.getDatabase().savePlayer(reporterEntity);
-
-                if (reporterPlayer != null) {
-                    reporterPlayer.broadcastPacket(new PacketSendServerMessage(true, String.format("$Traitement_Signalement (Karma %d)", reporterEntity.playerKarma), new ArrayList<>(List.of(reportedPlayer.getPlayerName()))));
+                    if (reporterPlayer != null) {
+                        reporterPlayer.broadcastPacket(new PacketSendServerMessage(true, String.format("$Traitement_Signalement (Karma %d)", reporterEntity.playerKarma), new ArrayList<>(List.of(playerName))));
+                    }
                 }
             }
         }

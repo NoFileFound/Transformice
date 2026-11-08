@@ -520,7 +520,7 @@ public final class ModuleInventory extends ModulePlayer {
                     default -> 0;
                 };
 
-                this.player.getPlayerRoom().broadcastPacket(new PacketSendVisualizeConsumable(this.player.getSessionId(), 1, new Object[]{500, this.player.drawColor}));
+                this.player.broadcastPacket(new PacketSendVisualizeConsumable(this.player.getSessionId(), 1, new Object[]{500, this.player.drawColor}));
             }
 
             case 2250 -> {
@@ -657,7 +657,12 @@ public final class ModuleInventory extends ModulePlayer {
                         this.player.getParseInventory().addConsumable(String.valueOf(itemConfig.getItemId()), itemConfig.getQuantity(), true);
                         break;
                     case 5:
-                        /// TODO: this.server.getParseShop().sendAddShopItem(this.player, itemConfig.getItemId(), false);
+                        if (!this.player.getPlayerData().getShopItems().containsKey(itemConfig.getItemId())){
+                            int[] shopInfo = this.server.getParseShop().getServerShopInfo(itemConfig.getItemId());
+                            this.player.getPlayerData().getShopItems().put(itemConfig.getItemId(), "");
+                            if (this.server.getShopConfig().getShopItemsBadges().containsKey(shopInfo[1] + "_" + shopInfo[0]))
+                                this.player.sendUnlockBadge(this.server.getShopConfig().getShopItemsBadges().get(shopInfo[1] + "_" + shopInfo[0]));
+                        }
                         break;
                     case 7:
                         if (!this.player.getPlayerData().getShopEmojis().contains(itemConfig.getItemId()))
