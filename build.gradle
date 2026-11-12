@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '9.2.2'
+}
+
+group = 'org.transformice'
+version = '1.2beta-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url = uri('https://jitpack.io')
+    }
+}
+
+dependencies {
+    // PS Framework
+    implementation('com.github.NoFileFound:PSFramework:1.0.2')
+    implementation('io.netty:netty-all:4.1.130.Final')
+
+    // Lua
+    implementation("org.luaj:luaj-jse:3.0.1")
+
+    implementation('io.github.classgraph:classgraph:4.8.179')
+
+    // Logging
+    implementation('org.fusesource.jansi:jansi:2.4.0')
+    implementation('ch.qos.logback:logback-classic:1.6.3')
+    implementation('org.slf4j:jul-to-slf4j:2.0.17')
+    implementation('org.jline:jline:3.30.6')
+
+    // Database
+    implementation('dev.morphia.morphia:morphia-core:2.4.14')
+    implementation('com.mysql:mysql-connector-j:9.4.0')
+
+    // GeoIP
+    implementation('com.maxmind.geoip2:geoip2:4.2.1')
+
+    // SMTP
+    implementation('org.eclipse.angus:jakarta.mail:2.0.5')
+}
+
+shadowJar {
+    archiveClassifier.set('')
+    manifest {
+        attributes('Main-Class': 'org.transformice.Application')
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
