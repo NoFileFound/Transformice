@@ -13,12 +13,16 @@ import org.transformice.GamePlayer;
 import org.transformice.GameRoom;
 import org.transformice.GameServer;
 import org.transformice.config.tfmconfig.EventConfig;
+import org.transformice.data.objects.EventType;
 import org.transformice.data.objects.MonsterInfo;
 import org.transformice.data.objects.RoomType;
 import org.transformice.database.data.PlayerEntity;
 import org.transformice.modules.impl.ModuleServer;
 
 // Packets
+import org.transformice.packets.send.login.PacketSendPlayerAttack;
+import org.transformice.packets.send.login.PacketSendPlayerHealth;
+import org.transformice.packets.send.login.PacketSendPlayerTookDamage;
 import org.transformice.packets.send.login.PacketSendSetCheeseSpriteSuffix;
 import org.transformice.packets.send.shop.PacketSendShopNewsInfo;
 
@@ -148,7 +152,7 @@ public final class ModuleEvents extends ModuleServer {
      * @param sessionId The player's session id.
      */
     public void handleEventPlayerAttack(GameRoom room, int sessionId) {
-
+        room.broadcastPacket(new PacketSendPlayerAttack(sessionId));
     }
 
     /**
@@ -188,10 +192,18 @@ public final class ModuleEvents extends ModuleServer {
     /**
      * Handles when the player took damage from the monster in the Halloween event.
      * @param room The player's room.
-     * @param sessionId The player's session id.
+     * @param player The player's instance.
      */
-    public void handleEventPlayerTookDamage(GameRoom room, int sessionId) {
+    public void handleEventPlayerTookDamage(GameRoom room, GamePlayer player) {
+        if (this.eventConfig.getEventName() == EventType.EVENT_HALLOWEEN) {
+            if (player.halloweenHealthPoints <= 0) {
+                player.sendDeath();
+                return;
+            }
 
+            player.halloweenHealthPoints--;
+            room.broadcastPacket(new PacketSendPlayerTookDamage(player.getSessionId()));
+        }
     }
 
     /**
@@ -245,6 +257,12 @@ public final class ModuleEvents extends ModuleServer {
         if (state == null || !state.running)
             return;
 
+        if (this.eventConfig.getEventName() == EventType.EVENT_HALLOWEEN) {
+            for (GamePlayer player : room.getPlayers().values()) {
+                player.halloweenHealthPoints = 0;
+            }
+        }
+
         state.running = false;
         state.eventMap = null;
         state.isEligible = false;
@@ -258,7 +276,12 @@ public final class ModuleEvents extends ModuleServer {
      * @param room The room's isntance.
      */
     public void handleEventRoomPostInitialization(GameRoom room) {
-
+        if (this.eventConfig.getEventName() == EventType.EVENT_HALLOWEEN) {
+            for (GamePlayer player : room.getPlayers().values()) {
+                player.halloweenHealthPoints = 4;
+                player.broadcastPacket(new PacketSendPlayerHealth(player.halloweenHealthPoints));
+            }
+        }
     }
 
     /**

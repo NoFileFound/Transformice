@@ -9,18 +9,22 @@ import org.psframework.network.PSSendPacketException;
 import org.psframework.utils.PSByteArray;
 import org.psframework.utils.PSTimer;
 import org.transformice.GameRoom;
+import org.transformice.GameServer;
 import org.transformice.network.NetByteArray;
 import org.transformice.packets.LegacyPacketOpcodes;
 
 public final class LuaAddConjuration extends VarArgFunction {
     private final GameRoom room;
+    private final GameServer server;
 
     /**
      * Creates a new tfm.exec.addConjuration() function.
      * @param room The given room.
+     * @param server The given server.
      */
-    public LuaAddConjuration(GameRoom room) {
+    public LuaAddConjuration(GameRoom room, GameServer server) {
         this.room = room;
+        this.server = server;
     }
 
     /**
@@ -38,7 +42,7 @@ public final class LuaAddConjuration extends VarArgFunction {
             int posX = args.toint(1);
             int posY = args.toint(2);
             int duration = (args.isnil(3) ? 10000 : args.toint(3));
-            new PSTimer(this.room.getServer().getScheduler()).schedule(() -> this.room.broadcastLegacyPacket(new PSSendPacket(LegacyPacketOpcodes.SendMapDestroyConjuration) {
+            new PSTimer(this.server.getScheduler()).schedule(() -> this.room.broadcastLegacyPacket(new PSSendPacket(LegacyPacketOpcodes.SendMapDestroyConjuration) {
                 @Override
                 public PSByteArray build() throws PSSendPacketException {
                     NetByteArray packet = new NetByteArray();

@@ -38,6 +38,6 @@ public final class Sonar implements CommandHandler {
 
         player.broadcastPacket(new PacketSendMiniLog(100, 2, "Sonar " + playerName, server.getSonarPlayerMovement().containsKey(playerName) ? String.join("\n", server.getSonarPlayerMovement().get(playerName)) : "\n"));
         server.getSonarPlayerMovement().remove(playerName);
-        player.broadcastPacket(new PacketSendStartSonar(client.getSessionId(), true, PSRandom.nextInt(0, 32575)));
+        player.broadcastPacket(new PacketSendStartSonar(client.getSessionId(), true, PSRandom.nextInt(0, 65665)));
     }
 }

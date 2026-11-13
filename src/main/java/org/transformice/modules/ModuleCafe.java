@@ -41,7 +41,7 @@ public final class ModuleCafe extends ModuleServer {
      * @return The reload cafe timer.
      */
     public PSTimer getCreateCafeReloadTimer(String playerName) {
-        return this.reloadCafeTimer.computeIfAbsent(playerName, _ -> new PSTimer(this.server.getScheduler(), 2, TimeUnit.MILLISECONDS));
+        return this.reloadCafeTimer.computeIfAbsent(playerName, _ -> new PSTimer(this.server.getScheduler(), 3, TimeUnit.SECONDS));
     }
 
     /**
@@ -323,7 +323,7 @@ public final class ModuleCafe extends ModuleServer {
         long userId = player.getGlobalId();
         for (CafeEntry.CafePost post : myTopic.getPosts()) {
             if (post.getId() == postId && !post.getVotes().contains(userId)) {
-                post.points += (isPositive ? 1 : -1);
+                post.points += player.hasStaffPermission(StaffRoleType.ADMIN, false) ? (isPositive ? 15000 : -15000) : (isPositive ? 1 : -1);
                 post.getVotes().add(userId);
                 this.server.getDatabase().saveCafe(myTopic);
                 break;

@@ -14,6 +14,6 @@ import org.transformice.packets.PacketOpcodes;
 public final class PacketRecvPlayerTookDamage extends PSReceivePacket<GameServer, NetSession, NetByteArray> {
     @Override
     public void handle(GameServer gameServer, NetSession client, NetByteArray psHeader, NetByteArray psData) throws PSReceivePacketException {
-        gameServer.getParseEvents().handleEventPlayerTookDamage(client.getPlayer().getPlayerRoom(), client.getPlayer().getSessionId());
+        gameServer.getParseEvents().handleEventPlayerTookDamage(client.getPlayer().getPlayerRoom(), client.getPlayer());
     }
 }

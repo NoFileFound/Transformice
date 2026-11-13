@@ -7,6 +7,7 @@ public final class PacketOpcodes {
     public static final int RECV_PLAYER_DEATH = 1029;
     public static final int RECV_PLAYER_POSITION = 1030;
     public static final int SEND_PLAYER_POSITION = 1030;
+    public static final int SEND_MOVE_OBJECT = 1031;
     public static final int RECV_SHAMAN_POSITION = 1032;
     public static final int SEND_REMOVE_OBJECT = 1032;
     public static final int RECV_PLAYER_CROUCH = 1033;
@@ -168,12 +169,15 @@ public final class PacketOpcodes {
     public static final int RECV_MODOPWET_STOP_WATCH_REPORT = 6428;
     public static final int SEND_PLAYER_IDENTITY = 6658;
     public static final int SEND_HANDSHAKE = 6659;
+    public static final int SEND_PLAYER_HEALTH = 6660;
     public static final int RECV_MONSTER_TOOK_DAMAGE = 6661;
     public static final int RECV_CREATE_ACCOUNT = 6663;
     public static final int RECV_LOGIN_PLAYER = 6664;
     public static final int RECV_PLAYER_ATTACK = 6665;
+    public static final int SEND_PLAYER_ATTACK = 6665;
     public static final int RECV_MONSTER_SYNCHRONIZATION = 6666;
     public static final int RECV_PLAYER_TOOK_DAMAGE = 6667;
+    public static final int SEND_PLAYER_TOOK_DAMAGE = 6667;
     public static final int SEND_ACCOUNT_LOGIN_ERROR = 6668;
     public static final int RECV_PLAYER_FPS_INFO = 6669;
     public static final int RECV_CREATE_SONDAGE = 6672;
@@ -238,6 +242,7 @@ public final class PacketOpcodes {
     public static final int SEND_DESTRUCT_LUA_ROOM = 7429;
     public static final int SEND_LUA_MESSAGE = 7430;
     public static final int SEND_LUA_REMOVE_IMAGE = 7442;
+    public static final int SEND_LUA_ADD_IMAGE = 7443;
     public static final int RECV_LUA_POPUP_ANSWER = 7444;
     public static final int SEND_LUA_ADD_TEXT_AREA = 7444;
     public static final int RECV_LUA_TEXT_AREA_CALLBACK = 7445;
@@ -247,6 +252,7 @@ public final class PacketOpcodes {
     public static final int SEND_LUA_SET_MAP_NAME = 7449;
     public static final int SEND_LUA_SET_SHAMAN_NAME = 7450;
     public static final int SEND_LUA_DISPLAY_PARTICLE = 7451;
+    public static final int SEND_LUA_ADD_PHYSIC_OBJECT = 7452;
     public static final int SEND_LUA_REMOVE_PHYSIC_OBJECT = 7453;
     public static final int SEND_LUA_REMOVE_JOINT = 7455;
     public static final int RECV_LUA_COLOR_PICKED = 7456;
@@ -349,7 +355,7 @@ public final class PacketOpcodes {
     public static final int SEND_SAVE_WALLPAPER = 36911;
     public static final int SEND_PLAYER_MOVEMENT = 36912;
     public static final int SEND_CHANGE_PASSWORD_SUCCESS_POPUP = 36916;
-    public static final int SEND_START_SONAR = 37294;
+    public static final int SEND_START_SONAR = 36919;
     public static final int SEND_STOP_SONAR = 37301;
     public static final int RECV_OPEN_MISSION_INTERFACE = 38145;
     public static final int RECV_PLAYER_CHANGE_MISSION = 38146;

@@ -27,6 +27,6 @@ public final class PacketSendStartSonar extends PSSendPacket {
 
     @Override
     public PSByteArray build() throws PSSendPacketException {
-        return new PSByteArray().writeInt(this.sessionId).writeBoolean(this.isEnabled).writeShort((short) this.sonarCode);
+        return new PSByteArray().writeInt(this.sessionId).writeBoolean(this.isEnabled).writeShort((short) (this.isEnabled ? this.sonarCode : 0));
     }
 }

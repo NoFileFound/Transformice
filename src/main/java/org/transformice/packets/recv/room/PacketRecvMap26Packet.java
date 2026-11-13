@@ -21,7 +21,7 @@ public final class PacketRecvMap26Packet extends PSReceivePacket<GameServer, Net
             int posY = psData.readShort();
             int width = psData.readShort();
             int height = psData.readShort();
-            room.sendAddPhysicObject(12, posX, posY, width, height);
+            room.sendAddPhysicObject(-1, false, 0, posX, posY, width, height, false, 0, 0, 0, 0, true, true, false, 0, 0, 0, true, "", false);
         }
     }
 }

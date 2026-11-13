@@ -112,7 +112,7 @@ public final class Utils {
             String prefix = roomName.substring(0, sep).toUpperCase();
             String name = roomName.substring(sep + 1);
             if (name.startsWith("*"))
-                return "int-" + name;
+                return "INT-" + name;
 
             if (isStaff || prefix.equals(roomCommunity))
                 return roomName;

@@ -34,6 +34,8 @@ import org.transformice.packets.send.legacy.PacketSendCatchTheCheeseMap;
 import org.transformice.packets.send.legacy.PacketSendMapVotePopup;
 import org.transformice.packets.send.legacy.PacketSendPlayerDisconnect;
 import org.transformice.packets.send.legacy.PacketSendPlayerSynchronizer;
+import org.transformice.packets.send.lua.PacketSendLuaAddImage;
+import org.transformice.packets.send.lua.PacketSendLuaAddPhysicObject;
 import org.transformice.packets.send.lua.PacketSendLuaNicknameColor;
 import org.transformice.packets.send.mulodrome.PacketSendMulodromeEnd;
 import org.transformice.packets.send.mulodrome.PacketSendMulodromeResult;
@@ -596,6 +598,14 @@ public final class GameRoom {
     }
 
     /**
+     * Gets the room's last image id.
+     * @return The room's last image id.
+     */
+    public int getLastImageId() {
+        return this.lastImageId;
+    }
+
+    /**
      * Gets the room's last object id.
      * @return The room's last object id.
      */
@@ -788,14 +798,6 @@ public final class GameRoom {
     }
 
     /**
-     * Gets the room's server.
-     * @return The room's server.
-     */
-    public GameServer getServer() {
-        return this.server;
-    }
-
-    /**
      * Gets the synchronizer.
      * @return The synchronizer.
      */
@@ -877,6 +879,49 @@ public final class GameRoom {
     }
 
     /**
+     * Adds an image.
+     * @param imageName The image's name.
+     * @param target The image target type.
+     * @param xPosition The X position.
+     * @param yPosition The Y position.
+     * @param xScale The X scale.
+     * @param yScale The Y scale.
+     * @param rotation The image rotation.
+     * @param alpha The image alpha.
+     * @param anchorX The image anchor X.
+     * @param anchorY The image anchor Y.
+     * @param fadeIn The image fade in.
+     * @param targetPlayer The target player.
+     */
+    public void addImage(String imageName, String target, int xPosition, int yPosition, int xScale, int yScale, int rotation, int alpha, int anchorX, int anchorY, boolean fadeIn, String targetPlayer) {
+        int imgInfo = 0;
+        if (target.startsWith("#")) {
+            imgInfo = 1;
+        } else if (target.startsWith("$")) {
+            imgInfo = 2;
+        } else if (target.startsWith("%")) {
+            imgInfo = 3;
+        } else if (target.startsWith("?")) {
+            imgInfo = 4;
+        } else if (target.startsWith("_")) {
+            imgInfo = 5;
+        } else if (target.startsWith("!")) {
+            imgInfo = 6;
+        } else if (target.startsWith("&")) {
+            imgInfo = 7;
+        } else if (target.startsWith(":")) {
+            imgInfo = 8;
+        } else if (target.startsWith("~")) {
+            imgInfo = 9;
+        } else if (target.startsWith("+")) {
+            imgInfo = 10;
+        }
+
+        this.broadcastPacket(new PacketSendLuaAddImage(this.lastImageId, imageName, imgInfo, this.players.get(targetPlayer) != null ? this.players.get(targetPlayer).getSessionId() : -1, xPosition, yPosition, xScale, yScale, rotation, alpha, anchorX, anchorY, fadeIn));
+        this.lastImageId++;
+    }
+
+    /**
      * Spawns a shaman object.
      * @param objectId The object's id. (-1 makes it default).
      * @param shamanObjectId The shaman's object id.
@@ -906,14 +951,29 @@ public final class GameRoom {
 
     /**
      * Adds a physical object.
-     * @param objectType The object's type.
-     * @param posX The position of X.
-     * @param posY The position of Y.
-     * @param width The object width.
-     * @param height The object height.
+     * @param id The physical object's id.
+     * @param dynamic Is the object dynamic.
+     * @param type The object's type.
+     * @param xPosition The object's X position.
+     * @param yPosition The object's Y position.
+     * @param width The object's width.
+     * @param height The object's height.
+     * @param foreground Does the object have foreground.
+     * @param friction The object's friction.
+     * @param restitution The object's restitution.
+     * @param angle The object's angle.
+     * @param color The object's color.
+     * @param miceCollision Is mice collision enabled.
+     * @param groundCollision Is ground collision enabled.
+     * @param fixedRotation Is fixed rotation.
+     * @param mass The object's mass.
+     * @param linearDamping Linear dumping.
+     * @param angularDamping Angular dumping.
+     * @param image The object's image name.
+     * @param contactListener Is the object have contact listener.
      */
-    public void sendAddPhysicObject(int objectType, int posX, int posY, int width, int height) {
-        ///  TODO: IMPLEMENT
+    public void sendAddPhysicObject(int id, boolean dynamic, int type, int xPosition, int yPosition, int width, int height, boolean foreground, int friction, int restitution, int angle, int color, boolean miceCollision, boolean groundCollision, boolean fixedRotation, int mass, int linearDamping, int angularDamping, boolean invisible, String image, boolean contactListener) {
+        this.broadcastPacket(new PacketSendLuaAddPhysicObject(id, dynamic, type, xPosition, yPosition, width, height, foreground, friction, restitution, angle, color, miceCollision, groundCollision, fixedRotation, mass, linearDamping, angularDamping, invisible, image, contactListener));
     }
 
     /**
@@ -1055,6 +1115,9 @@ public final class GameRoom {
             else
                 player.getPlayerData().petInfo = new long[]{0, 0};
         }
+
+        if (this.enableFallDamage)
+            player.broadcastPacket(new PacketSendAieMode(true, 1));
     }
 
     /**
@@ -1531,7 +1594,7 @@ public final class GameRoom {
                 return new MapDetails(map, isInverted);
             }
 
-            return new MapDetails(0, "", this.server.getVanillaMapXml(0));
+            return new MapDetails(0, "", this.server.getSpecialMapXml(0));
         }
 
         MapDetails eventMap = this.server.getParseEvents().getEventMap(this);
@@ -1658,8 +1721,8 @@ public final class GameRoom {
         }
 
         /**
-         * Creates a new event map details.
-         * @param mapCode The vanilla map's code.
+         * Creates a new special map details.
+         * @param mapCode The special map's code.
          */
         public MapDetails(int mapCode, String mapAuthor, byte[] mapXml) {
             this.mapCode = mapCode;
@@ -1697,7 +1760,7 @@ public final class GameRoom {
             this.isDualShaman = mapInfo.mapXML.contains("DC2");
             this.isCatchTheCheese = false;
             this.isTransform = false;
-            this.isInverted = PSRandom.nextInt(1, 100) > 90;
+            this.isInverted = isInverted || PSRandom.nextInt(1, 100) > 90;
             this.isGravity = mapInfo.mapXML.contains("G=");
         }
     }

@@ -27,9 +27,9 @@ import org.transformice.data.objects.RoomType;
 import org.transformice.data.objects.ShamanType;
 import org.transformice.modules.impl.ModuleRoom;
 import org.transformice.modules.lua.LuaTfmTable;
+import org.transformice.modules.lua.debug.LuaTraceback;
 
 // Packets
-import org.transformice.modules.lua.debug.LuaTraceback;
 import org.transformice.packets.send.chat.PacketSendServerMessage;
 import org.transformice.packets.send.lua.*;
 import org.transformice.packets.send.player.PacketSendPlayerMove;
@@ -82,6 +82,17 @@ public final class ModuleLua extends ModuleRoom {
     }
 
     /**
+     * Gets the lua admin's nickname.
+     * @return THe lua admin's nickname.
+     */
+    public String getLuaAdminName() {
+        if (this.luaAdmin == null)
+            return "";
+
+        return this.luaAdmin.getPlayerName();
+    }
+
+    /**
      * Gets the lua's map.
      * @return The lua's map.
      */
@@ -121,7 +132,7 @@ public final class ModuleLua extends ModuleRoom {
         this.luaGlobal = JsePlatform.standardGlobals();
         this.luaGlobal.load(new DebugLib());
         this.luaDebug = this.luaGlobal.get("debug");
-        this.luaGlobal.load(new LuaTfmTable(this.room));
+        this.luaGlobal.load(new LuaTfmTable(this.room, this.server, this.luaAdmin));
         for (GamePlayer client : this.room.getPlayers().values())
             this.sendLuaUpdatePlayerInfo(client, true);
 

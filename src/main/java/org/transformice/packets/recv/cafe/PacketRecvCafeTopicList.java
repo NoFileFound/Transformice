@@ -18,7 +18,7 @@ public final class PacketRecvCafeTopicList extends PSReceivePacket<GameServer, N
     public void handle(GameServer gameServer, NetSession client, NetByteArray psHeader, NetByteArray psData) throws PSReceivePacketException {
         GamePlayer player = client.getPlayer();
         PSTimer timer = gameServer.getParseCafe().getCreateCafeReloadTimer(player.getPlayerName());
-        if (timer.getRemainingTime() < 0) {
+        if (timer.getRemainingTime() <= 0) {
             gameServer.getParseCafe().reloadCafeTopics(player);
             timer.schedule();
         }

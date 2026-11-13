@@ -5,7 +5,9 @@ import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.TwoArgFunction;
 import org.psframework.utils.PSZlib;
+import org.transformice.GamePlayer;
 import org.transformice.GameRoom;
+import org.transformice.GameServer;
 import org.transformice.data.objects.RoomType;
 import org.transformice.modules.lua.debug.*;
 import org.transformice.modules.lua.system.*;
@@ -14,13 +16,19 @@ import org.transformice.modules.lua.ui.*;
 
 public final class LuaTfmTable extends TwoArgFunction {
     private final GameRoom room;
+    private final GameServer server;
+    private final GamePlayer luaAdmin;
 
     /**
      * Creates a new LuaTfmTable.
      * @param room The given room.
+     * @param server The given server.
+     * @param luaAdmin The given lua executor.
      */
-    public LuaTfmTable(GameRoom room) {
+    public LuaTfmTable(GameRoom room, GameServer server, GamePlayer luaAdmin) {
         this.room = room;
+        this.server = server;
+        this.luaAdmin = luaAdmin;
     }
 
     @Override
@@ -183,11 +191,11 @@ public final class LuaTfmTable extends TwoArgFunction {
         table.get("tfm").get("get").get("room").get("xmlMapInfo").set("xml", new String(PSZlib.decompress(this.room.getCurrentMap().mapXml)));
         table.get("tfm").set("exec", new LuaTable());
         table.get("tfm").get("exec").set("addBonus", new LuaAddBonus(this.room));
-        table.get("tfm").get("exec").set("addConjuration", new LuaAddConjuration(this.room));
-        ///  todo: tfm.exec.addImage
+        table.get("tfm").get("exec").set("addConjuration", new LuaAddConjuration(this.room, this.server));
+        table.get("tfm").get("exec").set("addImage", new LuaAddImage(this.room));
         ///  todo: tfm.exec.addJoint
-        ///  todo: tfm.exec.addPhysicObject
-        ///  todo: tfm.exec.addShamanObject
+        table.get("tfm").get("exec").set("addPhysicObject", new LuaAddPhysicObject(this.room));
+        table.get("tfm").get("exec").set("addShamanObject", new LuaAddShamanObject(this.room, this.luaAdmin));
         table.get("tfm").get("exec").set("attachBalloon", new LuaAttachBalloon(this.room));
         table.get("tfm").get("exec").set("bindKeyboard", new LuaBindKeyboard(this.room));
         table.get("tfm").get("exec").set("changePlayerSize", new LuaChangePlayerSize(this.room));
@@ -216,8 +224,8 @@ public final class LuaTfmTable extends TwoArgFunction {
         table.get("tfm").get("exec").set("killPlayer", new LuaKillPlayer(this.room));
         table.get("tfm").get("exec").set("linkMice", new LuaLinkMice(this.room));
         table.get("tfm").get("exec").set("lowerSyncDelay", new LuaLowerSyncDelay(this.room));
-        ///  TODO: tfm.exec.moveObject ( objectId, xPosition, yPosition, positionOffset, xSpeed, ySpeed, speedOffset, angle, angleOffset )
-        ///  TODO: tfm.exec.movePhysicObject ( objectId, xPosition, yPosition, positionOffset, xSpeed, ySpeed, speedOffset, angle, angleOffset )
+        table.get("tfm").get("exec").set("moveObject", new LuaMoveObject(this.room));
+        table.get("tfm").get("exec").set("movePhysicObject", new LuaMovePhysicObject(this.room));
         table.get("tfm").get("exec").set("movePlayer", new LuaMovePlayer(this.room));
         ///  TODO: tfm.exec.newGame ( mapCode, flipped )
         table.get("tfm").get("exec").set("playEmote", new LuaPlayEmote(this.room));
@@ -253,13 +261,8 @@ public final class LuaTfmTable extends TwoArgFunction {
         table.get("system").set("bindKeyboard", new LuaBindKeyboard(this.room));
         table.get("system").set("bindMouse", new LuaBindMouse(this.room));
         table.get("system").set("disableChatCommandDisplay", new LuaDisableChatCommandDisplay(this.room));
-        ///  TODO: system.giveAdventurePoint ( playerName, achievementCode, amount )
-        ///  TODO: system.loadFile ( fileNumber )
-        ///  TODO: system.loadPlayerData ( playerName )
         ///  TODO: system.newTimer ( callback, time, loop, arg1, arg2, arg3, arg4 )
         ///  TODO: system.removeTimer ( timerId )
-        ///  TODO: system.saveFile ( data, fileNumber )
-        ///  TODO: system.savePlayerData ( playerName, data )
         table.set("ui", new LuaTable());
         table.get("ui").set("addPopup", new LuaAddPopup(this.room));
         table.get("ui").set("addTextArea", new LuaAddTextArea(this.room));

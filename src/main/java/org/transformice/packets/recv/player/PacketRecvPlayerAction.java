@@ -35,16 +35,16 @@ public final class PacketRecvPlayerAction extends PSReceivePacket<GameServer, Ne
             case 22: // kissing
             case 26: // rock paper scissors.
                 GamePlayer repPlayer = gameServer.getPlayerBySessionId(playerSessionId);
-                room.broadcastPacket(new PacketSendPlayerAction(player.getSessionId(), actionType + 1, "", false));
-                repPlayer.getPlayerRoom().broadcastPacket(new PacketSendPlayerAction(repPlayer.getSessionId(), actionType + 1, "", false));
+                room.broadcastPacket(player, new PacketSendPlayerAction(player.getSessionId(), actionType + 1, "", false));
+                repPlayer.getPlayerRoom().broadcastPacket(repPlayer, new PacketSendPlayerAction(repPlayer.getSessionId(), actionType + 1, "", false));
                 if (actionType == 26) {
                     int num1 = PSRandom.nextInt(0, 2);
                     int num2 = PSRandom.nextInt(0, 2);
-                    room.broadcastPacket(new PacketSendRockPaperScissorsPacket(player.getSessionId(), num1, playerSessionId, num2));
+                    room.broadcastPacket(new PacketSendRockPaperScissorsPacket(player.getSessionId(), num1, repPlayer.getSessionId(), num2));
                 }
                 break;
             default:
-                room.broadcastPacket(new PacketSendPlayerAction(player.getSessionId(), actionType, "", false));
+                room.broadcastPacket(player, new PacketSendPlayerAction(player.getSessionId(), actionType, "", false));
                 break;
         }
 

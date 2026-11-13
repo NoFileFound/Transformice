@@ -105,6 +105,7 @@ public final class GamePlayer {
     public long lastSonarTime;
     public int lastPingTimeEnd;
     public int lastGameModeId;
+    public int halloweenHealthPoints;
     public boolean canMeep;
     public boolean canTransform;
     public boolean canShamanRespawn;
@@ -572,6 +573,8 @@ public final class GamePlayer {
             }
         }
 
+        int cheeseTmp = this.cheeseCount;
+
         this.isDead = true;
         this.cheeseCount = 0;
         this.cheeseIdxs.clear();
@@ -605,7 +608,7 @@ public final class GamePlayer {
                 this.checkTitleProgress(this.playerData.firstCount, "first");
             }
 
-            this.parseDailyQuests.increaseMission(MissionType.BRING_BACK_CHEESE, this.cheeseCount);
+            this.parseDailyQuests.increaseMission(MissionType.BRING_BACK_CHEESE, cheeseTmp);
             this.playerData.cheeseCount++;
             this.checkTitleProgress(this.playerData.cheeseCount, "cheese");
             this.playerData.shopCheese++;
@@ -632,7 +635,7 @@ public final class GamePlayer {
                     }
                 }
             } else {
-                this.parseDailyQuests.increaseMission(MissionType.BRING_BACK_CHEESE_AS_SHAMAN, this.cheeseCount);
+                this.parseDailyQuests.increaseMission(MissionType.BRING_BACK_CHEESE_AS_SHAMAN, cheeseTmp);
                 this.playerData.shamanCheeseCount++;
             }
         }
